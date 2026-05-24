@@ -82,11 +82,31 @@ const config: Config = {
           "0%": { backgroundPosition: "-200% 0" },
           "100%": { backgroundPosition: "200% 0" },
         },
+        "slide-up": {
+          from: { opacity: "0", transform: "translateY(40px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+        "slide-left": {
+          from: { opacity: "0", transform: "translateX(-50px)" },
+          to: { opacity: "1", transform: "translateX(0)" },
+        },
+        "slide-right": {
+          from: { opacity: "0", transform: "translateX(50px)" },
+          to: { opacity: "1", transform: "translateX(0)" },
+        },
+        "fade-in": {
+          from: { opacity: "0" },
+          to: { opacity: "1" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         shimmer: "shimmer 2s linear infinite",
+        "slide-up": "slide-up 0.65s cubic-bezier(0.16, 1, 0.3, 1) both",
+        "slide-left": "slide-left 0.65s cubic-bezier(0.16, 1, 0.3, 1) both",
+        "slide-right": "slide-right 0.65s cubic-bezier(0.16, 1, 0.3, 1) both",
+        "fade-in": "fade-in 0.5s ease-out both",
       },
     },
   },

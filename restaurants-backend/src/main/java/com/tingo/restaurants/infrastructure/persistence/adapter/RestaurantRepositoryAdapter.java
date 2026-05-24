@@ -55,7 +55,7 @@ public class RestaurantRepositoryAdapter implements RestaurantRepository {
     @Override
     public Page<Restaurant> findByFilters(String name, String city, String category,
                                            RestaurantStatus status, Pageable pageable) {
-        return jpaRepository.findByFilters(name, city, status, pageable).map(this::toDomain);
+        return jpaRepository.findByFilters(name, city, pageable).map(this::toDomain);
     }
 
     @Override

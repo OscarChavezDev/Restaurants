@@ -5,6 +5,7 @@ import com.tingo.restaurants.domain.exception.DomainException;
 import com.tingo.restaurants.domain.exception.InvalidCredentialsException;
 import com.tingo.restaurants.domain.exception.RestaurantNotFoundException;
 import com.tingo.restaurants.domain.exception.UserAlreadyExistsException;
+import com.tingo.restaurants.domain.exception.UserNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(RestaurantNotFoundException.class)
     public ResponseEntity<ApiResponse<Void>> handleRestaurantNotFound(RestaurantNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.error(ex.getMessage(), ex.getErrorCode()));
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleUserNotFound(UserNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(ApiResponse.error(ex.getMessage(), ex.getErrorCode()));
     }

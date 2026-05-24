@@ -25,18 +25,25 @@ public interface RestaurantJpaRepository extends JpaRepository<RestaurantEntity,
 
     boolean existsByEmailAndDeletedAtIsNull(String email);
 
-    @Query("""
-        SELECT r FROM RestaurantEntity r
-        WHERE r.deletedAt IS NULL
+    @Query(value = """
+        SELECT * FROM restaurants r
+        WHERE r.deleted_at IS NULL
           AND r.status = 'ACTIVE'
-          AND (:name IS NULL OR LOWER(r.name) LIKE LOWER(CONCAT('%', :name, '%')))
-          AND (:city IS NULL OR LOWER(r.city) = LOWER(:city))
-          AND (:status IS NULL OR r.status = :status)
-    """)
+          AND (CAST(:name AS text) IS NULL OR LOWER(r.name) LIKE LOWER(CONCAT('%', :name, '%')))
+          AND (CAST(:city AS text) IS NULL OR LOWER(r.city) = LOWER(CAST(:city AS text)))
+        ORDER BY r.avg_rating DESC, r.total_ratings DESC
+        """,
+        countQuery = """
+        SELECT COUNT(*) FROM restaurants r
+        WHERE r.deleted_at IS NULL
+          AND r.status = 'ACTIVE'
+          AND (CAST(:name AS text) IS NULL OR LOWER(r.name) LIKE LOWER(CONCAT('%', :name, '%')))
+          AND (CAST(:city AS text) IS NULL OR LOWER(r.city) = LOWER(CAST(:city AS text)))
+        """,
+        nativeQuery = true)
     Page<RestaurantEntity> findByFilters(
             @Param("name") String name,
             @Param("city") String city,
-            @Param("status") RestaurantStatus status,
             Pageable pageable);
 
     @Query(value = """

@@ -4,8 +4,10 @@ import { Tag, Calendar } from 'lucide-react';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { restaurantService } from '@/services/restaurantService';
-import { useMyRestaurants } from '@/hooks/useRestaurants';
+import { useMyRestaurants, useRestaurants } from '@/hooks/useRestaurants';
+import { useAuthStore } from '@/store/authStore';
 import { formatCurrency } from '@/utils/formatters';
+import { RestaurantPicker } from '@/components/ui/RestaurantPicker';
 import type { Promotion } from '@/types/restaurant';
 
 const PROMO_LABELS: Record<string, string> = {
@@ -17,7 +19,10 @@ const PROMO_LABELS: Record<string, string> = {
 };
 
 export default function PromotionsPage() {
-  const { data: restaurants } = useMyRestaurants();
+  const isAdmin = useAuthStore((s) => s.isAdmin());
+  const { data: myRestaurants } = useMyRestaurants();
+  const { data: allRestaurants } = useRestaurants(0, 100);
+  const restaurants = isAdmin ? allRestaurants : myRestaurants;
   const [selectedRestaurantId, setSelectedRestaurantId] = useState<string>('');
 
   const { data: promotions, isLoading } = useQuery({
@@ -33,19 +38,12 @@ export default function PromotionsPage() {
         <p className="text-gray-600 mt-1">Descuentos y ofertas activas por restaurante</p>
       </div>
 
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">Selecciona un restaurante</label>
-        <select
-          value={selectedRestaurantId}
-          onChange={(e) => setSelectedRestaurantId(e.target.value)}
-          className="w-full max-w-sm border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-        >
-          <option value="">-- Elige un restaurante --</option>
-          {restaurants?.content.map((r) => (
-            <option key={r.id} value={r.id}>{r.name}</option>
-          ))}
-        </select>
-      </div>
+      <RestaurantPicker
+        restaurants={restaurants?.content ?? []}
+        value={selectedRestaurantId}
+        onChange={setSelectedRestaurantId}
+        label="Selecciona un restaurante para ver sus promociones"
+      />
 
       {!selectedRestaurantId ? (
         <div className="text-center py-20 text-gray-400">

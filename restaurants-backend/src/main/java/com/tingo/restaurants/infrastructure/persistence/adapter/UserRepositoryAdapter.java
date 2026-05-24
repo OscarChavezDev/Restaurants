@@ -5,6 +5,8 @@ import com.tingo.restaurants.domain.repository.UserRepository;
 import com.tingo.restaurants.infrastructure.persistence.entity.UserEntity;
 import com.tingo.restaurants.infrastructure.persistence.repository.UserJpaRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -44,6 +46,11 @@ public class UserRepositoryAdapter implements UserRepository {
             entity.softDelete();
             jpaRepository.save(entity);
         });
+    }
+
+    @Override
+    public Page<User> findAll(Pageable pageable) {
+        return jpaRepository.findByDeletedAtIsNull(pageable).map(this::toDomain);
     }
 
     private User toDomain(UserEntity e) {

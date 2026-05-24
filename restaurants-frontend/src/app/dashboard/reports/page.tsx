@@ -1,41 +1,46 @@
 'use client';
 
 import { BarChart3, TrendingUp, Users, Calendar, UtensilsCrossed, Star } from 'lucide-react';
-import { useMyRestaurants } from '@/hooks/useRestaurants';
+import { useMyRestaurants, useRestaurants } from '@/hooks/useRestaurants';
 import { useMyReservations } from '@/hooks/useReservations';
+import { useAuthStore } from '@/store/authStore';
 
 export default function ReportsPage() {
-  const { data: restaurants } = useMyRestaurants();
-  const { data: reservations } = useMyReservations(0, 100);
+  const isAdmin = useAuthStore((s) => s.isAdmin());
+
+  const { data: myRestaurants } = useMyRestaurants();
+  const { data: allRestaurants } = useRestaurants(0, 100);
+  const { data: reservations } = useMyReservations(0, 200);
+
+  const restaurants = isAdmin ? allRestaurants : myRestaurants;
 
   const totalConfirmed = reservations?.content.filter(r => r.status === 'CONFIRMED').length ?? 0;
   const totalCancelled = reservations?.content.filter(r => r.status === 'CANCELLED').length ?? 0;
   const totalCompleted = reservations?.content.filter(r => r.status === 'COMPLETED').length ?? 0;
-  const totalPending = reservations?.content.filter(r => r.status === 'PENDING').length ?? 0;
-  const eventRelated = reservations?.content.filter(r => r.isEventRelated).length ?? 0;
+  const totalPending   = reservations?.content.filter(r => r.status === 'PENDING').length ?? 0;
+  const eventRelated   = reservations?.content.filter(r => r.isEventRelated).length ?? 0;
 
   const stats = [
     { label: 'Restaurantes activos', value: restaurants?.totalElements ?? 0, icon: UtensilsCrossed, color: 'bg-orange-100 text-orange-600' },
-    { label: 'Reservas totales', value: reservations?.totalElements ?? 0, icon: Calendar, color: 'bg-blue-100 text-blue-600' },
-    { label: 'Confirmadas', value: totalConfirmed, icon: TrendingUp, color: 'bg-green-100 text-green-600' },
-    { label: 'Canceladas', value: totalCancelled, icon: Users, color: 'bg-red-100 text-red-600' },
-    { label: 'Completadas', value: totalCompleted, icon: Star, color: 'bg-purple-100 text-purple-600' },
-    { label: 'Pendientes', value: totalPending, icon: BarChart3, color: 'bg-yellow-100 text-yellow-600' },
+    { label: 'Reservas totales',     value: reservations?.totalElements ?? 0, icon: Calendar,       color: 'bg-blue-100 text-blue-600'   },
+    { label: 'Confirmadas',          value: totalConfirmed,                    icon: TrendingUp,     color: 'bg-green-100 text-green-600' },
+    { label: 'Canceladas',           value: totalCancelled,                    icon: Users,          color: 'bg-red-100 text-red-600'     },
+    { label: 'Completadas',          value: totalCompleted,                    icon: Star,           color: 'bg-purple-100 text-purple-600'},
+    { label: 'Pendientes',           value: totalPending,                      icon: BarChart3,      color: 'bg-yellow-100 text-yellow-600'},
   ];
 
-  const conversionRate = reservations?.totalElements
-    ? Math.round((totalCompleted / reservations.totalElements) * 100)
-    : 0;
-
+  const conversionRate  = reservations?.totalElements
+    ? Math.round((totalCompleted / reservations.totalElements) * 100) : 0;
   const cancellationRate = reservations?.totalElements
-    ? Math.round((totalCancelled / reservations.totalElements) * 100)
-    : 0;
+    ? Math.round((totalCancelled / reservations.totalElements) * 100) : 0;
 
   return (
     <div>
       <div className="mb-8">
         <h1 className="font-display text-2xl font-bold text-gray-900">Reportes</h1>
-        <p className="text-gray-600 mt-1">Métricas y estadísticas del sistema</p>
+        <p className="text-gray-600 mt-1">
+          {isAdmin ? 'Métricas y estadísticas del sistema' : 'Estadísticas de tus restaurantes'}
+        </p>
       </div>
 
       {/* KPIs */}
@@ -70,10 +75,12 @@ export default function ReportsPage() {
         </div>
       </div>
 
-      {/* Restaurantes */}
+      {/* Tabla de restaurantes */}
       {restaurants && restaurants.content.length > 0 && (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <h2 className="font-display text-lg font-semibold text-gray-900 mb-4">Mis Restaurantes</h2>
+          <h2 className="font-display text-lg font-semibold text-gray-900 mb-4">
+            {isAdmin ? 'Todos los restaurantes' : 'Mis restaurantes'}
+          </h2>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -90,13 +97,18 @@ export default function ReportsPage() {
                   <tr key={r.id} className="border-b border-gray-50 hover:bg-gray-50">
                     <td className="py-3 font-medium text-gray-900">{r.name}</td>
                     <td className="py-3 text-gray-500">{r.city}</td>
-                    <td className="py-3 text-right">⭐ {r.avgRating.toFixed(1)} ({r.totalRatings})</td>
+                    <td className="py-3 text-right text-gray-700">
+                      <span className="inline-flex items-center gap-1">
+                        <Star className="h-3.5 w-3.5 text-yellow-400 fill-yellow-400" />
+                        {r.avgRating.toFixed(1)} ({r.totalRatings})
+                      </span>
+                    </td>
                     <td className="py-3 text-right text-gray-600">{r.totalCapacity} personas</td>
                     <td className="py-3 text-right">
                       <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
-                        r.status === 'ACTIVE' ? 'bg-green-100 text-green-700' :
+                        r.status === 'ACTIVE'           ? 'bg-green-100 text-green-700' :
                         r.status === 'PENDING_APPROVAL' ? 'bg-yellow-100 text-yellow-700' :
-                        'bg-gray-100 text-gray-600'
+                                                          'bg-gray-100 text-gray-600'
                       }`}>{r.status}</span>
                     </td>
                   </tr>

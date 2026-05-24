@@ -70,7 +70,7 @@ export default function RestaurantDetailPage() {
   if (error || !restaurant) return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
       <div className="text-center">
-        <div className="text-5xl mb-4">🍽️</div>
+        <UtensilsCrossed className="h-12 w-12 text-gray-300 mb-4 mx-auto" />
         <h2 className="font-display text-xl font-bold text-gray-900 mb-2">Restaurante no encontrado</h2>
         <Link href="/restaurants" className="text-orange-500 hover:underline">Ver todos los restaurantes</Link>
       </div>
@@ -93,7 +93,7 @@ export default function RestaurantDetailPage() {
         {restaurant.coverImageUrl ? (
           <Image src={restaurant.coverImageUrl} alt={restaurant.name} fill className="object-cover" />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center text-8xl opacity-20">🍽️</div>
+          <div className="absolute inset-0 flex items-center justify-center opacity-20"><UtensilsCrossed className="h-32 w-32 text-orange-300" /></div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
 

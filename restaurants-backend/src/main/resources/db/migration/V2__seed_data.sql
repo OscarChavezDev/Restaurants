@@ -17,5 +17,5 @@ INSERT INTO food_categories (id, name, description, icon_url) VALUES
 -- Hash bcrypt de 'Admin@1234!'
 INSERT INTO users (id, email, password_hash, full_name, role, is_active, email_verified) VALUES
   (uuid_generate_v4(), 'admin@tingo-restaurants.com',
-   '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj2pK9k7ZSfe',
+   '$2a$12$Vl2VwOkP9h0HwMzVE1eHx.6M/P.rdZvLXZLDPlv84SR3lYgiW8A/2',
    'Administrador del Sistema', 'ADMIN', TRUE, TRUE);

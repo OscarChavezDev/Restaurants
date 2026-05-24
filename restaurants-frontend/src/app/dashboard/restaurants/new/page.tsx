@@ -159,12 +159,12 @@ export default function NewRestaurantPage() {
           <h2 className="font-display text-base font-semibold text-gray-900 mb-4">Características</h2>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {[
-              { field: 'acceptsReservations' as const, label: '🗓️ Acepta reservas' },
-              { field: 'acceptsEvents' as const, label: '🎉 Acepta eventos' },
-              { field: 'hasParking' as const, label: '🅿️ Estacionamiento' },
-              { field: 'hasWifi' as const, label: '📶 WiFi' },
-              { field: 'hasAirConditioning' as const, label: '❄️ Aire acondicionado' },
-              { field: 'isAccessible' as const, label: '♿ Accesible' },
+              { field: 'acceptsReservations' as const, label: 'Acepta reservas' },
+              { field: 'acceptsEvents' as const, label: 'Acepta eventos' },
+              { field: 'hasParking' as const, label: 'Estacionamiento' },
+              { field: 'hasWifi' as const, label: 'WiFi' },
+              { field: 'hasAirConditioning' as const, label: 'Aire acondicionado' },
+              { field: 'isAccessible' as const, label: 'Accesible' },
             ].map(({ field, label }) => (
               <label key={field} className="flex items-center gap-2.5 p-3 rounded-xl border border-gray-200 cursor-pointer hover:bg-orange-50 hover:border-orange-200 transition-colors">
                 <input {...register(field)} type="checkbox" className="h-4 w-4 rounded accent-orange-500" />

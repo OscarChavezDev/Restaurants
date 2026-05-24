@@ -30,7 +30,7 @@ export default function RestaurantDetailDashboard() {
       api.patch(`/v1/restaurants/${id}/status`, null, { params: { status } }),
     onSuccess: (_, status) => {
       qc.invalidateQueries({ queryKey: ['restaurants', 'detail', id] });
-      toast.success(`Restaurante ${status === 'ACTIVE' ? 'aprobado ✅' : status === 'INACTIVE' ? 'desactivado' : 'actualizado'}`);
+      toast.success(`Restaurante ${status === 'ACTIVE' ? 'aprobado' : status === 'INACTIVE' ? 'desactivado' : 'actualizado'}`);
     },
     onError: () => toast.error('Error al cambiar el estado'),
   });
@@ -94,10 +94,10 @@ export default function RestaurantDetailDashboard() {
               {(restaurant.status === 'INACTIVE' || restaurant.status === 'TEMPORARILY_CLOSED') && <XCircle className="h-6 w-6 text-gray-500" />}
               <div>
                 <p className="font-semibold text-gray-900">
-                  {restaurant.status === 'PENDING_APPROVAL' && '⏳ Este restaurante está pendiente de tu aprobación'}
-                  {restaurant.status === 'ACTIVE' && '✅ Restaurante activo y visible al público'}
-                  {restaurant.status === 'INACTIVE' && '🔴 Restaurante desactivado'}
-                  {restaurant.status === 'TEMPORARILY_CLOSED' && '🟡 Restaurante cerrado temporalmente'}
+                  {restaurant.status === 'PENDING_APPROVAL' && 'Este restaurante está pendiente de tu aprobación'}
+                  {restaurant.status === 'ACTIVE' && 'Restaurante activo y visible al público'}
+                  {restaurant.status === 'INACTIVE' && 'Restaurante desactivado'}
+                  {restaurant.status === 'TEMPORARILY_CLOSED' && 'Restaurante cerrado temporalmente'}
                 </p>
                 <p className="text-sm text-gray-500 mt-0.5">
                   {restaurant.status === 'PENDING_APPROVAL' && 'Apruébalo para que aparezca en el catálogo público y los clientes puedan hacer reservas.'}

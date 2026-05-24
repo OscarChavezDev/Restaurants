@@ -120,7 +120,7 @@ export default function ReservationLookupPage() {
               {reservation.isEventRelated && (
                 <div className="pt-3 border-t border-gray-100">
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">
-                    🎉 Vinculada al evento: {reservation.relatedEventName}
+                    Vinculada al evento: {reservation.relatedEventName}
                   </span>
                 </div>
               )}

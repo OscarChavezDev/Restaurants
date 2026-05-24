@@ -33,6 +33,7 @@ services:
       context: ./restaurants-backend
       dockerfile: Dockerfile
     container_name: restaurants-backend
+    user: root
     restart: unless-stopped
     depends_on:
       postgres:

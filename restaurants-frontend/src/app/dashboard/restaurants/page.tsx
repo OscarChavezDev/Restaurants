@@ -1,6 +1,6 @@
 'use client';
 
-import { Plus, ExternalLink, Calendar, Star, Users, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Plus, ExternalLink, Calendar, Star, Users, CheckCircle, XCircle, Clock, UtensilsCrossed } from 'lucide-react';
 import { useState } from 'react';
 import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -38,7 +38,7 @@ export default function RestaurantsPage() {
       api.patch(`/v1/restaurants/${id}/status`, null, { params: { status } }),
     onSuccess: (_, { status }) => {
       qc.invalidateQueries({ queryKey: ['restaurants'] });
-      toast.success(status === 'ACTIVE' ? '✅ Restaurante aprobado' : '🔴 Restaurante desactivado');
+      toast.success(status === 'ACTIVE' ? 'Restaurante aprobado' : 'Restaurante desactivado');
     },
     onError: () => toast.error('Error al cambiar estado'),
   });
@@ -91,7 +91,7 @@ export default function RestaurantsPage() {
         <div className="space-y-3">{[1,2,3].map(i => <div key={i} className="h-24 skeleton rounded-2xl" />)}</div>
       ) : !restaurants?.length ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
-          <div className="text-6xl mb-4">🍽️</div>
+          <UtensilsCrossed className="h-16 w-16 text-gray-300 mb-4" />
           <h3 className="font-display text-lg font-semibold text-gray-900 mb-2">
             {isAdmin ? 'No hay restaurantes con este filtro' : 'Sin restaurantes aún'}
           </h3>

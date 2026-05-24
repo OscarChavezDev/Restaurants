@@ -3,16 +3,21 @@
 import { useState } from 'react';
 import { Plus, ChevronDown, Trash2, UtensilsCrossed, Loader2 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useMyRestaurants } from '@/hooks/useRestaurants';
+import { useMyRestaurants, useRestaurants } from '@/hooks/useRestaurants';
+import { useAuthStore } from '@/store/authStore';
 import { api } from '@/services/api';
 import { formatCurrency } from '@/utils/formatters';
+import { RestaurantPicker } from '@/components/ui/RestaurantPicker';
 import toast from 'react-hot-toast';
 import type { Menu } from '@/types/restaurant';
 
 const DISH_CATEGORIES = ['ENTRADAS','SOPAS','PLATOS_PRINCIPALES','PARRILLAS','MARISCOS','ENSALADAS','POSTRES','BEBIDAS','BEBIDAS_ALCOHOLICAS','ESPECIALES'];
 
 export default function MenusPage() {
-  const { data: restaurants } = useMyRestaurants();
+  const isAdmin = useAuthStore((s) => s.isAdmin());
+  const { data: myRestaurants } = useMyRestaurants();
+  const { data: allRestaurants } = useRestaurants(0, 100);
+  const restaurants = isAdmin ? allRestaurants : myRestaurants;
   const [restaurantId, setRestaurantId] = useState('');
   const [expandedMenu, setExpandedMenu] = useState<string | null>(null);
   const [showMenuForm, setShowMenuForm] = useState(false);
@@ -63,14 +68,11 @@ export default function MenusPage() {
         <div><h1 className="font-display text-2xl font-bold text-gray-900">Menús y Platos</h1><p className="text-gray-600 mt-1">Crea menús y agrega platos a tus restaurantes</p></div>
       </div>
 
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">Selecciona tu restaurante</label>
-        <select value={restaurantId} onChange={e => { setRestaurantId(e.target.value); setShowMenuForm(false); }}
-          className="w-full max-w-sm border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
-          <option value="">-- Elige un restaurante --</option>
-          {restaurants?.content.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
-        </select>
-      </div>
+      <RestaurantPicker
+        restaurants={restaurants?.content ?? []}
+        value={restaurantId}
+        onChange={(id) => { setRestaurantId(id); setShowMenuForm(false); }}
+      />
 
       {restaurantId && (
         <button onClick={() => setShowMenuForm(!showMenuForm)}

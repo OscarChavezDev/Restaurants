@@ -13,6 +13,10 @@ RUN mvn clean package -DskipTests -B
 FROM eclipse-temurin:21-jre-jammy AS runtime
 WORKDIR /app
 
+# Instalar wget para el healthcheck
+RUN apt-get update && apt-get install -y wget && rm -rf /var/lib/apt/lists/*
+
+
 # Usuario no-root por seguridad (sintaxis Debian/Ubuntu)
 RUN groupadd -g 1001 appgroup && useradd -u 1001 -g appgroup -M -s /bin/false appuser
 
