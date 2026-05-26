@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { MapPin, Star, Calendar, UtensilsCrossed, ChevronRight, ArrowRight } from 'lucide-react';
+import { MapPin, Star, Calendar, UtensilsCrossed, ArrowRight, Building2 } from 'lucide-react';
 import { AnimateOnScroll } from '@/components/ui/AnimateOnScroll';
 import { useTranslation } from '@/hooks/useTranslation';
 
@@ -26,7 +26,22 @@ export default function HomePage() {
         <div className="absolute inset-0 opacity-[0.06]"
           style={{ backgroundImage: 'repeating-linear-gradient(45deg, #fff 0, #fff 1px, transparent 0, transparent 50%)', backgroundSize: '12px 12px' }}
         />
-        <div className="relative mx-auto max-w-5xl px-4 py-28 sm:px-6 lg:px-8 text-center">
+
+        {/* ── Navbar ── */}
+        <nav className="relative mx-auto max-w-5xl px-4 pt-5 sm:px-6 lg:px-8 flex items-center justify-between">
+          <span className="flex items-center gap-2 text-white font-bold text-lg tracking-tight">
+            <UtensilsCrossed className="h-5 w-5 text-orange-300" />
+            Tingo Restaurants
+          </span>
+          <Link
+            href="/login"
+            className="inline-flex items-center gap-2 rounded-xl border border-white/30 bg-white/10 backdrop-blur-sm px-4 py-2 text-sm font-semibold text-white hover:bg-white/20 transition-all duration-200"
+          >
+            Iniciar Sesión
+          </Link>
+        </nav>
+
+        <div className="relative mx-auto max-w-5xl px-4 py-20 sm:px-6 lg:px-8 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-sm text-orange-100 text-sm font-medium mb-8 border border-white/20">
             <MapPin className="h-3.5 w-3.5" />
             Tingo María, Huánuco, Perú
@@ -49,13 +64,6 @@ export default function HomePage() {
               {t('viewRestaurants')}
             </Link>
             <Link
-              href="/dashboard"
-              className="inline-flex items-center gap-2 rounded-xl border-2 border-white/40 bg-white/10 backdrop-blur-sm px-7 py-3.5 text-sm font-semibold text-white hover:bg-white/20 hover:scale-105 transition-all duration-200"
-            >
-              {t('managementPanel')}
-              <ChevronRight className="h-4 w-4" />
-            </Link>
-            <Link
               href="/reservations"
               className="inline-flex items-center gap-2 rounded-xl border-2 border-white/25 px-7 py-3.5 text-sm font-semibold text-orange-100 hover:bg-white/10 hover:scale-105 transition-all duration-200"
             >
@@ -72,8 +80,55 @@ export default function HomePage() {
         </div>
       </header>
 
+      {/* ── Dos caminos ── */}
+      <section className="bg-white dark:bg-zinc-900 mx-auto max-w-5xl px-4 py-16 sm:px-6 lg:px-8">
+        <AnimateOnScroll animation="slide-up" className="text-center mb-10">
+          <p className="text-gray-400 dark:text-zinc-500 text-sm font-semibold uppercase tracking-widest">¿Qué quieres hacer?</p>
+        </AnimateOnScroll>
+
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          {/* Turista */}
+          <AnimateOnScroll animation="slide-up" delay={0}>
+            <Link
+              href="/restaurants"
+              className="group block rounded-2xl border-2 border-orange-100 dark:border-zinc-700 bg-orange-50 dark:bg-zinc-800 p-8 hover:border-orange-300 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+            >
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-100 dark:bg-orange-500/20 text-orange-500 mb-5 group-hover:scale-110 group-hover:bg-orange-200 dark:group-hover:bg-orange-500/30 transition-all duration-300">
+                <UtensilsCrossed className="h-6 w-6" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Soy turista o cliente</h3>
+              <p className="text-sm text-gray-500 dark:text-zinc-400 leading-relaxed mb-6">
+                Explora restaurantes verificados, consulta menús y haz tu reserva en segundos.
+              </p>
+              <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-orange-600 dark:text-orange-400 group-hover:gap-3 transition-all duration-200">
+                Explorar restaurantes <ArrowRight className="h-4 w-4" />
+              </span>
+            </Link>
+          </AnimateOnScroll>
+
+          {/* Dueño */}
+          <AnimateOnScroll animation="slide-up" delay={100}>
+            <Link
+              href="/register"
+              className="group block rounded-2xl border-2 border-orange-500 bg-gradient-to-br from-orange-500 to-orange-600 p-8 hover:from-orange-600 hover:to-orange-700 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300"
+            >
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/20 text-white mb-5 group-hover:scale-110 group-hover:bg-white/30 transition-all duration-300">
+                <Building2 className="h-6 w-6" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">Tengo un restaurante</h3>
+              <p className="text-sm text-orange-100 leading-relaxed mb-6">
+                Regístrate gratis y llega a miles de turistas y locales de Tingo María desde el primer día.
+              </p>
+              <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-white group-hover:gap-3 transition-all duration-200">
+                Registrar mi restaurante <ArrowRight className="h-4 w-4" />
+              </span>
+            </Link>
+          </AnimateOnScroll>
+        </div>
+      </section>
+
       {/* ── Features ── */}
-      <section className="bg-white dark:bg-zinc-900 mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+      <section className="bg-white dark:bg-zinc-900 mx-auto max-w-7xl px-4 pt-4 pb-20 sm:px-6 lg:px-8">
         <AnimateOnScroll animation="slide-up" className="text-center mb-14">
           <span className="inline-block px-3 py-1 rounded-full bg-orange-100 dark:bg-orange-500/15 text-orange-600 dark:text-orange-400 text-xs font-semibold uppercase tracking-widest mb-4">
             {t('featuresSubtitle')}
@@ -102,27 +157,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── CTA ── */}
-      <section className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #9a3412 0%, #c2410c 60%, #ea580c 100%)' }}>
-        <div className="absolute inset-0 opacity-[0.06]"
-          style={{ backgroundImage: 'repeating-linear-gradient(45deg, #fff 0, #fff 1px, transparent 0, transparent 50%)', backgroundSize: '12px 12px' }}
-        />
-        <AnimateOnScroll animation="slide-up">
-          <div className="relative mx-auto max-w-4xl px-4 py-20 sm:px-6 lg:px-8 text-center">
-            <h2 className="font-display text-3xl font-bold text-white mb-3">
-              {t('ctaTitle')}
-            </h2>
-            <p className="text-orange-200 mb-8 text-lg">{t('ctaDesc')}</p>
-            <Link
-              href="/register"
-              className="inline-flex items-center gap-2 rounded-xl bg-white px-8 py-4 font-semibold text-orange-600 hover:bg-orange-50 hover:scale-105 transition-all duration-200 shadow-lg"
-            >
-              {t('ctaBtn')}
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
-        </AnimateOnScroll>
-      </section>
     </div>
   );
 }

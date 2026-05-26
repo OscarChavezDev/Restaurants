@@ -29,7 +29,7 @@ public interface RestaurantJpaRepository extends JpaRepository<RestaurantEntity,
         SELECT * FROM restaurants r
         WHERE r.deleted_at IS NULL
           AND r.status = 'ACTIVE'
-          AND (CAST(:name AS text) IS NULL OR LOWER(r.name) LIKE LOWER(CONCAT('%', :name, '%')))
+          AND (CAST(:name AS text) IS NULL OR LOWER(r.name) LIKE LOWER(CONCAT('%', CAST(:name AS text), '%')))
           AND (CAST(:city AS text) IS NULL OR LOWER(r.city) = LOWER(CAST(:city AS text)))
         ORDER BY r.avg_rating DESC, r.total_ratings DESC
         """,
@@ -37,7 +37,7 @@ public interface RestaurantJpaRepository extends JpaRepository<RestaurantEntity,
         SELECT COUNT(*) FROM restaurants r
         WHERE r.deleted_at IS NULL
           AND r.status = 'ACTIVE'
-          AND (CAST(:name AS text) IS NULL OR LOWER(r.name) LIKE LOWER(CONCAT('%', :name, '%')))
+          AND (CAST(:name AS text) IS NULL OR LOWER(r.name) LIKE LOWER(CONCAT('%', CAST(:name AS text), '%')))
           AND (CAST(:city AS text) IS NULL OR LOWER(r.city) = LOWER(CAST(:city AS text)))
         """,
         nativeQuery = true)

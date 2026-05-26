@@ -49,7 +49,7 @@ export const registerSchema = z.object({
 export type RegisterFormData = z.infer<typeof registerSchema>;
 
 export const createReservationSchema = z.object({
-  restaurantId: z.string().uuid('ID de restaurante inválido'),
+  restaurantId: z.string(),
   customerName: z.string().min(2, 'Nombre requerido').max(150),
   customerEmail: z.string().email('Email inválido').optional().or(z.literal('')),
   customerPhone: z.string().min(6, 'Teléfono requerido'),

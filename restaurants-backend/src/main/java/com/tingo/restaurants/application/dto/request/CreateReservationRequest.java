@@ -28,7 +28,7 @@ public class CreateReservationRequest {
     private String customerPhone;
 
     @NotNull(message = "La fecha de reserva es obligatoria")
-    @Future(message = "La fecha de reserva debe ser en el futuro")
+    @FutureOrPresent(message = "La fecha de reserva no puede ser en el pasado")
     private LocalDate reservationDate;
 
     @NotNull(message = "La hora de inicio es obligatoria")

@@ -1,0 +1,12 @@
+services:
+  frontend:
+    build:
+      context: ./restaurants-frontend
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./restaurants-frontend/src:/app/src
+      - ./restaurants-frontend/public:/app/public
+    environment:
+      NODE_ENV: development
+      WATCHPACK_POLLING: "true"
+    command: npm run dev

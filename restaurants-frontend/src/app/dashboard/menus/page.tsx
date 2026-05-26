@@ -74,11 +74,14 @@ export default function MenusPage() {
         onChange={(id) => { setRestaurantId(id); setShowMenuForm(false); }}
       />
 
-      {restaurantId && (
+      {restaurantId && !isAdmin && (
         <button onClick={() => setShowMenuForm(!showMenuForm)}
           className="inline-flex items-center gap-2 mb-6 px-4 py-2.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold rounded-xl transition-colors">
           <Plus className="h-4 w-4" /> Nuevo Menú
         </button>
+      )}
+      {restaurantId && isAdmin && (
+        <p className="mb-6 text-sm text-gray-400 italic">Modo lectura — el admin puede ver menús pero no modificarlos.</p>
       )}
 
       {showMenuForm && (
@@ -112,15 +115,17 @@ export default function MenusPage() {
                   <div><p className="font-semibold text-gray-900">{menu.name}</p><p className="text-xs text-gray-500">{menu.dishes?.length ?? 0} platos · {menu.isActive ? 'Activo' : 'Inactivo'}</p></div>
                   <ChevronDown className={`h-4 w-4 text-gray-400 ml-2 transition-transform ${expandedMenu === menu.id ? 'rotate-180' : ''}`} />
                 </button>
-                <div className="flex items-center gap-2">
-                  <button onClick={() => setShowDishForm(showDishForm === menu.id ? null : menu.id)}
-                    className="px-3 py-1.5 text-xs font-medium bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200">
-                    + Plato
-                  </button>
-                  <button onClick={() => deleteMenu.mutate(menu.id)} className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg">
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
+                {!isAdmin && (
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => setShowDishForm(showDishForm === menu.id ? null : menu.id)}
+                      className="px-3 py-1.5 text-xs font-medium bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200">
+                      + Plato
+                    </button>
+                    <button onClick={() => deleteMenu.mutate(menu.id)} className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg">
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
               </div>
 
               {showDishForm === menu.id && (
@@ -160,7 +165,7 @@ export default function MenusPage() {
                       </div>
                       <div className="flex items-center gap-3">
                         <span className="font-semibold text-orange-600 text-sm">{formatCurrency(d.price)}</span>
-                        <button onClick={() => deleteDish.mutate(d.id)} className="p-1 text-red-300 hover:text-red-500"><Trash2 className="h-3.5 w-3.5" /></button>
+                        {!isAdmin && <button onClick={() => deleteDish.mutate(d.id)} className="p-1 text-red-300 hover:text-red-500"><Trash2 className="h-3.5 w-3.5" /></button>}
                       </div>
                     </div>
                   ))}
