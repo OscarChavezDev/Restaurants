@@ -4,7 +4,7 @@ Sistema independiente y autónomo de gestión de restaurantes, parte del ecosist
 
 ---
 
-## 🏗️ Arquitectura
+## 🏗️ Arquitectura      
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐

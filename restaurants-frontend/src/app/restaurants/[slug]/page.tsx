@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -20,6 +19,8 @@ import { formatRating, formatDistance, DAY_LABELS } from '@/utils/formatters';
 import { cn } from '@/utils/cn';
 import { MenuSection } from '@/features/restaurants/MenuSection';
 import { ImageGallery } from '@/features/restaurants/ImageGallery';
+import { PromotionsSection } from '@/features/restaurants/PromotionsSection';
+import { RestaurantLogo } from '@/components/ui/RestaurantLogo';
 import { RatingsSection } from '@/features/restaurants/RatingsSection';
 
 const TODAY = new Date().toISOString().split('T')[0];
@@ -176,11 +177,7 @@ export default function RestaurantDetailPage() {
 
         <div className="absolute bottom-6 left-6 right-6">
           <div className="flex items-end gap-4">
-            {restaurant.logoUrl && (
-              <div className="relative h-16 w-16 rounded-2xl overflow-hidden bg-white shadow-lg flex-shrink-0">
-                <Image src={restaurant.logoUrl} alt="" fill className="object-cover" />
-              </div>
-            )}
+            <RestaurantLogo name={restaurant.name} logoUrl={restaurant.logoUrl} className="h-16 w-16 rounded-2xl shadow-lg text-2xl" />
             <div>
               <h1 className="font-display text-3xl font-bold text-white">{restaurant.name}</h1>
               <div className="flex items-center gap-3 mt-1">
@@ -255,6 +252,9 @@ export default function RestaurantDetailPage() {
                 </div>
               </div>
             )}
+
+            {/* Promociones */}
+            <PromotionsSection restaurantId={restaurant.id} />
 
             {/* Menú */}
             <MenuSection restaurantId={restaurant.id} />

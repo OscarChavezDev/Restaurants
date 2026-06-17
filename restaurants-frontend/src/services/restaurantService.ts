@@ -89,6 +89,18 @@ export const restaurantService = {
     return extractData<Promotion[]>(await api.get(`/v1/promotions/restaurant/${restaurantId}`));
   },
 
+  async getActivePromotions(restaurantId: string) {
+    return extractData<Promotion[]>(await api.get(`/v1/promotions/restaurant/${restaurantId}/active`));
+  },
+
+  async createPromotion(restaurantId: string, params: Record<string, string | number | undefined>) {
+    return extractData<Promotion>(await api.post(`/v1/promotions/restaurant/${restaurantId}`, null, { params }));
+  },
+
+  async deletePromotion(id: string) {
+    return api.delete(`/v1/promotions/${id}`);
+  },
+
   // ── Horarios (S2-02) ──────────────────────────────────────────
   async getSchedules(restaurantId: string) {
     return extractData<Schedule[]>(await api.get(`/v1/restaurants/${restaurantId}/schedules`));
