@@ -10,6 +10,11 @@ export const RESTAURANT_KEYS = {
   slug: (slug: string) => [...RESTAURANT_KEYS.all, 'slug', slug] as const,
   nearby: (lat: number, lon: number, r: number) => [...RESTAURANT_KEYS.all, 'nearby', lat, lon, r] as const,
   mine: () => [...RESTAURANT_KEYS.all, 'mine'] as const,
+  menus: (restaurantId: string) => [...RESTAURANT_KEYS.all, 'menus', restaurantId] as const,
+  dishes: (menuId: string) => [...RESTAURANT_KEYS.all, 'dishes', menuId] as const,
+  images: (restaurantId: string) => [...RESTAURANT_KEYS.all, 'images', restaurantId] as const,
+  ratings: (restaurantId: string, page: number) => [...RESTAURANT_KEYS.all, 'ratings', restaurantId, page] as const,
+  ratingStats: (restaurantId: string) => [...RESTAURANT_KEYS.all, 'ratingStats', restaurantId] as const,
 };
 
 export function useRestaurants(page = 0, size = 12) {
@@ -83,5 +88,50 @@ export function useDeleteRestaurant() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: RESTAURANT_KEYS.all });
     },
+  });
+}
+
+export function useRestaurantMenus(restaurantId: string) {
+  return useQuery({
+    queryKey: RESTAURANT_KEYS.menus(restaurantId),
+    queryFn: () => restaurantService.getMenus(restaurantId),
+    enabled: !!restaurantId,
+    staleTime: 1000 * 60 * 5,
+  });
+}
+
+export function useMenuDishes(menuId: string) {
+  return useQuery({
+    queryKey: RESTAURANT_KEYS.dishes(menuId),
+    queryFn: () => restaurantService.getDishes(menuId),
+    enabled: !!menuId,
+    staleTime: 1000 * 60 * 5,
+  });
+}
+
+export function useRestaurantImages(restaurantId: string) {
+  return useQuery({
+    queryKey: RESTAURANT_KEYS.images(restaurantId),
+    queryFn: () => restaurantService.getImages(restaurantId),
+    enabled: !!restaurantId,
+    staleTime: 1000 * 60 * 10,
+  });
+}
+
+export function useRestaurantRatings(restaurantId: string, page = 0) {
+  return useQuery({
+    queryKey: RESTAURANT_KEYS.ratings(restaurantId, page),
+    queryFn: () => restaurantService.getRatings(restaurantId, page),
+    enabled: !!restaurantId,
+    staleTime: 1000 * 60 * 2,
+  });
+}
+
+export function useRatingStats(restaurantId: string) {
+  return useQuery({
+    queryKey: RESTAURANT_KEYS.ratingStats(restaurantId),
+    queryFn: () => restaurantService.getRatingStats(restaurantId),
+    enabled: !!restaurantId,
+    staleTime: 1000 * 60 * 5,
   });
 }

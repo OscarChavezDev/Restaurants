@@ -1,6 +1,7 @@
 package com.tingo.restaurants.application.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.tingo.restaurants.domain.model.enums.RestaurantStatus;
 import lombok.Builder;
 import lombok.Getter;
@@ -46,6 +47,7 @@ public class RestaurantResponse {
     private boolean hasParking;
     private boolean hasWifi;
     private boolean hasAirConditioning;
+    @JsonProperty("isAccessible")
     private boolean isAccessible;
 
     private List<String> categories;

@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -31,6 +32,7 @@ public class RestaurantRepositoryAdapter implements RestaurantRepository {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<Restaurant> findById(UUID id) {
         return jpaRepository.findById(id)
                 .filter(e -> e.getDeletedAt() == null)
@@ -38,6 +40,7 @@ public class RestaurantRepositoryAdapter implements RestaurantRepository {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<Restaurant> findBySlug(String slug) {
         return jpaRepository.findBySlugAndDeletedAtIsNull(slug).map(this::toDomain);
     }

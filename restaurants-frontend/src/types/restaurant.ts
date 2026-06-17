@@ -91,6 +91,36 @@ export interface Promotion {
   usageCount: number;
 }
 
+export interface RestaurantImage {
+  id: string;
+  restaurantId: string;
+  url: string;
+  caption?: string;
+  displayOrder: number;
+  createdAt: string;
+}
+
+export interface RatingResponse {
+  id: string;
+  userName: string;
+  score: number;
+  comment?: string;
+  foodScore?: number;
+  serviceScore?: number;
+  ambianceScore?: number;
+  isVerified: boolean;
+  createdAt: string;
+}
+
+export interface RatingStatsResponse {
+  avgScore: number;
+  avgFoodScore?: number;
+  avgServiceScore?: number;
+  avgAmbianceScore?: number;
+  totalRatings: number;
+  distribution: Record<number, number>;
+}
+
 export interface CreateRestaurantDto {
   name: string;
   description?: string;

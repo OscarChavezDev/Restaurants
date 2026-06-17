@@ -1,5 +1,6 @@
 package com.tingo.restaurants.application.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -14,5 +15,6 @@ public class ScheduleResponse {
     private DayOfWeek dayOfWeek;
     private LocalTime openingTime;
     private LocalTime closingTime;
+    @JsonProperty("isClosed")
     private boolean isClosed;
 }

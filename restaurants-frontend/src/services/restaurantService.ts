@@ -1,5 +1,5 @@
 import { api, extractData } from './api';
-import type { Restaurant, CreateRestaurantDto, Menu, Promotion } from '@/types/restaurant';
+import type { Restaurant, CreateRestaurantDto, Menu, Dish, Promotion, RestaurantImage, RatingResponse, RatingStatsResponse } from '@/types/restaurant';
 import type { PagedResponse } from '@/types/auth';
 
 export const restaurantService = {
@@ -63,6 +63,26 @@ export const restaurantService = {
 
   async getMenus(restaurantId: string) {
     return extractData<Menu[]>(await api.get(`/v1/menus/restaurant/${restaurantId}`));
+  },
+
+  async getDishes(menuId: string) {
+    return extractData<Dish[]>(await api.get(`/v1/dishes/menu/${menuId}`));
+  },
+
+  async getImages(restaurantId: string) {
+    return extractData<RestaurantImage[]>(await api.get(`/v1/restaurants/${restaurantId}/images`));
+  },
+
+  async getRatings(restaurantId: string, page = 0, size = 10) {
+    return extractData<PagedResponse<RatingResponse>>(
+      await api.get(`/v1/ratings/restaurant/${restaurantId}`, { params: { page, size } })
+    );
+  },
+
+  async getRatingStats(restaurantId: string) {
+    return extractData<RatingStatsResponse>(
+      await api.get(`/v1/ratings/restaurant/${restaurantId}/stats`)
+    );
   },
 
   async getPromotions(restaurantId: string) {

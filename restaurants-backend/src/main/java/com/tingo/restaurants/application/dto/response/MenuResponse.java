@@ -1,5 +1,6 @@
 package com.tingo.restaurants.application.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -15,6 +16,7 @@ public class MenuResponse {
     private UUID restaurantId;
     private String name;
     private String description;
+    @JsonProperty("isActive")
     private boolean isActive;
     private LocalDate validFrom;
     private LocalDate validUntil;

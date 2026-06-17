@@ -17,6 +17,9 @@ import { useAuthStore } from '@/store/authStore';
 import { createReservationSchema, type CreateReservationFormData } from '@/validations/restaurantSchema';
 import { formatRating, formatDistance, DAY_LABELS } from '@/utils/formatters';
 import { cn } from '@/utils/cn';
+import { MenuSection } from '@/features/restaurants/MenuSection';
+import { ImageGallery } from '@/features/restaurants/ImageGallery';
+import { RatingsSection } from '@/features/restaurants/RatingsSection';
 
 const TODAY = new Date().toISOString().split('T')[0];
 
@@ -168,15 +171,15 @@ export default function RestaurantDetailPage() {
 
             {/* Horarios */}
             {restaurant.schedules?.length > 0 && (
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-                <h2 className="font-display text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-6">
+                <h2 className="font-display text-lg font-semibold text-gray-900 dark:text-gray-50 mb-4 flex items-center gap-2">
                   <Clock className="h-5 w-5 text-orange-500" /> Horarios
                 </h2>
                 <div className="space-y-2">
                   {restaurant.schedules.map(s => (
-                    <div key={s.id} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
-                      <span className="text-sm font-medium text-gray-700">{DAY_LABELS[s.dayOfWeek] ?? s.dayOfWeek}</span>
-                      <span className="text-sm text-gray-500">
+                    <div key={s.id} className="flex items-center justify-between py-2 border-b border-gray-50 dark:border-gray-700 last:border-0">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{DAY_LABELS[s.dayOfWeek] ?? s.dayOfWeek}</span>
+                      <span className="text-sm text-gray-500 dark:text-gray-400">
                         {s.isClosed ? <span className="text-red-500">Cerrado</span> : `${s.openingTime} - ${s.closingTime}`}
                       </span>
                     </div>
@@ -184,6 +187,15 @@ export default function RestaurantDetailPage() {
                 </div>
               </div>
             )}
+
+            {/* Menú */}
+            <MenuSection restaurantId={restaurant.id} />
+
+            {/* Galería */}
+            <ImageGallery restaurantId={restaurant.id} />
+
+            {/* Reseñas */}
+            <RatingsSection restaurantId={restaurant.id} />
           </div>
 
           {/* Sidebar */}
