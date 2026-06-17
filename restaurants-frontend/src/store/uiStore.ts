@@ -23,7 +23,11 @@ export const useUiStore = create<UiState>()(
     }),
     {
       name: 'restaurants-ui',
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() =>
+        typeof window !== 'undefined'
+          ? window.localStorage
+          : ({ getItem: () => null, setItem: () => {}, removeItem: () => {} } as any)
+      ),
     }
   )
 );

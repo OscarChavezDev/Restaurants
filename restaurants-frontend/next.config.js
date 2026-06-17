@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone",
+  swcMinify: false,
   images: {
     // Los dueños pegan URLs de imágenes de cualquier dominio (gallery, cover,
     // logo, platos). Desactivar la optimización evita tener que whitelistear

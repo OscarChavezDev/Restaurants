@@ -3,9 +3,11 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { useState } from 'react';
-import { Toaster } from 'react-hot-toast';
+import dynamic from 'next/dynamic';
 import { ThemeProvider } from '@/components/ui/ThemeProvider';
-import { TopControls } from '@/components/ui/TopControls';
+
+const Toaster = dynamic(() => import('react-hot-toast').then(m => m.Toaster), { ssr: false });
+const TopControls = dynamic(() => import('@/components/ui/TopControls').then(m => m.TopControls), { ssr: false });
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(

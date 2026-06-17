@@ -43,7 +43,11 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'restaurants-auth',
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() =>
+        typeof window !== 'undefined'
+          ? window.localStorage
+          : ({ getItem: () => null, setItem: () => {}, removeItem: () => {} } as any)
+      ),
       partialize: (state) => ({
         user: state.user,
         accessToken: state.accessToken,

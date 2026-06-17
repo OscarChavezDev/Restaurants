@@ -1,0 +1,19 @@
+'use client';
+
+export default function Error({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
+  return (
+    <div className="flex h-screen flex-col items-center justify-center bg-gray-50">
+      <h2 className="text-2xl font-bold text-gray-900 mb-2">500 - Error del servidor</h2>
+      <p className="text-gray-500 mb-4">Ocurrió un error inesperado.</p>
+      <button onClick={() => reset()} className="px-4 py-2 bg-orange-500 text-white rounded-lg">
+        Reintentar
+      </button>
+    </div>
+  );
+}

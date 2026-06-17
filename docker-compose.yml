@@ -53,7 +53,7 @@ services:
     volumes:
       - backend_logs:/app/logs
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8080/api/actuator/health"]
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/api/restaurants || [ $$? -eq 8 ]"]
       interval: 30s
       timeout: 10s
       retries: 3
