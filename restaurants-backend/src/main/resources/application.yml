@@ -79,6 +79,12 @@ management:
   endpoint:
     health:
       show-details: when-authorized
+  health:
+    # El indicador de mail intenta conectar al SMTP en cada health check; sin
+    # credenciales SMTP eso deja el health en DOWN y marca el contenedor unhealthy.
+    # El envío de correos sigue funcionando; solo se excluye del /actuator/health.
+    mail:
+      enabled: false
 
 logging:
   level:

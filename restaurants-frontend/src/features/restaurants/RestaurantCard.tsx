@@ -4,6 +4,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { MapPin, Star, Users, Wifi, Car, UtensilsCrossed, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { cn } from '@/utils/cn';
+import { RestaurantLogo } from '@/components/ui/RestaurantLogo';
+import { PromoBadge } from '@/features/restaurants/PromoBadge';
 import { formatDistance, formatRating } from '@/utils/formatters';
 import type { Restaurant } from '@/types/restaurant';
 
@@ -91,17 +93,16 @@ export function RestaurantCard({ restaurant, showDistance }: Props) {
               {formatDistance(restaurant.distanceKm)}
             </span>
           )}
+
+          {/* Badge de promociones activas */}
+          <PromoBadge restaurantId={restaurant.id} />
         </div>
 
         {/* Card body */}
         <div className="p-5 flex-1 flex flex-col">
           {/* Logo + Name */}
           <div className="flex items-start gap-3 mb-3">
-            {restaurant.logoUrl && (
-              <div className="relative h-10 w-10 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100 dark:bg-gray-700">
-                <Image src={restaurant.logoUrl} alt="" fill className="object-cover" />
-              </div>
-            )}
+            <RestaurantLogo name={restaurant.name} logoUrl={restaurant.logoUrl} className="h-10 w-10 rounded-xl text-base" />
             <div className="min-w-0">
               <h3 className="font-display font-semibold text-gray-900 dark:text-gray-50 group-hover:text-orange-500 transition-colors leading-tight line-clamp-1">
                 {restaurant.name}

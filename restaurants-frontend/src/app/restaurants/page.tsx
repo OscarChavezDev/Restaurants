@@ -22,6 +22,7 @@ export default function RestaurantsPublicPage() {
   const [geo, setGeo] = useState<GeoState>({ status: 'idle' });
   const [topRatedFilter, setTopRatedFilter] = useState(false);
   const [openNowFilter, setOpenNowFilter] = useState(false);
+  const [priceFilter, setPriceFilter] = useState<number | null>(null);
   const t = useTranslation();
 
   const isNearbyMode = geo.status === 'ready';
@@ -68,6 +69,7 @@ export default function RestaurantsPublicPage() {
   // Client-side filtering and sorting
   restaurants = restaurants.filter(r => {
     if (openNowFilter && !isRestaurantOpenNow(r.schedules)) return false;
+    if (priceFilter !== null && r.priceLevel !== priceFilter) return false;
     return true;
   });
 
@@ -173,6 +175,26 @@ export default function RestaurantsPublicPage() {
                 </button>
               </div>
 
+              {/* Filtro por precio */}
+              <div className="flex items-center gap-1.5">
+                {[1, 2, 3, 4].map((level) => (
+                  <button
+                    key={level}
+                    type="button"
+                    onClick={() => setPriceFilter(priceFilter === level ? null : level)}
+                    title={`Precio nivel ${level}`}
+                    className={cn(
+                      "px-3 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-sm border",
+                      priceFilter === level
+                        ? "bg-white text-orange-600 border-white"
+                        : "bg-white/10 text-white border-white/20 hover:bg-white/20 backdrop-blur-sm"
+                    )}
+                  >
+                    {'$'.repeat(level)}
+                  </button>
+                ))}
+              </div>
+
               <div className="w-px h-6 bg-white/20 hidden sm:block mx-1"></div>
 
               {/* Botón Cerca de mí */}
@@ -239,9 +261,9 @@ export default function RestaurantsPublicPage() {
                 ? 'No hay restaurantes activos en un radio de 5 km de tu ubicación'
                 : 'No se encontraron restaurantes con los filtros aplicados'}
             </p>
-            {(search || city || isNearbyMode || topRatedFilter || openNowFilter) && (
+            {(search || city || isNearbyMode || topRatedFilter || openNowFilter || priceFilter !== null) && (
               <button
-                onClick={() => { setSearch(''); setCity(''); setPage(0); clearNearby(); setTopRatedFilter(false); setOpenNowFilter(false); }}
+                onClick={() => { setSearch(''); setCity(''); setPage(0); clearNearby(); setTopRatedFilter(false); setOpenNowFilter(false); setPriceFilter(null); }}
                 className="px-6 py-2.5 bg-orange-500 text-white rounded-xl font-medium hover:bg-orange-600 transition-colors"
               >
                 {t('clearFilters')}

@@ -27,6 +27,7 @@ function ReservationRow({
   onCancel,
   onComplete,
   onNoShow,
+  onReview,
   confirmPending,
   cancelPending,
   completePending,
