@@ -73,6 +73,10 @@ public class RestaurantEntity extends BaseEntity {
     private int totalCapacity = 0;
 
     @Builder.Default
+    @Column(name = "price_level", nullable = false)
+    private int priceLevel = 2;
+
+    @Builder.Default
     @Column(name = "min_reservation_size", nullable = false)
     private int minReservationSize = 1;
 

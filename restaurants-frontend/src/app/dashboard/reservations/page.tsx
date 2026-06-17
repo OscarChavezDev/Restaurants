@@ -1,6 +1,6 @@
 'use client';
 
-import { Calendar, CheckCircle, XCircle, CheckCheck, UserX } from 'lucide-react';
+import { Calendar, CheckCircle, XCircle, CheckCheck, UserX, Star } from 'lucide-react';
 import { useState } from 'react';
 import {
   useMyReservations,
@@ -17,6 +17,8 @@ import { formatDate, formatTime, STATUS_LABELS, STATUS_COLORS } from '@/utils/fo
 import { cn } from '@/utils/cn';
 import toast from 'react-hot-toast';
 import type { Reservation } from '@/types/reservation';
+import { RatingModal } from '@/components/ui/RatingModal';
+import { useRatings } from '@/hooks/useRatings';
 
 function ReservationRow({
   res,
@@ -36,6 +38,7 @@ function ReservationRow({
   onCancel: (id: string) => void;
   onComplete: (id: string) => void;
   onNoShow: (id: string) => void;
+  onReview?: (id: string) => void;
   confirmPending: boolean;
   cancelPending: boolean;
   completePending: boolean;
@@ -108,6 +111,15 @@ function ReservationRow({
             <XCircle className="h-3.5 w-3.5" /> Cancelar
           </button>
         )}
+
+        {!canManage && res.status === 'COMPLETED' && onReview && (
+          <button
+            onClick={() => onReview(res.id)}
+            className="inline-flex items-center gap-1 px-3 py-1.5 bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-medium rounded-lg transition-colors"
+          >
+            <Star className="h-3.5 w-3.5" /> Dejar reseña
+          </button>
+        )}
       </div>
     </div>
   );
@@ -121,6 +133,10 @@ export default function ReservationsPage() {
   const completeMutation = useCompleteReservation();
   const noShowMutation = useNoShowReservation();
   const [restaurantId, setRestaurantId] = useState('');
+  const { createRating, loading: ratingLoading } = useRatings();
+  
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [reviewReservationId, setReviewReservationId] = useState('');
 
   // Para owners/admins: selector de restaurante + reservas por restaurante
   const { data: myRestaurants } = useMyRestaurants();
@@ -169,12 +185,31 @@ export default function ReservationsPage() {
     }
   };
 
+  const handleOpenReview = (id: string) => {
+    setReviewReservationId(id);
+    setReviewModalOpen(true);
+  };
+
+  const handleSubmitReview = async (data: any) => {
+    try {
+      await createRating({
+        reservationId: reviewReservationId,
+        ...data
+      });
+      toast.success('Reseña publicada exitosamente');
+      setReviewModalOpen(false);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Error al publicar reseña');
+    }
+  };
+
   const rowProps = {
     canManage: isOwner || isAdmin,
     onConfirm: handleConfirm,
     onCancel: handleCancel,
     onComplete: handleComplete,
     onNoShow: handleNoShow,
+    onReview: handleOpenReview,
     confirmPending: confirmMutation.isPending,
     cancelPending: cancelMutation.isPending,
     completePending: completeMutation.isPending,
@@ -244,6 +279,13 @@ export default function ReservationsPage() {
           {reservations.map((res) => <ReservationRow key={res.id} res={res} {...rowProps} />)}
         </div>
       )}
+
+      <RatingModal
+        isOpen={reviewModalOpen}
+        onClose={() => setReviewModalOpen(false)}
+        onSubmit={handleSubmitReview}
+        loading={ratingLoading}
+      />
     </div>
   );
 }

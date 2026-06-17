@@ -32,6 +32,7 @@ import java.util.UUID;
 public class RestaurantController {
 
     private final RestaurantService restaurantService;
+    private final com.tingo.restaurants.application.service.ReservationService reservationService;
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'RESTAURANTE_OWNER')")
@@ -44,6 +45,16 @@ public class RestaurantController {
         RestaurantResponse response = restaurantService.create(request, ownerId);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.ok("Restaurante creado exitosamente", response));
+    }
+
+    @GetMapping("/{id}/availability")
+    @Operation(summary = "Consultar disponibilidad de un restaurante para una fecha y hora")
+    public ResponseEntity<ApiResponse<com.tingo.restaurants.application.dto.response.AvailabilityResponse>> getAvailability(
+            @PathVariable UUID id,
+            @RequestParam @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate date,
+            @RequestParam @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.TIME) java.time.LocalTime time,
+            @RequestParam int partySize) {
+        return ResponseEntity.ok(ApiResponse.ok(reservationService.checkAvailability(id, date, time, partySize)));
     }
 
     @GetMapping

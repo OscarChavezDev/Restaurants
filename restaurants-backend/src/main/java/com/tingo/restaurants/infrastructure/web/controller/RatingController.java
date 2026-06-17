@@ -36,4 +36,14 @@ public class RatingController {
             @PathVariable UUID restaurantId) {
         return ResponseEntity.ok(ApiResponse.ok(ratingService.getStatsByRestaurant(restaurantId)));
     }
+
+    @PostMapping
+    @Operation(summary = "Crear reseña para una reserva completada")
+    public ResponseEntity<ApiResponse<RatingResponse>> create(
+            @jakarta.validation.Valid @RequestBody com.tingo.restaurants.application.dto.request.CreateRatingRequest request,
+            @org.springframework.security.core.annotation.AuthenticationPrincipal org.springframework.security.core.userdetails.UserDetails userDetails) {
+        UUID userId = userDetails != null ? UUID.fromString(userDetails.getUsername()) : null;
+        return ResponseEntity.status(org.springframework.http.HttpStatus.CREATED)
+                .body(ApiResponse.ok("Reseña creada exitosamente", ratingService.createRating(userId, request)));
+    }
 }

@@ -114,7 +114,7 @@ public class RestaurantRepositoryAdapter implements RestaurantRepository {
                 .website(e.getWebsite()).ruc(e.getRuc()).status(e.getStatus())
                 .address(e.getAddress()).district(e.getDistrict()).city(e.getCity())
                 .region(e.getRegion()).latitude(e.getLatitude()).longitude(e.getLongitude())
-                .totalCapacity(e.getTotalCapacity()).minReservationSize(e.getMinReservationSize())
+                .totalCapacity(e.getTotalCapacity()).priceLevel(e.getPriceLevel()).minReservationSize(e.getMinReservationSize())
                 .maxReservationSize(e.getMaxReservationSize()).coverImageUrl(e.getCoverImageUrl())
                 .logoUrl(e.getLogoUrl()).avgRating(e.getAvgRating()).totalRatings(e.getTotalRatings())
                 .acceptsReservations(e.isAcceptsReservations()).acceptsEvents(e.isAcceptsEvents())
@@ -145,8 +145,7 @@ public class RestaurantRepositoryAdapter implements RestaurantRepository {
         e.setEmail(r.getEmail()); e.setWebsite(r.getWebsite()); e.setRuc(r.getRuc());
         e.setStatus(r.getStatus()); e.setAddress(r.getAddress()); e.setDistrict(r.getDistrict());
         e.setCity(r.getCity()); e.setRegion(r.getRegion()); e.setLatitude(r.getLatitude());
-        e.setLongitude(r.getLongitude()); e.setTotalCapacity(r.getTotalCapacity());
-        e.setMinReservationSize(r.getMinReservationSize());
+        e.setLongitude(r.getLongitude()); e.setTotalCapacity(r.getTotalCapacity()); e.setPriceLevel(r.getPriceLevel()); e.setMinReservationSize(r.getMinReservationSize());
         e.setMaxReservationSize(r.getMaxReservationSize());
         e.setCoverImageUrl(r.getCoverImageUrl()); e.setLogoUrl(r.getLogoUrl());
         e.setAvgRating(r.getAvgRating()); e.setTotalRatings(r.getTotalRatings());

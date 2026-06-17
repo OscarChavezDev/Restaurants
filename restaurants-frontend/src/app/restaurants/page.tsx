@@ -1,12 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { Search, MapPin, UtensilsCrossed, Navigation, X, ArrowLeft } from 'lucide-react';
+import { Search, MapPin, UtensilsCrossed, Navigation, X, ArrowLeft, Star, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchRestaurants, useNearbyRestaurants } from '@/hooks/useRestaurants';
 import { RestaurantCard, RestaurantCardSkeleton } from '@/features/restaurants/RestaurantCard';
 import { AnimateOnScroll } from '@/components/ui/AnimateOnScroll';
 import { useTranslation } from '@/hooks/useTranslation';
+import { cn } from '@/utils/cn';
 
 type GeoState =
   | { status: 'idle' }
@@ -19,6 +20,8 @@ export default function RestaurantsPublicPage() {
   const [city, setCity] = useState('');
   const [page, setPage] = useState(0);
   const [geo, setGeo] = useState<GeoState>({ status: 'idle' });
+  const [topRatedFilter, setTopRatedFilter] = useState(false);
+  const [openNowFilter, setOpenNowFilter] = useState(false);
   const t = useTranslation();
 
   const isNearbyMode = geo.status === 'ready';
@@ -27,7 +30,7 @@ export default function RestaurantsPublicPage() {
     name: search || undefined,
     city: city || undefined,
     page,
-    size: 12,
+    size: 100, // Increased size to make client-side filtering more effective
   });
 
   const { data: nearbyData, isLoading: nearbyLoading } = useNearbyRestaurants(
@@ -37,8 +40,40 @@ export default function RestaurantsPublicPage() {
   );
 
   const isLoading = isNearbyMode ? nearbyLoading : searchLoading;
-  const restaurants = isNearbyMode ? nearbyData ?? [] : searchData?.content ?? [];
+  let restaurants = isNearbyMode ? nearbyData ?? [] : searchData?.content ?? [];
   const totalElements = isNearbyMode ? nearbyData?.length : searchData?.totalElements;
+
+  const isRestaurantOpenNow = (schedules: any[]): boolean => {
+    if (!schedules || schedules.length === 0) return false;
+    const now = new Date();
+    const days = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+    const todayStr = days[now.getDay()];
+    
+    const todaySchedule = schedules.find((s: any) => s.dayOfWeek === todayStr);
+    if (!todaySchedule || todaySchedule.isClosed) return false;
+    
+    const currentTime = now.getHours() * 60 + now.getMinutes();
+    const parseTime = (timeStr: string) => {
+      if (!timeStr) return 0;
+      const [h, m] = timeStr.split(':').map(Number);
+      return h * 60 + m;
+    };
+    
+    const openTime = parseTime(todaySchedule.openingTime);
+    const closeTime = parseTime(todaySchedule.closingTime);
+    
+    return currentTime >= openTime && currentTime <= closeTime;
+  };
+
+  // Client-side filtering and sorting
+  restaurants = restaurants.filter(r => {
+    if (openNowFilter && !isRestaurantOpenNow(r.schedules)) return false;
+    return true;
+  });
+
+  if (topRatedFilter) {
+    restaurants.sort((a, b) => b.avgRating - a.avgRating);
+  }
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -106,14 +141,47 @@ export default function RestaurantsPublicPage() {
               </button>
             </form>
 
-            {/* Botón Cerca de mí */}
-            <div className="flex items-center gap-3">
+            {/* Filtros extra */}
+            <div className="flex flex-wrap items-center gap-4 mt-2">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setTopRatedFilter(!topRatedFilter)}
+                  className={cn(
+                    "flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm border",
+                    topRatedFilter 
+                      ? "bg-white text-orange-600 border-white" 
+                      : "bg-white/10 text-white border-white/20 hover:bg-white/20 backdrop-blur-sm"
+                  )}
+                >
+                  <Star className={cn("h-4 w-4", topRatedFilter ? "fill-orange-500 text-orange-500" : "text-white")} />
+                  Mejores reseñas
+                </button>
+                
+                <button
+                  type="button"
+                  onClick={() => setOpenNowFilter(!openNowFilter)}
+                  className={cn(
+                    "flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm border",
+                    openNowFilter 
+                      ? "bg-white text-orange-600 border-white" 
+                      : "bg-white/10 text-white border-white/20 hover:bg-white/20 backdrop-blur-sm"
+                  )}
+                >
+                  <Clock className="h-4 w-4" />
+                  Abierto ahora
+                </button>
+              </div>
+
+              <div className="w-px h-6 bg-white/20 hidden sm:block mx-1"></div>
+
+              {/* Botón Cerca de mí */}
               {!isNearbyMode ? (
                 <button
                   type="button"
                   onClick={handleNearby}
                   disabled={geo.status === 'loading'}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/15 border border-white/30 text-white text-sm font-medium hover:bg-white/25 disabled:opacity-60 transition-all duration-200"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/15 border border-white/30 text-white text-sm font-medium hover:bg-white/25 disabled:opacity-60 transition-all duration-200"
                 >
                   {geo.status === 'loading' ? (
                     <span className="h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
@@ -123,7 +191,7 @@ export default function RestaurantsPublicPage() {
                   {geo.status === 'loading' ? 'Obteniendo ubicación...' : t('nearby')}
                 </button>
               ) : (
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white text-orange-600 text-sm font-semibold">
+                <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-orange-600 text-sm font-semibold shadow-sm">
                   <Navigation className="h-4 w-4 fill-orange-500" />
                   {t('showingNearby')}
                   <button onClick={clearNearby} className="ml-1 hover:text-orange-800 transition-colors">
@@ -151,11 +219,9 @@ export default function RestaurantsPublicPage() {
               {isNearbyMode ? t('nearbyRestaurants') : t('restaurants')}
             </span>
           </div>
-          {totalElements !== undefined && (
-            <p className="text-sm text-gray-500">
-              {totalElements} {t('restaurantsFound')}
-            </p>
-          )}
+          <p className="text-sm text-gray-500">
+            {restaurants.length} {t('restaurantsFound')}
+          </p>
         </div>
 
         {isLoading ? (
@@ -171,11 +237,11 @@ export default function RestaurantsPublicPage() {
             <p className="text-gray-500 mb-6">
               {isNearbyMode
                 ? 'No hay restaurantes activos en un radio de 5 km de tu ubicación'
-                : search || city ? t('tryDifferent') : 'Aún no hay restaurantes registrados en la plataforma'}
+                : 'No se encontraron restaurantes con los filtros aplicados'}
             </p>
-            {(search || city || isNearbyMode) && (
+            {(search || city || isNearbyMode || topRatedFilter || openNowFilter) && (
               <button
-                onClick={() => { setSearch(''); setCity(''); setPage(0); clearNearby(); }}
+                onClick={() => { setSearch(''); setCity(''); setPage(0); clearNearby(); setTopRatedFilter(false); setOpenNowFilter(false); }}
                 className="px-6 py-2.5 bg-orange-500 text-white rounded-xl font-medium hover:bg-orange-600 transition-colors"
               >
                 {t('clearFilters')}

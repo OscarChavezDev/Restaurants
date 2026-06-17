@@ -31,5 +31,7 @@ public interface ReservationRepository {
 
     int sumPartySizeByRestaurantAndDate(UUID restaurantId, LocalDate date);
 
+    int sumOccupiedSeats(UUID restaurantId, LocalDate date, java.time.LocalTime time);
+
     boolean existsByConfirmationCode(String code);
 }

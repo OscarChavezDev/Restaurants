@@ -40,6 +40,7 @@ public class ReservationService {
     private final RestaurantRepository restaurantRepository;
     private final ReservationMapper reservationMapper;
     private final ApplicationEventPublisher eventPublisher;
+    private final EmailService emailService;
 
     @Transactional
     public ReservationResponse create(CreateReservationRequest request, UUID customerId) {
@@ -95,8 +96,9 @@ public class ReservationService {
 
         Reservation saved = reservationRepository.save(reservation);
         eventPublisher.publishEvent(new ReservationCreatedEvent(saved));
+        emailService.sendReservationCreated(saved);
         log.info("Reserva creada: {} para restaurante: {}", saved.getConfirmationCode(), request.getRestaurantId());
-        return reservationMapper.toResponse(saved);
+        return mapToResponse(saved);
     }
 
     @Transactional
@@ -104,7 +106,9 @@ public class ReservationService {
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new ReservationException("Reserva no encontrada"));
         Reservation confirmed = reservation.confirm();
-        return reservationMapper.toResponse(reservationRepository.save(confirmed));
+        Reservation saved = reservationRepository.save(confirmed);
+        emailService.sendReservationConfirmed(saved);
+        return mapToResponse(saved);
     }
 
     @Transactional
@@ -114,7 +118,8 @@ public class ReservationService {
         Reservation cancelled = reservation.cancel(reason);
         Reservation saved = reservationRepository.save(cancelled);
         eventPublisher.publishEvent(new ReservationCancelledEvent(saved));
-        return reservationMapper.toResponse(saved);
+        emailService.sendReservationCancelled(saved);
+        return mapToResponse(saved);
     }
 
     @Transactional
@@ -123,7 +128,7 @@ public class ReservationService {
                 .orElseThrow(() -> new ReservationException("Reserva no encontrada"));
         Reservation completed = reservation.complete();
         log.info("Reserva {} marcada como COMPLETED", completed.getConfirmationCode());
-        return reservationMapper.toResponse(reservationRepository.save(completed));
+        return mapToResponse(reservationRepository.save(completed));
     }
 
     @Transactional
@@ -132,26 +137,47 @@ public class ReservationService {
                 .orElseThrow(() -> new ReservationException("Reserva no encontrada"));
         Reservation noShow = reservation.markNoShow();
         log.info("Reserva {} marcada como NO_SHOW", noShow.getConfirmationCode());
-        return reservationMapper.toResponse(reservationRepository.save(noShow));
+        return mapToResponse(reservationRepository.save(noShow));
     }
 
     public ReservationResponse findByConfirmationCode(String code) {
         return reservationRepository.findByConfirmationCode(code)
-                .map(reservationMapper::toResponse)
+                .map(this::mapToResponse)
                 .orElseThrow(() -> ReservationException.notFound(code));
+    }
+
+    public com.tingo.restaurants.application.dto.response.AvailabilityResponse checkAvailability(UUID restaurantId, java.time.LocalDate date, java.time.LocalTime time, int partySize) {
+        Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new RestaurantNotFoundException(restaurantId));
+        
+        int occupiedSeats = reservationRepository.sumOccupiedSeats(restaurantId, date, time);
+        int totalCapacity = restaurant.getTotalCapacity();
+        int remainingSeats = totalCapacity - occupiedSeats;
+        
+        boolean isAvailable = restaurant.isActive() && 
+                              restaurant.isOpenAt(date.getDayOfWeek(), time) &&
+                              remainingSeats >= partySize;
+                              
+        return com.tingo.restaurants.application.dto.response.AvailabilityResponse.builder()
+                .available(isAvailable)
+                .requestedPartySize(partySize)
+                .occupiedSeats(occupiedSeats)
+                .totalCapacity(totalCapacity)
+                .remainingSeats(Math.max(0, remainingSeats))
+                .build();
     }
 
     public PagedResponse<ReservationResponse> findByRestaurant(UUID restaurantId, Pageable pageable) {
         Page<ReservationResponse> page = reservationRepository
                 .findByRestaurantId(restaurantId, pageable)
-                .map(reservationMapper::toResponse);
+                .map(this::mapToResponse);
         return PagedResponse.from(page);
     }
 
     public PagedResponse<ReservationResponse> findByCustomer(UUID customerId, Pageable pageable) {
         Page<ReservationResponse> page = reservationRepository
                 .findByCustomerId(customerId, pageable)
-                .map(reservationMapper::toResponse);
+                .map(this::mapToResponse);
         return PagedResponse.from(page);
     }
 
@@ -165,5 +191,14 @@ public class ReservationService {
             code = sb.toString();
         } while (reservationRepository.existsByConfirmationCode(code));
         return code;
+    }
+
+    private ReservationResponse mapToResponse(Reservation reservation) {
+        ReservationResponse response = reservationMapper.toResponse(reservation);
+        if (reservation.getRestaurantId() != null) {
+            restaurantRepository.findById(reservation.getRestaurantId())
+                    .ifPresent(r -> response.setRestaurantName(r.getName()));
+        }
+        return response;
     }
 }

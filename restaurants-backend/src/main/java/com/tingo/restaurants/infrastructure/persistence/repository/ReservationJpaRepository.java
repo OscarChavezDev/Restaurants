@@ -41,4 +41,19 @@ public interface ReservationJpaRepository extends JpaRepository<ReservationEntit
             @Param("date") LocalDate date);
 
     boolean existsByConfirmationCode(String confirmationCode);
+
+    @Query("""
+        SELECT COALESCE(SUM(r.partySize), 0)
+        FROM ReservationEntity r
+        WHERE r.restaurantId = :restaurantId
+        AND r.reservationDate = :date
+        AND r.startTime <= :time
+        AND (r.endTime IS NULL OR r.endTime >= :time)
+        AND r.status IN ('PENDING', 'CONFIRMED')
+        AND r.deletedAt IS NULL
+    """)
+    int sumOccupiedSeats(
+            @Param("restaurantId") UUID restaurantId,
+            @Param("date") LocalDate date,
+            @Param("time") java.time.LocalTime time);
 }

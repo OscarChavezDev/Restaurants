@@ -39,6 +39,7 @@ export interface Restaurant {
   latitude: number;
   longitude: number;
   totalCapacity: number;
+  priceLevel: number;
   minReservationSize: number;
   maxReservationSize: number;
   coverImageUrl: string;
@@ -147,6 +148,7 @@ export interface CreateRestaurantDto {
   latitude?: number;
   longitude?: number;
   totalCapacity: number;
+  priceLevel?: number;
   minReservationSize?: number;
   maxReservationSize?: number;
   coverImageUrl?: string;

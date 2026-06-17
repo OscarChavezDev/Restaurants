@@ -48,6 +48,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/v1/dishes/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/v1/promotions/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/v1/ratings/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/v1/ratings").permitAll()
                         .requestMatchers(HttpMethod.GET, "/v1/reservations/code/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/reservations").permitAll()
                         .anyRequest().authenticated()

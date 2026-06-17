@@ -1,17 +1,55 @@
 'use client';
 
-import { useState } from 'react';
-import { Search, Calendar, CheckCircle, XCircle, Clock, ArrowLeft } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Search, Calendar, CheckCircle, XCircle, Clock, ArrowLeft, Star } from 'lucide-react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { useReservationByCode } from '@/hooks/useReservations';
+import { useRatings } from '@/hooks/useRatings';
+import toast from 'react-hot-toast';
 import { formatDate, formatTime, STATUS_LABELS, STATUS_COLORS } from '@/utils/formatters';
 import { cn } from '@/utils/cn';
 
-export default function ReservationLookupPage() {
-  const [code, setCode] = useState('');
-  const [search, setSearch] = useState('');
+import { Suspense } from 'react';
+
+function StarRating({ value, onChange, size = "md" }: { value: number, onChange: (v: number) => void, size?: "sm" | "md" }) {
+  const iconSize = size === "sm" ? "h-5 w-5" : "h-7 w-7";
+  return (
+    <div className="flex gap-1">
+      {[1, 2, 3, 4, 5].map(i => (
+        <button key={i} type="button" onClick={() => onChange(i)} className="focus:outline-none transition-transform hover:scale-110">
+          <Star className={cn(iconSize, i <= value ? "fill-yellow-400 text-yellow-400" : "text-gray-200 hover:text-yellow-200")} />
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function ReservationLookupContent() {
+  const searchParams = useSearchParams();
+  const defaultCode = searchParams.get('code') || '';
+  
+  const [code, setCode] = useState(defaultCode);
+  const [search, setSearch] = useState(defaultCode);
 
   const { data: reservation, isLoading, error } = useReservationByCode(search);
+  
+  // Review state
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [reviewScore, setReviewScore] = useState(0);
+  const [foodScore, setFoodScore] = useState(0);
+  const [serviceScore, setServiceScore] = useState(0);
+  const [ambianceScore, setAmbianceScore] = useState(0);
+  const [comment, setComment] = useState('');
+  const [reviewSubmitted, setReviewSubmitted] = useState(false);
+  const { createRating, loading: submittingReview } = useRatings();
+
+  useEffect(() => {
+    if (defaultCode) {
+      setCode(defaultCode);
+      setSearch(defaultCode.toUpperCase().trim());
+    }
+  }, [defaultCode]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,6 +58,29 @@ export default function ReservationLookupPage() {
 
   const StatusIcon = reservation?.status === 'CONFIRMED' ? CheckCircle
     : reservation?.status === 'CANCELLED' ? XCircle : Clock;
+
+  const handleReviewSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reviewScore || !reservation) {
+        toast.error('Por favor, selecciona una puntuación general');
+        return;
+    }
+    try {
+      await createRating({
+        reservationId: reservation.id,
+        score: reviewScore,
+        foodScore: foodScore || undefined,
+        serviceScore: serviceScore || undefined,
+        ambianceScore: ambianceScore || undefined,
+        comment: comment || undefined,
+      });
+      toast.success('¡Reseña enviada con éxito!');
+      setReviewSubmitted(true);
+      setShowReviewForm(false);
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Error al enviar reseña');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -64,7 +125,6 @@ export default function ReservationLookupPage() {
 
         {reservation && (
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-            {/* Status banner */}
             <div className={cn('p-4 flex items-center gap-3', {
               'bg-green-50': reservation.status === 'CONFIRMED',
               'bg-yellow-50': reservation.status === 'PENDING',
@@ -83,7 +143,6 @@ export default function ReservationLookupPage() {
               </div>
             </div>
 
-            {/* Detalles */}
             <div className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -124,6 +183,70 @@ export default function ReservationLookupPage() {
                   </span>
                 </div>
               )}
+              {reservation.status === 'COMPLETED' && !reviewSubmitted && (
+                <div className="pt-6 border-t border-gray-100">
+                  {!showReviewForm ? (
+                    <button onClick={() => setShowReviewForm(true)} className="w-full py-3.5 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 shadow-sm text-yellow-950 font-semibold rounded-xl transition-all flex items-center justify-center gap-2 transform hover:scale-[1.01]">
+                      <Star className="h-5 w-5 fill-yellow-900 text-yellow-900" />
+                      Dejar una reseña del restaurante
+                    </button>
+                  ) : (
+                    <form onSubmit={handleReviewSubmit} className="space-y-5 bg-white border border-gray-100 shadow-sm p-5 rounded-2xl">
+                      <h4 className="font-display text-lg font-semibold text-gray-900">Califica tu experiencia</h4>
+                      
+                      <div className="bg-gray-50 p-4 rounded-xl">
+                        <label className="block text-sm font-semibold text-gray-800 mb-2">Puntuación General *</label>
+                        <StarRating value={reviewScore} onChange={setReviewScore} />
+                      </div>
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div className="bg-gray-50 p-3 rounded-xl">
+                          <label className="block text-xs font-medium text-gray-600 mb-1.5">Comida (opc.)</label>
+                          <StarRating value={foodScore} onChange={setFoodScore} size="sm" />
+                        </div>
+                        <div className="bg-gray-50 p-3 rounded-xl">
+                          <label className="block text-xs font-medium text-gray-600 mb-1.5">Servicio (opc.)</label>
+                          <StarRating value={serviceScore} onChange={setServiceScore} size="sm" />
+                        </div>
+                        <div className="bg-gray-50 p-3 rounded-xl">
+                          <label className="block text-xs font-medium text-gray-600 mb-1.5">Ambiente (opc.)</label>
+                          <StarRating value={ambianceScore} onChange={setAmbianceScore} size="sm" />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Comentario (opcional)</label>
+                        <textarea 
+                          value={comment} 
+                          onChange={(e) => setComment(e.target.value)}
+                          className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all resize-none"
+                          rows={3}
+                          placeholder="¿Qué tal estuvo tu visita? Cuenta a otros usuarios tu experiencia."
+                        />
+                      </div>
+
+                      <div className="flex gap-3 pt-2">
+                        <button type="submit" disabled={submittingReview || reviewScore === 0} className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                          {submittingReview ? <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : null}
+                          {submittingReview ? 'Enviando...' : 'Enviar reseña'}
+                        </button>
+                        <button type="button" onClick={() => setShowReviewForm(false)} className="px-6 py-2.5 border border-gray-200 text-gray-600 font-medium rounded-xl hover:bg-gray-50 transition-colors">
+                          Cancelar
+                        </button>
+                      </div>
+                    </form>
+                  )}
+                </div>
+              )}
+              {reviewSubmitted && (
+                 <div className="pt-5 pb-2 border-t border-gray-100 text-center flex flex-col items-center justify-center gap-2">
+                   <div className="h-10 w-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-1">
+                     <CheckCircle className="h-6 w-6" />
+                   </div>
+                   <span className="font-semibold text-gray-900 text-lg">¡Gracias por tu reseña!</span>
+                   <p className="text-sm text-gray-500">Tu opinión ayuda a otros turistas a elegir mejor.</p>
+                 </div>
+              )}
             </div>
           </div>
         )}
@@ -135,5 +258,13 @@ export default function ReservationLookupPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function ReservationLookupPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center"><div className="h-8 w-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" /></div>}>
+      <ReservationLookupContent />
+    </Suspense>
   );
 }

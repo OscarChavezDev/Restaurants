@@ -28,4 +28,6 @@ public interface RatingJpaRepository extends JpaRepository<RatingEntity, UUID> {
 
     @Query("SELECT AVG(r.ambianceScore) FROM RatingEntity r WHERE r.restaurantId = :restaurantId")
     Double getAvgAmbianceScore(@Param("restaurantId") UUID restaurantId);
+
+    boolean existsByUserIdAndReservationId(UUID userId, UUID reservationId);
 }

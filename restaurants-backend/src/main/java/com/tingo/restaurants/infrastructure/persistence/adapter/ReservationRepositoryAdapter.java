@@ -73,6 +73,11 @@ public class ReservationRepositoryAdapter implements ReservationRepository {
         return jpaRepository.existsByConfirmationCode(code);
     }
 
+    @Override
+    public int sumOccupiedSeats(UUID restaurantId, LocalDate date, java.time.LocalTime time) {
+        return jpaRepository.sumOccupiedSeats(restaurantId, date, time);
+    }
+
     private Reservation toDomain(ReservationEntity e) {
         return Reservation.builder()
                 .id(e.getId()).restaurantId(e.getRestaurantId()).customerId(e.getCustomerId())

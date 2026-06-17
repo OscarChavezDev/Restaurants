@@ -110,4 +110,12 @@ export const restaurantService = {
   async reorderImages(restaurantId: string, items: ImageReorderItem[]) {
     return extractData<RestaurantImage[]>(await api.patch(`/v1/restaurants/${restaurantId}/images/reorder`, items));
   },
+
+  async checkAvailability(restaurantId: string, date: string, time: string, partySize: number) {
+    return extractData<any>(
+      await api.get(`/v1/restaurants/${restaurantId}/availability`, {
+        params: { date, time, partySize }
+      })
+    );
+  },
 };

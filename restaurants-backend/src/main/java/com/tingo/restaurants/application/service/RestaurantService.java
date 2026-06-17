@@ -56,6 +56,7 @@ public class RestaurantService {
                 .latitude(request.getLatitude())
                 .longitude(request.getLongitude())
                 .totalCapacity(request.getTotalCapacity())
+                .priceLevel(request.getPriceLevel() != null ? request.getPriceLevel() : 2)
                 .minReservationSize(request.getMinReservationSize())
                 .maxReservationSize(request.getMaxReservationSize())
                 .coverImageUrl(request.getCoverImageUrl())

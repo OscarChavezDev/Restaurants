@@ -33,6 +33,7 @@ public class RestaurantResponse {
     private BigDecimal longitude;
 
     private int totalCapacity;
+    private int priceLevel;
     private int minReservationSize;
     private int maxReservationSize;
 

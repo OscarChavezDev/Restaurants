@@ -55,6 +55,10 @@ public class CreateRestaurantRequest {
     @Max(value = 5000, message = "La capacidad máxima es 5000")
     private int totalCapacity;
 
+    @Min(1)
+    @Max(4)
+    private Integer priceLevel = 2;
+
     @Min(1) private int minReservationSize = 1;
     @Min(1) private int maxReservationSize = 20;
 
