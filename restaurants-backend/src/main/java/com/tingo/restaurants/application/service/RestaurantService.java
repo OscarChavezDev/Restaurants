@@ -137,6 +137,58 @@ public class RestaurantService {
     }
 
     @Transactional
+    public RestaurantResponse update(UUID id, CreateRestaurantRequest request, UUID requesterId, boolean isAdmin) {
+        Restaurant existing = restaurantRepository.findById(id)
+                .orElseThrow(() -> new RestaurantNotFoundException(id));
+
+        // Solo el dueño del restaurante (o un ADMIN) puede editarlo
+        if (!isAdmin && !existing.getOwnerId().equals(requesterId)) {
+            throw new org.springframework.security.access.AccessDeniedException(
+                    "No puedes editar un restaurante que no te pertenece");
+        }
+
+        log.info("Actualizando restaurante: {} ({})", existing.getName(), id);
+
+        // Se preservan los campos no editables desde este formulario:
+        // id, ownerId, slug, status, calificaciones y auditoría.
+        Restaurant updated = Restaurant.builder()
+                .id(existing.getId())
+                .ownerId(existing.getOwnerId())
+                .slug(existing.getSlug())
+                .status(existing.getStatus())
+                .avgRating(existing.getAvgRating())
+                .totalRatings(existing.getTotalRatings())
+                .createdAt(existing.getCreatedAt())
+                .name(request.getName())
+                .description(request.getDescription())
+                .phone(request.getPhone())
+                .email(request.getEmail())
+                .website(request.getWebsite())
+                .ruc(existing.getRuc())   // el RUC no se edita desde el panel; se preserva
+                .address(request.getAddress())
+                .district(request.getDistrict())
+                .city(request.getCity())
+                .region(request.getRegion())
+                .latitude(request.getLatitude())
+                .longitude(request.getLongitude())
+                .totalCapacity(request.getTotalCapacity())
+                .priceLevel(request.getPriceLevel() != null ? request.getPriceLevel() : existing.getPriceLevel())
+                .minReservationSize(request.getMinReservationSize())
+                .maxReservationSize(request.getMaxReservationSize())
+                .coverImageUrl(request.getCoverImageUrl())
+                .logoUrl(request.getLogoUrl())
+                .acceptsReservations(request.isAcceptsReservations())
+                .acceptsEvents(request.isAcceptsEvents())
+                .hasParking(request.isHasParking())
+                .hasWifi(request.isHasWifi())
+                .hasAirConditioning(request.isHasAirConditioning())
+                .isAccessible(request.isAccessible())
+                .build();
+
+        return restaurantMapper.toResponse(restaurantRepository.save(updated));
+    }
+
+    @Transactional
     public RestaurantResponse updateStatus(UUID id, RestaurantStatus newStatus) {
         Restaurant restaurant = restaurantRepository.findById(id)
                 .orElseThrow(() -> new RestaurantNotFoundException(id));
@@ -159,6 +211,7 @@ public class RestaurantService {
                 .latitude(restaurant.getLatitude())
                 .longitude(restaurant.getLongitude())
                 .totalCapacity(restaurant.getTotalCapacity())
+                .priceLevel(restaurant.getPriceLevel())
                 .minReservationSize(restaurant.getMinReservationSize())
                 .maxReservationSize(restaurant.getMaxReservationSize())
                 .coverImageUrl(restaurant.getCoverImageUrl())
@@ -177,9 +230,13 @@ public class RestaurantService {
     }
 
     @Transactional
-    public void delete(UUID id) {
-        restaurantRepository.findById(id)
+    public void delete(UUID id, UUID requesterId, boolean isAdmin) {
+        Restaurant existing = restaurantRepository.findById(id)
                 .orElseThrow(() -> new RestaurantNotFoundException(id));
+        if (!isAdmin && !existing.getOwnerId().equals(requesterId)) {
+            throw new org.springframework.security.access.AccessDeniedException(
+                    "No puedes eliminar un restaurante que no te pertenece");
+        }
         restaurantRepository.deleteById(id);
         log.info("Restaurante eliminado (soft delete): {}", id);
     }

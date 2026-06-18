@@ -8,6 +8,7 @@ import com.tingo.restaurants.domain.exception.UserAlreadyExistsException;
 import com.tingo.restaurants.domain.model.User;
 import com.tingo.restaurants.domain.repository.UserRepository;
 import com.tingo.restaurants.infrastructure.security.JwtTokenProvider;
+import com.tingo.restaurants.infrastructure.security.LoginAttemptService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,6 +27,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final LoginAttemptService loginAttemptService;
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
@@ -53,16 +55,20 @@ public class AuthService {
 
     @Transactional
     public AuthResponse login(LoginRequest request) {
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(InvalidCredentialsException::new);
+        // Rate limiting: bloquea tras demasiados intentos fallidos.
+        loginAttemptService.checkBlocked(request.getEmail());
 
-        if (!user.isActive() || user.getDeletedAt() != null) {
+        User user = userRepository.findByEmail(request.getEmail()).orElse(null);
+        boolean credentialsOk = user != null
+                && user.isActive()
+                && user.getDeletedAt() == null
+                && passwordEncoder.matches(request.getPassword(), user.getPasswordHash());
+
+        if (!credentialsOk) {
+            loginAttemptService.loginFailed(request.getEmail());
             throw new InvalidCredentialsException();
         }
-
-        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            throw new InvalidCredentialsException();
-        }
+        loginAttemptService.loginSucceeded(request.getEmail());
 
         User updated = User.builder()
                 .id(user.getId())

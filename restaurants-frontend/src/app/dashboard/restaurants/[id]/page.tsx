@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, MapPin, Phone, Mail, Users, Star, Calendar, Trash2, CheckCircle, XCircle, Clock, AlertCircle } from 'lucide-react';
+import { ArrowLeft, MapPin, Phone, Mail, Users, Star, Calendar, Trash2, CheckCircle, XCircle, Clock, AlertCircle, Pencil } from 'lucide-react';
 import { useRestaurant, useDeleteRestaurant } from '@/hooks/useRestaurants';
 import { useRestaurantReservations, useConfirmReservation, useCancelReservation } from '@/hooks/useReservations';
 import { formatDate, formatTime, STATUS_LABELS, STATUS_COLORS, DAY_LABELS } from '@/utils/formatters';
@@ -61,8 +61,8 @@ export default function RestaurantDetailDashboard() {
   return (
     <div>
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between gap-3 flex-wrap mb-6">
+        <div className="flex items-center gap-3 min-w-0">
           <Link href="/dashboard/restaurants" className="p-2 rounded-xl hover:bg-gray-100 transition-colors">
             <ArrowLeft className="h-5 w-5 text-gray-500" />
           </Link>
@@ -76,7 +76,11 @@ export default function RestaurantDetailDashboard() {
             className="px-4 py-2 border border-gray-200 text-sm font-medium rounded-xl hover:bg-gray-50 transition-colors">
             Ver página pública ↗
           </Link>
-          <button onClick={handleDelete} className="p-2 rounded-xl text-red-500 hover:bg-red-50 transition-colors">
+          <Link href={`/dashboard/restaurants/${id}/edit`}
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold rounded-xl transition-colors">
+            <Pencil className="h-4 w-4" /> Editar
+          </Link>
+          <button onClick={handleDelete} className="p-2 rounded-xl text-red-500 hover:bg-red-50 transition-colors" title="Eliminar restaurante">
             <Trash2 className="h-4 w-4" />
           </button>
         </div>

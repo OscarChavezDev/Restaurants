@@ -136,6 +136,21 @@ public class RestaurantController {
         return ResponseEntity.ok(ApiResponse.ok(restaurantService.findByOwner(ownerId, pageable)));
     }
 
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'RESTAURANTE_OWNER')")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Actualizar información del restaurante (dueño o ADMIN)")
+    public ResponseEntity<ApiResponse<RestaurantResponse>> update(
+            @PathVariable UUID id,
+            @Valid @RequestBody CreateRestaurantRequest request,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        UUID requesterId = UUID.fromString(userDetails.getUsername());
+        boolean isAdmin = userDetails.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        RestaurantResponse response = restaurantService.update(id, request, requesterId, isAdmin);
+        return ResponseEntity.ok(ApiResponse.ok("Restaurante actualizado correctamente", response));
+    }
+
     @PatchMapping("/{id}/status")
     @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
@@ -150,8 +165,13 @@ public class RestaurantController {
     @PreAuthorize("hasAnyRole('ADMIN', 'RESTAURANTE_OWNER')")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Eliminar restaurante (soft delete)")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable UUID id) {
-        restaurantService.delete(id);
+    public ResponseEntity<ApiResponse<Void>> delete(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        UUID requesterId = UUID.fromString(userDetails.getUsername());
+        boolean isAdmin = userDetails.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        restaurantService.delete(id, requesterId, isAdmin);
         return ResponseEntity.ok(ApiResponse.ok("Restaurante eliminado correctamente", null));
     }
 }

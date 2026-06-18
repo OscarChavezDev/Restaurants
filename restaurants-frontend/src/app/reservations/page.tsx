@@ -84,30 +84,42 @@ function ReservationLookupContent() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-gradient-to-r from-orange-600 to-orange-500 py-14">
-        <div className="mx-auto max-w-2xl px-4 text-center">
-          <Calendar className="h-12 w-12 text-orange-200 mx-auto mb-4" />
-          <h1 className="font-display text-3xl font-bold text-white mb-2">Consulta tu Reserva</h1>
-          <p className="text-orange-100 mb-8">Ingresa el código de confirmación que recibiste</p>
-          <form onSubmit={handleSearch} className="flex gap-2">
-            <input
-              value={code}
-              onChange={e => setCode(e.target.value)}
-              placeholder="Ej: RES-AB12CD34"
-              className="flex-1 px-4 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-300 font-mono uppercase"
-            />
-            <button type="submit" className="px-6 py-3 bg-white text-orange-600 font-semibold rounded-xl hover:bg-orange-50 transition-colors">
-              Buscar
-            </button>
-          </form>
+      <div className="relative overflow-hidden bg-gradient-to-r from-orange-600 to-orange-500 py-12 sm:py-14">
+        {/* glow cálido sutil */}
+        <div aria-hidden className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(60% 80% at 70% 0%, rgba(255,196,140,0.22) 0%, transparent 60%)' }} />
+        <div className="relative mx-auto max-w-2xl px-4">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-white/15 backdrop-blur-md border border-white/25 px-3.5 py-2 text-sm font-medium text-white hover:bg-white/25 transition-colors mb-6"
+          >
+            <ArrowLeft className="h-4 w-4" /> Volver al inicio
+          </Link>
+
+          <div className="text-center">
+            <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-white/15 border border-white/25 backdrop-blur-md mb-4">
+              <Calendar className="h-7 w-7 text-white" />
+            </div>
+            <h1 className="font-display text-3xl font-bold text-white mb-2">Consulta tu Reserva</h1>
+            <p className="text-orange-100 mb-8">Ingresa el código de confirmación que recibiste</p>
+            <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <input
+                  value={code}
+                  onChange={e => setCode(e.target.value)}
+                  placeholder="Ej: RES-AB12CD34"
+                  className="w-full pl-10 pr-4 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-300 font-mono uppercase"
+                />
+              </div>
+              <button type="submit" className="px-6 py-3 bg-white text-orange-600 font-semibold rounded-xl hover:bg-orange-50 hover:scale-105 transition-all duration-200 whitespace-nowrap">
+                Buscar
+              </button>
+            </form>
+          </div>
         </div>
       </div>
 
       <div className="mx-auto max-w-2xl px-4 py-10">
-        <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-orange-600 mb-6 transition-colors">
-          <ArrowLeft className="h-4 w-4" /> Volver al inicio
-        </Link>
-
         {isLoading && (
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
             <div className="h-8 w-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto" />
@@ -252,8 +264,15 @@ function ReservationLookupContent() {
         )}
 
         {!search && !isLoading && (
-          <div className="text-center py-8 text-gray-400">
-            <p className="text-sm">Ingresa un código como <code className="font-mono bg-gray-100 px-1.5 py-0.5 rounded text-gray-600">RES-XXXXXXXX</code></p>
+          <div className="text-center py-12">
+            <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-50 text-orange-400 mb-4">
+              <Search className="h-7 w-7" />
+            </div>
+            <p className="text-gray-500 text-sm">
+              Ingresa tu código de confirmación, p. ej.{' '}
+              <code className="font-mono bg-gray-100 px-1.5 py-0.5 rounded text-gray-600">RES-XXXXXXXX</code>
+            </p>
+            <p className="text-gray-400 text-xs mt-1">Lo recibiste al crear tu reserva.</p>
           </div>
         )}
       </div>

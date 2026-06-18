@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   UtensilsCrossed, Calendar, BarChart3, Tag,
-  LogOut, Home, Users
+  LogOut, Home, Users, X
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -20,7 +20,7 @@ const navItems = [
   { href: '/dashboard/users',        icon: Users,           labelKey: 'users',        roles: ['ADMIN'] },
 ] as const;
 
-export function Sidebar() {
+export function Sidebar({ open = false, onClose }: { open?: boolean; onClose?: () => void }) {
   const pathname = usePathname();
   const { user, logout } = useAuthStore();
   const t = useTranslation();
@@ -30,16 +30,41 @@ export function Sidebar() {
   );
 
   return (
-    <aside className="flex h-full w-64 flex-col bg-gray-900 text-white">
+    <>
+      {/* Overlay (solo móvil) */}
+      <div
+        className={cn(
+          'fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden transition-opacity',
+          open ? 'opacity-100' : 'pointer-events-none opacity-0'
+        )}
+        onClick={onClose}
+        aria-hidden
+      />
+
+      <aside
+        className={cn(
+          'fixed inset-y-0 left-0 z-50 flex h-full w-64 flex-col bg-gray-900 text-white transition-transform duration-300',
+          'lg:static lg:translate-x-0',
+          open ? 'translate-x-0' : '-translate-x-full'
+        )}
+      >
       {/* Logo */}
       <div className="flex items-center gap-3 p-6 border-b border-gray-700">
         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500 shadow-lg flex-shrink-0">
           <UtensilsCrossed className="h-6 w-6 text-white" />
         </div>
-        <div>
+        <div className="flex-1 min-w-0">
           <p className="font-display font-semibold text-sm leading-tight">Restaurants</p>
           <p className="text-xs text-gray-400">Tingo María</p>
         </div>
+        {/* Cerrar (solo móvil) */}
+        <button
+          onClick={onClose}
+          className="lg:hidden p-1.5 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
+          aria-label="Cerrar menú"
+        >
+          <X className="h-5 w-5" />
+        </button>
       </div>
 
       {/* Nav */}
@@ -93,6 +118,7 @@ export function Sidebar() {
           {t('logout')}
         </button>
       </div>
-    </aside>
+      </aside>
+    </>
   );
 }

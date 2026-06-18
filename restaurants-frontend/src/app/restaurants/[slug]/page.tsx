@@ -170,7 +170,7 @@ export default function RestaurantDetailPage() {
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
 
         <div className="absolute top-4 left-4">
-          <Link href="/restaurants" className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/90 rounded-xl text-sm font-medium text-gray-700 hover:bg-white transition-colors">
+          <Link href="/restaurants" className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/15 backdrop-blur-md border border-white/25 text-sm font-medium text-white hover:bg-white/25 transition-colors">
             <ArrowLeft className="h-4 w-4" /> Volver
           </Link>
         </div>

@@ -81,6 +81,16 @@ export function useCreateRestaurant() {
   });
 }
 
+export function useUpdateRestaurant(id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: CreateRestaurantDto) => restaurantService.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: RESTAURANT_KEYS.all });
+    },
+  });
+}
+
 export function useDeleteRestaurant() {
   const queryClient = useQueryClient();
   return useMutation({

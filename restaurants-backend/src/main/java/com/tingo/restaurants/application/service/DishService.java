@@ -7,6 +7,7 @@ import com.tingo.restaurants.domain.exception.DomainException;
 import com.tingo.restaurants.domain.model.Dish;
 import com.tingo.restaurants.domain.repository.DishRepository;
 import com.tingo.restaurants.domain.repository.MenuRepository;
+import com.tingo.restaurants.infrastructure.security.OwnershipGuard;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,11 +26,13 @@ public class DishService {
 
     private final DishRepository dishRepository;
     private final MenuRepository menuRepository;
+    private final OwnershipGuard ownershipGuard;
 
     @Transactional
     public DishResponse create(CreateDishRequest request) {
         var menu = menuRepository.findById(request.getMenuId())
                 .orElseThrow(() -> new DomainException("Menú no encontrado", "MENU_NOT_FOUND") {});
+        ownershipGuard.assertOwnsRestaurant(menu.getRestaurantId());
 
         Dish dish = Dish.builder()
                 .id(UUID.randomUUID())
@@ -71,6 +74,7 @@ public class DishService {
     public DishResponse update(UUID dishId, UpdateDishRequest request) {
         Dish existing = dishRepository.findById(dishId)
                 .orElseThrow(() -> new DomainException("Plato no encontrado", "DISH_NOT_FOUND") {});
+        ownershipGuard.assertOwnsRestaurant(existing.getRestaurantId());
 
         Dish.DishBuilder builder = existing.toBuilder().updatedAt(LocalDateTime.now());
         if (request.getName() != null) builder.name(request.getName());
@@ -96,6 +100,7 @@ public class DishService {
     public DishResponse toggleAvailability(UUID dishId) {
         Dish existing = dishRepository.findById(dishId)
                 .orElseThrow(() -> new DomainException("Plato no encontrado", "DISH_NOT_FOUND") {});
+        ownershipGuard.assertOwnsRestaurant(existing.getRestaurantId());
 
         Dish toggled = existing.toBuilder()
                 .isAvailable(!existing.isAvailable())
@@ -109,6 +114,9 @@ public class DishService {
 
     @Transactional
     public void delete(UUID id) {
+        Dish existing = dishRepository.findById(id)
+                .orElseThrow(() -> new DomainException("Plato no encontrado", "DISH_NOT_FOUND") {});
+        ownershipGuard.assertOwnsRestaurant(existing.getRestaurantId());
         dishRepository.deleteById(id);
     }
 

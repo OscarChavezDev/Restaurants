@@ -2,7 +2,7 @@
 
 import { BarChart3, TrendingUp, Users, Calendar, UtensilsCrossed, Star } from 'lucide-react';
 import { useMyRestaurants, useRestaurants } from '@/hooks/useRestaurants';
-import { useMyReservations } from '@/hooks/useReservations';
+import { useManagedReservations } from '@/hooks/useReservations';
 import { useAuthStore } from '@/store/authStore';
 
 export default function ReportsPage() {
@@ -10,29 +10,30 @@ export default function ReportsPage() {
 
   const { data: myRestaurants } = useMyRestaurants();
   const { data: allRestaurants } = useRestaurants(0, 100);
-  const { data: reservations } = useMyReservations(0, 200);
+  const { reservations } = useManagedReservations();
 
   const restaurants = isAdmin ? allRestaurants : myRestaurants;
 
-  const totalConfirmed = reservations?.content.filter(r => r.status === 'CONFIRMED').length ?? 0;
-  const totalCancelled = reservations?.content.filter(r => r.status === 'CANCELLED').length ?? 0;
-  const totalCompleted = reservations?.content.filter(r => r.status === 'COMPLETED').length ?? 0;
-  const totalPending   = reservations?.content.filter(r => r.status === 'PENDING').length ?? 0;
-  const eventRelated   = reservations?.content.filter(r => r.isEventRelated).length ?? 0;
+  const totalReservations = reservations.length;
+  const totalConfirmed = reservations.filter(r => r.status === 'CONFIRMED').length;
+  const totalCancelled = reservations.filter(r => r.status === 'CANCELLED').length;
+  const totalCompleted = reservations.filter(r => r.status === 'COMPLETED').length;
+  const totalPending   = reservations.filter(r => r.status === 'PENDING').length;
+  const eventRelated   = reservations.filter(r => r.isEventRelated).length;
 
   const stats = [
-    { label: 'Restaurantes activos', value: restaurants?.totalElements ?? 0, icon: UtensilsCrossed, color: 'bg-orange-100 text-orange-600' },
-    { label: 'Reservas totales',     value: reservations?.totalElements ?? 0, icon: Calendar,       color: 'bg-blue-100 text-blue-600'   },
+    { label: 'Restaurantes',         value: restaurants?.totalElements ?? 0, icon: UtensilsCrossed, color: 'bg-orange-100 text-orange-600' },
+    { label: 'Reservas totales',     value: totalReservations,               icon: Calendar,       color: 'bg-blue-100 text-blue-600'   },
     { label: 'Confirmadas',          value: totalConfirmed,                    icon: TrendingUp,     color: 'bg-green-100 text-green-600' },
     { label: 'Canceladas',           value: totalCancelled,                    icon: Users,          color: 'bg-red-100 text-red-600'     },
     { label: 'Completadas',          value: totalCompleted,                    icon: Star,           color: 'bg-purple-100 text-purple-600'},
     { label: 'Pendientes',           value: totalPending,                      icon: BarChart3,      color: 'bg-yellow-100 text-yellow-600'},
   ];
 
-  const conversionRate  = reservations?.totalElements
-    ? Math.round((totalCompleted / reservations.totalElements) * 100) : 0;
-  const cancellationRate = reservations?.totalElements
-    ? Math.round((totalCancelled / reservations.totalElements) * 100) : 0;
+  const conversionRate  = totalReservations
+    ? Math.round((totalCompleted / totalReservations) * 100) : 0;
+  const cancellationRate = totalReservations
+    ? Math.round((totalCancelled / totalReservations) * 100) : 0;
 
   return (
     <div>

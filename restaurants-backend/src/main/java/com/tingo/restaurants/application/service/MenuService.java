@@ -6,8 +6,10 @@ import com.tingo.restaurants.application.dto.response.DishResponse;
 import com.tingo.restaurants.domain.exception.RestaurantNotFoundException;
 import com.tingo.restaurants.domain.model.Menu;
 import com.tingo.restaurants.domain.model.Dish;
+import com.tingo.restaurants.domain.exception.DomainException;
 import com.tingo.restaurants.domain.repository.MenuRepository;
 import com.tingo.restaurants.domain.repository.RestaurantRepository;
+import com.tingo.restaurants.infrastructure.security.OwnershipGuard;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,11 +28,13 @@ public class MenuService {
 
     private final MenuRepository menuRepository;
     private final RestaurantRepository restaurantRepository;
+    private final OwnershipGuard ownershipGuard;
 
     @Transactional
     public MenuResponse create(CreateMenuRequest request) {
         restaurantRepository.findById(request.getRestaurantId())
                 .orElseThrow(() -> new RestaurantNotFoundException(request.getRestaurantId()));
+        ownershipGuard.assertOwnsRestaurant(request.getRestaurantId());
 
         Menu menu = Menu.builder()
                 .id(UUID.randomUUID())
@@ -62,6 +66,9 @@ public class MenuService {
 
     @Transactional
     public void delete(UUID id) {
+        Menu menu = menuRepository.findById(id)
+                .orElseThrow(() -> new DomainException("Menú no encontrado", "MENU_NOT_FOUND") {});
+        ownershipGuard.assertOwnsRestaurant(menu.getRestaurantId());
         menuRepository.deleteById(id);
     }
 

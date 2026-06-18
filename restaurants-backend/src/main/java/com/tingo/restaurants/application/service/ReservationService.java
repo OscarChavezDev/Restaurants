@@ -102,9 +102,10 @@ public class ReservationService {
     }
 
     @Transactional
-    public ReservationResponse confirm(UUID id) {
+    public ReservationResponse confirm(UUID id, UUID requesterId, boolean isAdmin) {
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new ReservationException("Reserva no encontrada"));
+        requireRestaurantOwnership(reservation, requesterId, isAdmin);
         Reservation confirmed = reservation.confirm();
         Reservation saved = reservationRepository.save(confirmed);
         emailService.sendReservationConfirmed(saved);
@@ -112,9 +113,16 @@ public class ReservationService {
     }
 
     @Transactional
-    public ReservationResponse cancel(UUID id, String reason) {
+    public ReservationResponse cancel(UUID id, String reason, UUID requesterId, boolean isAdmin) {
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new ReservationException("Reserva no encontrada"));
+        // Puede cancelar: ADMIN, el dueño del restaurante, o el cliente que la creó.
+        boolean isOwner = isRestaurantOwner(reservation, requesterId);
+        boolean isCustomer = requesterId != null && requesterId.equals(reservation.getCustomerId());
+        if (!isAdmin && !isOwner && !isCustomer) {
+            throw new org.springframework.security.access.AccessDeniedException(
+                    "No tienes permiso para cancelar esta reserva");
+        }
         Reservation cancelled = reservation.cancel(reason);
         Reservation saved = reservationRepository.save(cancelled);
         eventPublisher.publishEvent(new ReservationCancelledEvent(saved));
@@ -123,21 +131,38 @@ public class ReservationService {
     }
 
     @Transactional
-    public ReservationResponse completeReservation(UUID id) {
+    public ReservationResponse completeReservation(UUID id, UUID requesterId, boolean isAdmin) {
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new ReservationException("Reserva no encontrada"));
+        requireRestaurantOwnership(reservation, requesterId, isAdmin);
         Reservation completed = reservation.complete();
         log.info("Reserva {} marcada como COMPLETED", completed.getConfirmationCode());
         return mapToResponse(reservationRepository.save(completed));
     }
 
     @Transactional
-    public ReservationResponse markNoShow(UUID id) {
+    public ReservationResponse markNoShow(UUID id, UUID requesterId, boolean isAdmin) {
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new ReservationException("Reserva no encontrada"));
+        requireRestaurantOwnership(reservation, requesterId, isAdmin);
         Reservation noShow = reservation.markNoShow();
         log.info("Reserva {} marcada como NO_SHOW", noShow.getConfirmationCode());
         return mapToResponse(reservationRepository.save(noShow));
+    }
+
+    // ── Autorización: el restaurante de la reserva debe pertenecer al solicitante ──
+    private boolean isRestaurantOwner(Reservation reservation, UUID requesterId) {
+        if (requesterId == null || reservation.getRestaurantId() == null) return false;
+        return restaurantRepository.findById(reservation.getRestaurantId())
+                .map(r -> requesterId.equals(r.getOwnerId()))
+                .orElse(false);
+    }
+
+    private void requireRestaurantOwnership(Reservation reservation, UUID requesterId, boolean isAdmin) {
+        if (!isAdmin && !isRestaurantOwner(reservation, requesterId)) {
+            throw new org.springframework.security.access.AccessDeniedException(
+                    "No tienes permiso sobre las reservas de este restaurante");
+        }
     }
 
     public ReservationResponse findByConfirmationCode(String code) {
@@ -167,7 +192,18 @@ public class ReservationService {
                 .build();
     }
 
-    public PagedResponse<ReservationResponse> findByRestaurant(UUID restaurantId, Pageable pageable) {
+    public PagedResponse<ReservationResponse> findByRestaurant(UUID restaurantId, Pageable pageable,
+                                                               UUID requesterId, boolean isAdmin) {
+        // Un OWNER solo puede ver las reservas de SUS restaurantes (evita exponer
+        // datos personales de clientes de otros locales). ADMIN ve cualquiera.
+        if (!isAdmin) {
+            Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                    .orElseThrow(() -> new RestaurantNotFoundException(restaurantId));
+            if (!requesterId.equals(restaurant.getOwnerId())) {
+                throw new org.springframework.security.access.AccessDeniedException(
+                        "No tienes permiso para ver las reservas de este restaurante");
+            }
+        }
         Page<ReservationResponse> page = reservationRepository
                 .findByRestaurantId(restaurantId, pageable)
                 .map(this::mapToResponse);

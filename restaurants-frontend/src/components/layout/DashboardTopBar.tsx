@@ -1,21 +1,33 @@
 'use client';
 
-import { Sun, Moon } from 'lucide-react';
+import { Sun, Moon, Menu } from 'lucide-react';
 import { useUiStore } from '@/store/uiStore';
 import { cn } from '@/utils/cn';
 
-export function DashboardTopBar() {
+export function DashboardTopBar({ onMenuClick }: { onMenuClick?: () => void }) {
   const { theme, lang, toggleTheme, setLang } = useUiStore();
   const isDark = theme === 'dark';
 
   return (
     <div className={cn(
-      'flex h-11 items-center justify-end px-6 border-b shrink-0',
+      'flex h-12 items-center justify-between gap-2 px-4 sm:px-6 border-b shrink-0',
       isDark
         ? 'bg-gray-900 border-gray-700'
         : 'bg-white border-gray-100'
     )}>
-      <div className="flex items-center gap-1.5">
+      {/* Hamburguesa (solo móvil) */}
+      <button
+        onClick={onMenuClick}
+        className={cn(
+          'lg:hidden flex h-8 w-8 items-center justify-center rounded-lg transition-colors',
+          isDark ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-100'
+        )}
+        aria-label="Abrir menú"
+      >
+        <Menu className="h-5 w-5" />
+      </button>
+
+      <div className="flex items-center gap-1.5 ml-auto">
         {/* Theme toggle */}
         <button
           onClick={toggleTheme}
@@ -45,7 +57,6 @@ export function DashboardTopBar() {
             )}
             title="Español"
           >
-            <span className="text-sm leading-none">🇵🇪</span>
             <span>ES</span>
           </button>
           <button
@@ -58,7 +69,6 @@ export function DashboardTopBar() {
             )}
             title="English"
           >
-            <span className="text-sm leading-none">🇺🇸</span>
             <span>EN</span>
           </button>
         </div>

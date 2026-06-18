@@ -45,6 +45,10 @@ export const restaurantService = {
     return extractData<Restaurant>(await api.post('/v1/restaurants', data));
   },
 
+  async update(id: string, data: CreateRestaurantDto) {
+    return extractData<Restaurant>(await api.put(`/v1/restaurants/${id}`, data));
+  },
+
   async updateStatus(id: string, status: string) {
     return extractData<Restaurant>(
       await api.patch(`/v1/restaurants/${id}/status`, null, { params: { status } })

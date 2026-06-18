@@ -42,33 +42,46 @@ export default function LoginPage() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-zinc-900 flex items-center justify-center p-4">
+    <div className="relative min-h-screen bg-gray-50 flex items-center justify-center p-4 overflow-hidden">
+      {/* Ambiente cálido */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -top-32 left-1/2 -translate-x-1/2 h-[460px] w-[460px] rounded-full bg-orange-400/20 blur-[120px]" />
+        <div className="absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-selva-400/15 blur-3xl" />
+        <div className="absolute -bottom-32 -left-20 h-72 w-72 rounded-full bg-orange-300/10 blur-3xl" />
+      </div>
+
       {/* Back button */}
-      <div className="absolute top-4 left-4">
+      <div className="absolute top-4 left-4 z-10">
         <Link
           href="/"
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-gray-800 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600 transition-colors shadow-sm"
+          className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white dark:bg-gray-800 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 transition-colors shadow-sm"
         >
           <ArrowLeft className="h-4 w-4" /> Volver
         </Link>
       </div>
 
-      <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-orange-500 shadow-lg mb-4">
-            <UtensilsCrossed className="h-8 w-8 text-white" />
+      <div className="relative z-10 w-full max-w-md">
+        {/* Logo con glow */}
+        <div className="text-center mb-7">
+          <div className="relative inline-flex mb-4">
+            <div className="absolute inset-0 rounded-2xl bg-orange-500 blur-xl opacity-40" />
+            <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 shadow-lg shadow-orange-500/30 ring-1 ring-white/40 dark:ring-white/10">
+              <UtensilsCrossed className="h-8 w-8 text-white" />
+            </div>
           </div>
-          <h1 className="font-display text-2xl font-bold text-gray-900 dark:text-gray-50">Iniciar Sesión</h1>
-          <p className="mt-2 text-gray-500 dark:text-gray-400 text-sm">Sistema de Restaurantes — Tingo María</p>
+          <h1 className="font-display text-2xl font-bold text-gray-900 dark:text-gray-50">Bienvenido de nuevo</h1>
+          <p className="mt-1.5 text-gray-500 dark:text-gray-400 text-sm">Inicia sesión en tu cuenta</p>
         </div>
 
         {/* Card */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-8">
+        <div className="relative overflow-hidden bg-white dark:bg-gray-800 rounded-2xl shadow-xl shadow-orange-900/[0.06] border border-gray-100 dark:border-gray-700 p-8">
+          {/* acento superior */}
+          <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-orange-500 via-orange-600 to-selva-500" />
+
           <form onSubmit={handleSubmit((d) => mutation.mutate(d))} className="space-y-5">
             {/* Email */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
                 Correo electrónico
               </label>
               <div className="relative">
@@ -87,7 +100,7 @@ export default function LoginPage() {
 
             {/* Password */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
                 Contraseña
               </label>
               <div className="relative">
@@ -114,7 +127,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={mutation.isPending}
-              className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-orange-500 hover:bg-orange-600 disabled:opacity-60 text-white font-semibold rounded-xl transition-colors"
+              className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 disabled:opacity-60 text-white font-semibold rounded-xl shadow-lg shadow-orange-500/25 transition-all"
             >
               {mutation.isPending ? (
                 <><Loader2 className="h-4 w-4 animate-spin" /> Iniciando sesión...</>
@@ -127,16 +140,12 @@ export default function LoginPage() {
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-500 dark:text-gray-400">
               ¿No tienes cuenta?{' '}
-              <Link href="/register" className="text-orange-500 hover:text-orange-600 font-medium">
+              <Link href="/register" className="text-orange-600 hover:text-orange-700 font-semibold">
                 Regístrate aquí
               </Link>
             </p>
           </div>
         </div>
-
-        <p className="mt-6 text-center text-xs text-gray-400 dark:text-gray-500">
-          © 2025 Plataforma Turística Tingo María
-        </p>
       </div>
     </div>
   );

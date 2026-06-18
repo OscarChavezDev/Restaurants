@@ -106,7 +106,7 @@ export default function RestaurantsPublicPage() {
       {/* Header */}
       <div className="bg-gradient-to-r from-orange-600 to-orange-500 py-14">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <Link href="/" className="inline-flex items-center gap-2 text-white/80 hover:text-white text-sm mb-4 transition-colors animate-slide-up">
+          <Link href="/" className="inline-flex items-center gap-1.5 rounded-xl bg-white/15 backdrop-blur-md border border-white/25 px-3.5 py-2 text-sm font-medium text-white hover:bg-white/25 transition-colors mb-5 animate-slide-up">
             <ArrowLeft className="h-4 w-4" />
             Inicio
           </Link>

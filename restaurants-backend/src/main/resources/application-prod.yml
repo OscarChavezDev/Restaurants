@@ -4,6 +4,14 @@ spring:
     properties:
       hibernate:
         format_sql: false
+  # En producción los secretos son OBLIGATORIOS por entorno (sin valor por defecto):
+  # si faltan, la app no arranca (fail-fast) en lugar de usar los valores del repo.
+  datasource:
+    password: ${DB_PASSWORD}
+
+security:
+  jwt:
+    secret: ${JWT_SECRET}
 
 logging:
   level:

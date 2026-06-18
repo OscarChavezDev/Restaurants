@@ -4,8 +4,10 @@ import com.tingo.restaurants.application.dto.response.PromotionResponse;
 import com.tingo.restaurants.domain.exception.RestaurantNotFoundException;
 import com.tingo.restaurants.domain.model.Promotion;
 import com.tingo.restaurants.domain.model.enums.PromotionType;
+import com.tingo.restaurants.domain.exception.DomainException;
 import com.tingo.restaurants.domain.repository.PromotionRepository;
 import com.tingo.restaurants.domain.repository.RestaurantRepository;
+import com.tingo.restaurants.infrastructure.security.OwnershipGuard;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +26,7 @@ public class PromotionService {
 
     private final PromotionRepository promotionRepository;
     private final RestaurantRepository restaurantRepository;
+    private final OwnershipGuard ownershipGuard;
 
     @Transactional
     public PromotionResponse create(UUID restaurantId, String title, String description,
@@ -33,6 +36,7 @@ public class PromotionService {
                                     Integer usageLimit) {
         restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> new RestaurantNotFoundException(restaurantId));
+        ownershipGuard.assertOwnsRestaurant(restaurantId);
 
         Promotion promo = Promotion.builder()
                 .id(UUID.randomUUID()).restaurantId(restaurantId).title(title)
@@ -58,6 +62,9 @@ public class PromotionService {
 
     @Transactional
     public void delete(UUID id) {
+        Promotion promo = promotionRepository.findById(id)
+                .orElseThrow(() -> new DomainException("Promoción no encontrada", "PROMOTION_NOT_FOUND") {});
+        ownershipGuard.assertOwnsRestaurant(promo.getRestaurantId());
         promotionRepository.deleteById(id);
     }
 
