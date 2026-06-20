@@ -101,6 +101,9 @@
   .dark .bg-gray-50      { background-color: #15120E; }   /* fondo app  */
   .dark .bg-gray-100     { background-color: #211C17; }   /* superficie */
   .dark .bg-gray-200     { background-color: #2C251E; }   /* superficie 2 */
+  .dark .bg-gray-700     { background-color: #2C251E; }   /* superficie 2 */
+  .dark .bg-gray-800     { background-color: #211C17; }   /* superficie */
+  .dark .bg-gray-900     { background-color: #15120E; }   /* fondo app  */
 
   /* Texto (se invierte y queda cálido) */
   .dark .text-gray-900   { color: #F5F1EA; }
@@ -237,4 +240,10 @@
 }
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-gray-400;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background-color: #44403C;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background-color: #57534E;
 }

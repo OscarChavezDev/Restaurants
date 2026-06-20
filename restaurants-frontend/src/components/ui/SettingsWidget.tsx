@@ -17,20 +17,25 @@ export function SettingsWidget() {
         <div className={cn(
           'mb-1 w-52 rounded-2xl border shadow-xl p-4 space-y-4 transition-all',
           isDark
-            ? 'bg-gray-800 border-gray-700 text-white'
-            : 'bg-white border-gray-200 text-gray-900'
+            ? 'bg-[#211C17] border-[#352D25] text-[#F5F1EA]'
+            : 'bg-white border-[#E7E1D8] text-[#1C1917]'
         )}>
           {/* Theme */}
           <div>
-            <p className={cn('text-xs font-semibold mb-2 uppercase tracking-wide', isDark ? 'text-gray-400' : 'text-gray-500')}>
+            <p className={cn('text-xs font-semibold mb-2 uppercase tracking-wide', isDark ? 'text-[#8A827A]' : 'text-[#78716C]')}>
               {lang === 'es' ? 'Tema' : 'Theme'}
             </p>
-            <div className="flex rounded-xl overflow-hidden border border-gray-200 dark:border-gray-600">
+            <div className={cn(
+              'flex rounded-xl overflow-hidden border',
+              isDark ? 'border-[#44403C]' : 'border-[#E7E1D8]'
+            )}>
               <button
                 onClick={() => !isDark || toggleTheme()}
                 className={cn(
                   'flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium transition-colors',
-                  !isDark ? 'bg-orange-500 text-white' : 'hover:bg-gray-700 text-gray-300'
+                  !isDark
+                    ? 'bg-orange-500 text-white'
+                    : 'hover:bg-[#2C251E] text-[#A8A29E]'
                 )}
               >
                 <Sun className="h-3.5 w-3.5" />
@@ -40,7 +45,9 @@ export function SettingsWidget() {
                 onClick={() => isDark || toggleTheme()}
                 className={cn(
                   'flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium transition-colors',
-                  isDark ? 'bg-orange-500 text-white' : 'hover:bg-gray-100 text-gray-600'
+                  isDark
+                    ? 'bg-[#F97A3D] text-white'
+                    : 'hover:bg-gray-100 text-[#78716C]'
                 )}
               >
                 <Moon className="h-3.5 w-3.5" />
@@ -51,16 +58,21 @@ export function SettingsWidget() {
 
           {/* Language */}
           <div>
-            <p className={cn('text-xs font-semibold mb-2 uppercase tracking-wide flex items-center gap-1', isDark ? 'text-gray-400' : 'text-gray-500')}>
+            <p className={cn('text-xs font-semibold mb-2 uppercase tracking-wide flex items-center gap-1', isDark ? 'text-[#8A827A]' : 'text-[#78716C]')}>
               <Globe className="h-3 w-3" />
               {lang === 'es' ? 'Idioma' : 'Language'}
             </p>
-            <div className="flex rounded-xl overflow-hidden border border-gray-200 dark:border-gray-600">
+            <div className={cn(
+              'flex rounded-xl overflow-hidden border',
+              isDark ? 'border-[#44403C]' : 'border-[#E7E1D8]'
+            )}>
               <button
                 onClick={() => setLang('es')}
                 className={cn(
                   'flex-1 py-2 text-xs font-medium transition-colors',
-                  lang === 'es' ? 'bg-orange-500 text-white' : isDark ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'
+                  lang === 'es'
+                    ? isDark ? 'bg-[#F97A3D] text-white' : 'bg-orange-500 text-white'
+                    : isDark ? 'hover:bg-[#2C251E] text-[#A8A29E]' : 'hover:bg-gray-100 text-[#78716C]'
                 )}
               >
                 Español
@@ -69,7 +81,9 @@ export function SettingsWidget() {
                 onClick={() => setLang('en')}
                 className={cn(
                   'flex-1 py-2 text-xs font-medium transition-colors',
-                  lang === 'en' ? 'bg-orange-500 text-white' : isDark ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'
+                  lang === 'en'
+                    ? isDark ? 'bg-[#F97A3D] text-white' : 'bg-orange-500 text-white'
+                    : isDark ? 'hover:bg-[#2C251E] text-[#A8A29E]' : 'hover:bg-gray-100 text-[#78716C]'
                 )}
               >
                 English
@@ -85,10 +99,10 @@ export function SettingsWidget() {
         className={cn(
           'flex h-12 w-12 items-center justify-center rounded-full shadow-lg transition-all duration-200',
           open
-            ? 'bg-gray-700 text-white rotate-90'
+            ? isDark ? 'bg-[#2C251E] text-[#F5F1EA] rotate-90' : 'bg-[#1C1917] text-white rotate-90'
             : isDark
-              ? 'bg-gray-700 text-white hover:bg-gray-600'
-              : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+              ? 'bg-[#2C251E] text-[#F5F1EA] hover:bg-[#352D25]'
+              : 'bg-white text-[#78716C] border border-[#E7E1D8] hover:bg-[#F4F0EA]'
         )}
         title={lang === 'es' ? 'Configuración' : 'Settings'}
       >

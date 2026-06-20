@@ -7,6 +7,7 @@ import {
   LogOut, Home, Users, X, SlidersHorizontal, ClipboardCheck, Wallet
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
+import { useUiStore } from '@/store/uiStore';
 import { useTranslation } from '@/hooks/useTranslation';
 import { cn } from '@/utils/cn';
 
@@ -26,6 +27,8 @@ const navItems = [
 export function Sidebar({ open = false, onClose }: { open?: boolean; onClose?: () => void }) {
   const pathname = usePathname();
   const { user, logout } = useAuthStore();
+  const theme = useUiStore((s) => s.theme);
+  const isDark = theme === 'dark';
   const t = useTranslation();
 
   const visible = navItems.filter((item) =>
@@ -46,24 +49,41 @@ export function Sidebar({ open = false, onClose }: { open?: boolean; onClose?: (
 
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-50 flex h-full w-64 flex-col bg-gray-900 text-white transition-transform duration-300',
+          'fixed inset-y-0 left-0 z-50 flex h-full w-64 flex-col transition-transform duration-300',
           'lg:static lg:translate-x-0',
-          open ? 'translate-x-0' : '-translate-x-full'
+          open ? 'translate-x-0' : '-translate-x-full',
+          isDark
+            ? 'bg-[#15120E] text-[#F5F1EA]'
+            : 'bg-white text-[#1C1917] shadow-[1px_0_0_0_#E7E1D8]'
         )}
       >
       {/* Logo */}
-      <div className="flex items-center gap-3 p-4 border-b border-gray-700">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500 shadow-lg flex-shrink-0">
+      <div className={cn(
+        'flex items-center gap-3 p-4 border-b',
+        isDark ? 'border-[#352D25]' : 'border-[#E7E1D8]'
+      )}>
+        <div className={cn(
+          'flex h-12 w-12 items-center justify-center rounded-2xl shadow-lg flex-shrink-0',
+          isDark ? 'bg-[#F97A3D]' : 'bg-orange-500'
+        )}>
           <UtensilsCrossed className="h-6 w-6 text-white" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-display font-semibold text-sm leading-tight">Restaurants</p>
-          <p className="text-xs text-gray-400">Tingo María</p>
+          <p className={cn(
+            'text-xs',
+            isDark ? 'text-[#8A827A]' : 'text-[#78716C]'
+          )}>Tingo María</p>
         </div>
         {/* Cerrar (solo móvil) */}
         <button
           onClick={onClose}
-          className="lg:hidden p-1.5 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
+          className={cn(
+            'lg:hidden p-1.5 rounded-lg transition-colors',
+            isDark
+              ? 'text-[#8A827A] hover:bg-[#2C251E] hover:text-[#F5F1EA]'
+              : 'text-[#78716C] hover:bg-gray-100 hover:text-[#1C1917]'
+          )}
           aria-label="Cerrar menú"
         >
           <X className="h-5 w-5" />
@@ -84,8 +104,12 @@ export function Sidebar({ open = false, onClose }: { open?: boolean; onClose?: (
               className={cn(
                 'flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors',
                 isActive
-                  ? 'bg-orange-500 text-white'
-                  : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                  ? isDark
+                    ? 'bg-[#F97A3D] text-white'
+                    : 'bg-orange-500 text-white'
+                  : isDark
+                    ? 'text-[#A8A29E] hover:bg-[#2C251E] hover:text-[#F5F1EA]'
+                    : 'text-[#78716C] hover:bg-[#F4F0EA] hover:text-[#1C1917]'
               )}
             >
               <item.icon className="h-4 w-4 flex-shrink-0" />
@@ -96,27 +120,45 @@ export function Sidebar({ open = false, onClose }: { open?: boolean; onClose?: (
       </nav>
 
       {/* User */}
-      <div className="border-t border-gray-700 p-4">
+      <div className={cn(
+        'border-t p-4',
+        isDark ? 'border-[#352D25]' : 'border-[#E7E1D8]'
+      )}>
         <Link
           href="/dashboard/profile"
           className={cn(
             'flex items-center gap-3 mb-3 rounded-xl px-2 py-2 transition-colors group',
             pathname === '/dashboard/profile'
-              ? 'bg-gray-800'
-              : 'hover:bg-gray-800'
+              ? isDark ? 'bg-[#2C251E]' : 'bg-[#F4F0EA]'
+              : isDark ? 'hover:bg-[#2C251E]' : 'hover:bg-[#F4F0EA]'
           )}
         >
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-orange-500 text-sm font-semibold flex-shrink-0 group-hover:ring-2 group-hover:ring-orange-400 transition-all">
+          <div className={cn(
+            'flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold flex-shrink-0 group-hover:ring-2 transition-all text-white',
+            isDark
+              ? 'bg-[#F97A3D] group-hover:ring-[#FB8C5A]'
+              : 'bg-orange-500 group-hover:ring-orange-400'
+          )}>
             {user?.fullName.charAt(0).toUpperCase()}
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium truncate">{user?.fullName}</p>
-            <p className="text-xs text-gray-400 truncate group-hover:text-orange-400 transition-colors">Editar perfil</p>
+            <p className={cn(
+              'text-xs truncate transition-colors',
+              isDark
+                ? 'text-[#8A827A] group-hover:text-[#FB8C5A]'
+                : 'text-[#78716C] group-hover:text-orange-500'
+            )}>Editar perfil</p>
           </div>
         </Link>
         <button
           onClick={logout}
-          className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
+          className={cn(
+            'flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm transition-colors',
+            isDark
+              ? 'text-[#A8A29E] hover:bg-[#2C251E] hover:text-[#F5F1EA]'
+              : 'text-[#78716C] hover:bg-[#F4F0EA] hover:text-[#1C1917]'
+          )}
         >
           <LogOut className="h-4 w-4" />
           {t('logout')}
