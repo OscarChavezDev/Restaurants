@@ -25,7 +25,7 @@ export function PromoFlyer({ promo, className = '' }: { promo: Promotion; classN
 
   return (
     <div
-      className={`relative flex flex-col justify-between overflow-hidden rounded-3xl p-5 text-white shadow-lg
+      className={`relative flex min-h-[17rem] flex-col justify-between overflow-hidden rounded-3xl p-5 text-white shadow-lg
         bg-gradient-to-br from-orange-500 via-orange-600 to-selva-600 ${className}`}
     >
       {/* Adornos */}

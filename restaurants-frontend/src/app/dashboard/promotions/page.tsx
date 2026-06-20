@@ -269,7 +269,7 @@ export default function PromotionsPage() {
               {promo.flyerHeadline && (
                 <div className="mt-3">
                   <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-400 mb-1.5">Flyer para el inicio</p>
-                  <PromoFlyer promo={{ ...promo, restaurantName: selectedRestaurant?.name }} className="h-52" />
+                  <PromoFlyer promo={{ ...promo, restaurantName: selectedRestaurant?.name }} className="max-w-sm" />
                 </div>
               )}
 

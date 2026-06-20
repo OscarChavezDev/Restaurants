@@ -50,11 +50,11 @@ export function OffersCarousel() {
         className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {offers.map((promo) => {
-          const card = <PromoFlyer promo={promo} className="h-56" />;
+          const card = <PromoFlyer promo={promo} className="h-full w-full" />;
           return (
-            <div key={promo.id} className="snap-start shrink-0 w-72 sm:w-80">
+            <div key={promo.id} className="flex snap-start shrink-0 w-72 sm:w-80">
               {promo.restaurantSlug ? (
-                <Link href={`/restaurants/${promo.restaurantSlug}`} className="block transition-transform hover:-translate-y-0.5">
+                <Link href={`/restaurants/${promo.restaurantSlug}`} className="flex w-full transition-transform hover:-translate-y-0.5">
                   {card}
                 </Link>
               ) : card}
