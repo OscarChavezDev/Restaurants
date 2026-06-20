@@ -1,5 +1,5 @@
 import { api, extractData } from './api';
-import type { Restaurant, CreateRestaurantDto, Menu, Dish, Promotion, RestaurantImage, RatingResponse, RatingStatsResponse, Schedule, ScheduleInput, ImageReorderItem } from '@/types/restaurant';
+import type { Restaurant, CreateRestaurantDto, Menu, Dish, Promotion, RestaurantImage, RatingResponse, RatingStatsResponse, Schedule, ScheduleInput, ImageReorderItem, Section, RestaurantTable } from '@/types/restaurant';
 import type { PagedResponse } from '@/types/auth';
 
 export const restaurantService = {
@@ -13,6 +13,12 @@ export const restaurantService = {
     return extractData<Restaurant>(await api.get(`/v1/restaurants/${id}`));
   },
 
+  async getCategories() {
+    return extractData<{ id: string; name: string; iconUrl?: string }[]>(
+      await api.get('/v1/categories')
+    );
+  },
+
   async getBySlug(slug: string) {
     return extractData<Restaurant>(await api.get(`/v1/restaurants/slug/${slug}`));
   },
@@ -20,13 +26,18 @@ export const restaurantService = {
   async search(params: {
     name?: string;
     city?: string;
-    category?: string;
+    categoryId?: string;
+    priceRange?: string;
     page?: number;
     size?: number;
   }) {
     return extractData<PagedResponse<Restaurant>>(
       await api.get('/v1/restaurants/search', { params })
     );
+  },
+
+  async getAvailableNow() {
+    return extractData<string[]>(await api.get('/v1/restaurants/available-now'));
   },
 
   async getNearby(lat: number, lon: number, radiusKm = 5) {
@@ -73,6 +84,11 @@ export const restaurantService = {
     return extractData<Dish[]>(await api.get(`/v1/dishes/menu/${menuId}`));
   },
 
+  /** Platos disponibles del restaurante (para el pre-pedido al reservar, S10-07). */
+  async getRestaurantDishes(restaurantId: string) {
+    return extractData<Dish[]>(await api.get(`/v1/dishes/restaurant/${restaurantId}`));
+  },
+
   async getImages(restaurantId: string) {
     return extractData<RestaurantImage[]>(await api.get(`/v1/restaurants/${restaurantId}/images`));
   },
@@ -101,6 +117,10 @@ export const restaurantService = {
     return extractData<Promotion>(await api.post(`/v1/promotions/restaurant/${restaurantId}`, null, { params }));
   },
 
+  async togglePromotion(id: string) {
+    return extractData<Promotion>(await api.patch(`/v1/promotions/${id}/toggle`));
+  },
+
   async deletePromotion(id: string) {
     return api.delete(`/v1/promotions/${id}`);
   },
@@ -112,6 +132,26 @@ export const restaurantService = {
 
   async updateSchedules(restaurantId: string, schedules: ScheduleInput[]) {
     return extractData<Schedule[]>(await api.put(`/v1/restaurants/${restaurantId}/schedules`, schedules));
+  },
+
+  // ── Secciones y mesas (S7-01) ─────────────────────────────────
+  async getSections(restaurantId: string) {
+    return extractData<Section[]>(await api.get(`/v1/restaurants/${restaurantId}/sections`));
+  },
+  async addSection(restaurantId: string, data: { name: string; type: string; capacity: number }) {
+    return extractData<Section>(await api.post(`/v1/restaurants/${restaurantId}/sections`, data));
+  },
+  async deleteSection(restaurantId: string, sectionId: string) {
+    return api.delete(`/v1/restaurants/${restaurantId}/sections/${sectionId}`);
+  },
+  async getTables(restaurantId: string) {
+    return extractData<RestaurantTable[]>(await api.get(`/v1/restaurants/${restaurantId}/tables`));
+  },
+  async addTable(restaurantId: string, data: { tableNumber: string; capacity: number; sectionId?: string }) {
+    return extractData<RestaurantTable>(await api.post(`/v1/restaurants/${restaurantId}/tables`, data));
+  },
+  async deleteTable(restaurantId: string, tableId: string) {
+    return api.delete(`/v1/restaurants/${restaurantId}/tables/${tableId}`);
   },
 
   // ── Galería de fotos (S2-03) ──────────────────────────────────

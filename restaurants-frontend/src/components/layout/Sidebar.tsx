@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   UtensilsCrossed, Calendar, BarChart3, Tag,
-  LogOut, Home, Users, X
+  LogOut, Home, Users, X, SlidersHorizontal, ClipboardCheck, Wallet
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -16,7 +16,10 @@ const navItems = [
   { href: '/dashboard/reservations', icon: Calendar,        labelKey: 'reservations', roles: ['ADMIN', 'RESTAURANTE_OWNER', 'CLIENTE'] },
   { href: '/dashboard/menus',        icon: UtensilsCrossed, labelKey: 'menus',        roles: ['ADMIN', 'RESTAURANTE_OWNER'] },
   { href: '/dashboard/promotions',   icon: Tag,             labelKey: 'promotions',   roles: ['ADMIN', 'RESTAURANTE_OWNER'] },
+  { href: '/dashboard/reservas-config', icon: SlidersHorizontal, labelKey: 'reservationConfig', roles: ['ADMIN', 'RESTAURANTE_OWNER'] },
+  { href: '/dashboard/pagos',        icon: Wallet,          labelKey: 'payments',     roles: ['ADMIN', 'RESTAURANTE_OWNER'] },
   { href: '/dashboard/reports',      icon: BarChart3,       labelKey: 'reports',      roles: ['ADMIN', 'RESTAURANTE_OWNER'] },
+  { href: '/dashboard/solicitudes',  icon: ClipboardCheck,  labelKey: 'registrationRequests', roles: ['ADMIN'] },
   { href: '/dashboard/users',        icon: Users,           labelKey: 'users',        roles: ['ADMIN'] },
 ] as const;
 
@@ -77,6 +80,7 @@ export function Sidebar({ open = false, onClose }: { open?: boolean; onClose?: (
             <Link
               key={item.href}
               href={item.href}
+              data-tour={`nav-${item.labelKey}`}
               className={cn(
                 'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
                 isActive

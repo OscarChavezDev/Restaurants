@@ -44,7 +44,8 @@ export function useRestaurantBySlug(slug: string) {
 export function useSearchRestaurants(params: {
   name?: string;
   city?: string;
-  category?: string;
+  categoryId?: string;
+  priceRange?: string;
   page?: number;
   size?: number;
 }) {

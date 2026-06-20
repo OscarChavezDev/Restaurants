@@ -7,15 +7,15 @@ import { DashboardTopBar } from '@/components/layout/DashboardTopBar';
 import { useAuthStore } from '@/store/authStore';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuthStore();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const user = useAuthStore((s) => s.user);
+  const hasHydrated = useAuthStore((s) => s.hasHydrated);
   const router = useRouter();
   const pathname = usePathname();
-  const [hydrated, setHydrated] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  useEffect(() => {
-    setHydrated(true);
-  }, []);
+  // El dashboard es solo para staff (dueño/admin). El cliente no debe entrar.
+  const isStaff = user?.role === 'ADMIN' || user?.role === 'RESTAURANTE_OWNER';
 
   // Cierra el drawer al navegar (móvil)
   useEffect(() => {
@@ -23,12 +23,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, [pathname]);
 
   useEffect(() => {
-    if (hydrated && !isAuthenticated) {
-      router.push('/login');
+    if (!hasHydrated) return;
+    if (!isAuthenticated) {
+      router.replace('/login');
+    } else if (!isStaff) {
+      // Cliente autenticado intentando entrar al panel → fuera.
+      router.replace('/restaurants');
     }
-  }, [hydrated, isAuthenticated, router]);
+  }, [hasHydrated, isAuthenticated, isStaff, router]);
 
-  if (!hydrated) {
+  if (!hasHydrated) {
     return (
       <div className="flex h-screen items-center justify-center bg-gray-50">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-orange-500 border-t-transparent" />
@@ -36,7 +40,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     );
   }
 
-  if (!isAuthenticated) return null;
+  // No renderizar el panel a quien no es staff (evita el "flash" del dashboard).
+  if (!isAuthenticated || !isStaff) return null;
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">

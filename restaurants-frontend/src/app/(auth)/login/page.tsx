@@ -11,6 +11,7 @@ import { UtensilsCrossed, Mail, Lock, Loader2, Eye, EyeOff, ArrowLeft } from 'lu
 import { loginSchema, type LoginFormData } from '@/validations/restaurantSchema';
 import { authService } from '@/services/authService';
 import { useAuthStore } from '@/store/authStore';
+import { GoogleLoginButton } from '@/components/ui/GoogleLoginButton';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -137,12 +138,35 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <div className="mt-6 text-center">
+          {/* Separador */}
+          <div className="my-6 flex items-center gap-3">
+            <span className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
+            <span className="text-xs text-gray-400">o</span>
+            <span className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
+          </div>
+
+          {/* Login con Google (rol CLIENTE) */}
+          <div className="flex justify-center">
+            <GoogleLoginButton
+              text="continue_with"
+              onSuccess={(user) =>
+                router.push(user.role === 'CLIENTE' ? '/restaurants' : '/dashboard')
+              }
+            />
+          </div>
+          <p className="mt-3 text-center text-xs text-gray-400">
+            Los clientes ingresan con Google para reservar, guardar favoritos y reseñar.
+          </p>
+
+          <div className="mt-6 text-center space-y-1">
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              ¿No tienes cuenta?{' '}
+              ¿Tienes un restaurante?{' '}
               <Link href="/register" className="text-orange-600 hover:text-orange-700 font-semibold">
-                Regístrate aquí
+                Regístralo aquí
               </Link>
+            </p>
+            <p className="text-xs text-gray-400 dark:text-gray-500">
+              Si eres cliente, ingresa o regístrate con tu cuenta de Google.
             </p>
           </div>
         </div>

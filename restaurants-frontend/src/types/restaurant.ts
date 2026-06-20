@@ -25,6 +25,7 @@ export interface ImageReorderItem {
 
 export interface Restaurant {
   id: string;
+  ownerId?: string;
   name: string;
   slug: string;
   description: string;
@@ -40,6 +41,8 @@ export interface Restaurant {
   longitude: number;
   totalCapacity: number;
   priceLevel: number;
+  avgDishPrice?: number;
+  priceRange?: 'LOW' | 'MEDIUM' | 'HIGH';
   minReservationSize: number;
   maxReservationSize: number;
   coverImageUrl: string;
@@ -53,6 +56,7 @@ export interface Restaurant {
   hasAirConditioning: boolean;
   isAccessible: boolean;
   categories: string[];
+  categoryIds: string[];
   schedules: Schedule[];
   createdAt: string;
   distanceKm?: number;
@@ -123,6 +127,8 @@ export interface RatingResponse {
   ambianceScore?: number;
   isVerified: boolean;
   createdAt: string;
+  ownerReply?: string;
+  ownerReplyAt?: string;
 }
 
 export interface RatingStatsResponse {
@@ -132,6 +138,23 @@ export interface RatingStatsResponse {
   avgAmbianceScore?: number;
   totalRatings: number;
   distribution: Record<number, number>;
+}
+
+export interface Section {
+  id: string;
+  name: string;
+  type: string; // INTERIOR | EXTERIOR | TERRAZA | BAR
+  capacity: number;
+  isActive: boolean;
+}
+
+export interface RestaurantTable {
+  id: string;
+  tableNumber: string;
+  capacity: number;
+  sectionId?: string;
+  sectionName?: string;
+  isActive: boolean;
 }
 
 export interface CreateRestaurantDto {

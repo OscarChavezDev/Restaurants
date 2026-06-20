@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { MapPin, Star, Calendar, UtensilsCrossed, ArrowRight, Building2 } from 'lucide-react';
 import { AnimateOnScroll } from '@/components/ui/AnimateOnScroll';
 import { ThemeLangSwitch } from '@/components/ui/ThemeLangSwitch';
+import { AuthNav } from '@/components/ui/AuthNav';
 import { useTranslation } from '@/hooks/useTranslation';
 
 export default function HomePage() {
@@ -20,11 +21,9 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-
       {/* ── Hero ── */}
       <header
-        className="relative overflow-hidden"
-        style={{ background: 'linear-gradient(135deg, #7C2D12 0%, #C2410C 48%, #E8590C 100%)' }}
+        className="relative overflow-hidden bg-gradient-to-br from-[#7C2D12] via-[#C2410C] to-[#E8590C] dark:from-[#240B03] dark:via-[#5A1F0C] dark:to-[#7C2D12]"
       >
         {/* glow cálido + textura diagonal sutil */}
         <div className="absolute inset-0" style={{ background: 'radial-gradient(70% 90% at 75% 8%, rgba(255,196,140,0.25) 0%, transparent 60%)' }} />
@@ -40,12 +39,7 @@ export default function HomePage() {
           </span>
           <div className="flex items-center gap-2">
             <ThemeLangSwitch />
-            <Link
-              href="/login"
-              className="inline-flex items-center gap-2 rounded-xl border border-white/30 bg-white/10 backdrop-blur-sm px-4 py-2 text-sm font-semibold text-white hover:bg-white/20 transition-all duration-200"
-            >
-              Iniciar Sesión
-            </Link>
+            <AuthNav />
           </div>
         </nav>
 

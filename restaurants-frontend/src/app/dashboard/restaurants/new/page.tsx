@@ -3,17 +3,24 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, MapPin } from 'lucide-react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import toast from 'react-hot-toast';
 import { useCreateRestaurant } from '@/hooks/useRestaurants';
+import { CategoryPicker } from '@/components/ui/CategoryPicker';
 import { createRestaurantSchema, type CreateRestaurantFormData } from '@/validations/restaurantSchema';
+
+const LocationPicker = dynamic(() => import('@/components/ui/LocationPicker'), {
+  ssr: false,
+  loading: () => <div className="h-[300px] rounded-xl bg-gray-100 animate-pulse" />,
+});
 
 export default function NewRestaurantPage() {
   const router = useRouter();
   const createMutation = useCreateRestaurant();
 
-  const { register, handleSubmit, formState: { errors } } = useForm<CreateRestaurantFormData>({
+  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<CreateRestaurantFormData>({
     resolver: zodResolver(createRestaurantSchema),
     defaultValues: {
       city: 'Tingo María',
@@ -27,6 +34,7 @@ export default function NewRestaurantPage() {
       hasWifi: false,
       hasAirConditioning: false,
       isAccessible: false,
+      categoryIds: [],
     },
   });
 
@@ -131,6 +139,22 @@ export default function NewRestaurantPage() {
               <label className="block text-sm font-medium text-gray-700 mb-1">Longitud</label>
               <input {...register('longitude', { valueAsNumber: true })} type="number" step="0.000001" placeholder="-75.9973" className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
             </div>
+
+            {/* Mapa: clic para fijar la ubicación */}
+            <div className="sm:col-span-2">
+              <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1.5">
+                <MapPin className="h-4 w-4 text-orange-500" /> Marca la ubicación en el mapa
+              </label>
+              <LocationPicker
+                lat={watch('latitude')}
+                lng={watch('longitude')}
+                onChange={(la, ln) => {
+                  setValue('latitude', la, { shouldValidate: true });
+                  setValue('longitude', ln, { shouldValidate: true });
+                }}
+              />
+              <p className="text-xs text-gray-400 mt-1.5">Haz clic en el punto exacto de tu restaurante; las coordenadas se rellenan solas.</p>
+            </div>
           </div>
         </section>
 
@@ -172,6 +196,13 @@ export default function NewRestaurantPage() {
               </label>
             ))}
           </div>
+        </section>
+
+        {/* Tipo de comida */}
+        <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+          <h2 className="font-display text-base font-semibold text-gray-900 mb-1">Tipo de comida</h2>
+          <p className="text-sm text-gray-500 mb-4">Elige las categorías que mejor describan tu restaurante.</p>
+          <CategoryPicker value={watch('categoryIds') ?? []} onChange={(ids) => setValue('categoryIds', ids)} />
         </section>
 
         {/* Botones */}

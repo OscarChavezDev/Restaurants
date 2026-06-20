@@ -143,6 +143,17 @@ const config: Config = {
           from: { opacity: "0" },
           to: { opacity: "1" },
         },
+        // Aparición con "rebote" para selecciones / badges
+        pop: {
+          "0%": { opacity: "0", transform: "scale(0.6)" },
+          "60%": { opacity: "1", transform: "scale(1.08)" },
+          "100%": { transform: "scale(1)" },
+        },
+        // Entrada suave para cards (más corta que slide-up, para listas escalonadas)
+        "pop-in": {
+          from: { opacity: "0", transform: "translateY(8px) scale(0.97)" },
+          to: { opacity: "1", transform: "translateY(0) scale(1)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -152,6 +163,8 @@ const config: Config = {
         "slide-left": "slide-left 0.65s cubic-bezier(0.16, 1, 0.3, 1) both",
         "slide-right": "slide-right 0.65s cubic-bezier(0.16, 1, 0.3, 1) both",
         "fade-in": "fade-in 0.5s ease-out both",
+        pop: "pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both",
+        "pop-in": "pop-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both",
       },
     },
   },

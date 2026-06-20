@@ -5,13 +5,14 @@ import Link from 'next/link';
 import { ArrowLeft, MapPin, Phone, Mail, Users, Star, Calendar, Trash2, CheckCircle, XCircle, Clock, AlertCircle, Pencil } from 'lucide-react';
 import { useRestaurant, useDeleteRestaurant } from '@/hooks/useRestaurants';
 import { useRestaurantReservations, useConfirmReservation, useCancelReservation } from '@/hooks/useReservations';
-import { formatDate, formatTime, STATUS_LABELS, STATUS_COLORS, DAY_LABELS } from '@/utils/formatters';
+import { formatDate, formatTime, STATUS_LABELS, STATUS_COLORS } from '@/utils/formatters';
 import { cn } from '@/utils/cn';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/services/api';
 import { useAuthStore } from '@/store/authStore';
 import { ScheduleEditor } from '@/components/ui/ScheduleEditor';
 import { PhotoManager } from '@/components/ui/PhotoManager';
+import { TablesManager } from '@/components/ui/TablesManager';
 import toast from 'react-hot-toast';
 import type { RestaurantStatus } from '@/types/restaurant';
 
@@ -187,19 +188,6 @@ export default function RestaurantDetailDashboard() {
             </div>
           )}
 
-          {restaurant.schedules?.length > 0 && (
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-              <h2 className="font-display text-base font-semibold text-gray-900 mb-3">Horarios</h2>
-              <div className="space-y-2">
-                {restaurant.schedules.map(s => (
-                  <div key={s.id} className="flex justify-between text-sm">
-                    <span className="text-gray-600">{DAY_LABELS[s.dayOfWeek] ?? s.dayOfWeek}</span>
-                    <span className="text-gray-500">{s.isClosed ? <span className="text-red-500">Cerrado</span> : `${s.openingTime}–${s.closingTime}`}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Reservas */}
@@ -258,6 +246,11 @@ export default function RestaurantDetailDashboard() {
       <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
         <ScheduleEditor restaurantId={id} />
         <PhotoManager restaurantId={id} />
+      </div>
+
+      {/* Mesas y secciones (S7-01) */}
+      <div className="mt-6">
+        <TablesManager restaurantId={id} />
       </div>
     </div>
   );

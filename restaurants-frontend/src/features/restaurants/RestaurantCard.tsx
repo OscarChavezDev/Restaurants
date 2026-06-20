@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { MapPin, Star, Users, Wifi, Car, UtensilsCrossed, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { RestaurantLogo } from '@/components/ui/RestaurantLogo';
+import { FavoriteButton } from '@/components/ui/FavoriteButton';
 import { PromoBadge } from '@/features/restaurants/PromoBadge';
 import { formatDistance, formatRating } from '@/utils/formatters';
 import type { Restaurant } from '@/types/restaurant';
@@ -88,9 +89,12 @@ export function RestaurantCard({ restaurant, showDistance }: Props) {
             {status.label}
           </span>
 
+          {/* Favorito (corazón) */}
+          <FavoriteButton restaurantId={restaurant.id} className="absolute top-2.5 right-2.5 z-10" />
+
           {/* Distance badge */}
           {showDistance && restaurant.distanceKm !== undefined && (
-            <span className="absolute top-3 right-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-black/50 text-white backdrop-blur-sm border border-white/10">
+            <span className="absolute top-3 right-14 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-black/50 text-white backdrop-blur-sm border border-white/10">
               <MapPin className="h-3 w-3" />
               {formatDistance(restaurant.distanceKm)}
             </span>

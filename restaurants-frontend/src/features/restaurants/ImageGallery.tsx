@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, ChevronLeft, ChevronRight, Images } from 'lucide-react';
 import { useRestaurantImages } from '@/hooks/useRestaurants';
 
@@ -13,6 +13,16 @@ function Lightbox({ images, index, onClose }: {
 
   const prev = () => setCurrent(i => (i - 1 + images.length) % images.length);
   const next = () => setCurrent(i => (i + 1) % images.length);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+      else if (e.key === 'ArrowLeft') prev();
+      else if (e.key === 'ArrowRight') next();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onClose]);
 
   return (
     <div

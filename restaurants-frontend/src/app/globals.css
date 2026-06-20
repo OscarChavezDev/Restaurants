@@ -57,6 +57,12 @@
   }
   /* Fondo del documento raíz: evita la franja oscura del navegador (overscroll/
      scrollbar) cuando el SO está en modo oscuro, y alinea controles nativos. */
+  /* Fuentes cargadas vía <link> en runtime (no en build): definimos las variables
+     que usa Tailwind (font-sans / font-display). */
+  :root {
+    --font-inter: 'Inter', system-ui, sans-serif;
+    --font-poppins: 'Poppins', system-ui, sans-serif;
+  }
   html {
     background-color: hsl(var(--background));
     color-scheme: light;
@@ -66,6 +72,14 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+
+  /* Transición suave al cambiar de modo (claro/oscuro). Solo color/fondo/borde,
+     para no interferir con transforms/animaciones. Se respeta prefers-reduced-motion. */
+  *, *::before, *::after {
+    transition-property: background-color, border-color, color, fill, stroke;
+    transition-duration: 0.28s;
+    transition-timing-function: ease;
   }
 }
 
@@ -176,6 +190,40 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ──────────────────────────────────────────────────────
+   Leaflet usa z-index internos muy altos (controles = 1000, panes 400+)
+   que, sin aislar, se dibujan por ENCIMA de las modales/overlays de la app
+   (CategoryModal, tour, etc.). Aislamos el contexto de apilamiento del mapa
+   para que esos z-index queden contenidos dentro del propio mapa.
+   ────────────────────────────────────────────────────── */
+.leaflet-container {
+  isolation: isolate;
+  z-index: 0;
+}
+
+/* ──────────────────────────────────────────────────────
+   Popups de Leaflet: respetar el tema (claro/oscuro) y evitar
+   los links azules por defecto que rompían el botón "Ver y reservar".
+   ────────────────────────────────────────────────────── */
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: #ffffff;
+  color: #1C1917;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+}
+.dark .leaflet-popup-content-wrapper,
+.dark .leaflet-popup-tip {
+  background: #211C17;
+  color: #F5F1EA;
+}
+.leaflet-popup-content-wrapper { border-radius: 14px; }
+.leaflet-popup-content { margin: 12px 14px; }
+.leaflet-popup-content a { text-decoration: none; }
+.leaflet-popup-close-button { color: #78716C !important; }
+.dark .leaflet-popup-close-button { color: #A8A29E !important; }
+/* Botón de acción dentro del popup: fuerza texto blanco (Leaflet pinta links de azul) */
+.map-popup-btn { color: #ffffff !important; text-decoration: none !important; }
 
 /* Scrollbar personalizado */
 ::-webkit-scrollbar {

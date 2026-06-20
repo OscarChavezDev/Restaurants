@@ -3,12 +3,19 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, MapPin } from 'lucide-react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import toast from 'react-hot-toast';
 import { useRestaurant, useUpdateRestaurant } from '@/hooks/useRestaurants';
+import { CategoryPicker } from '@/components/ui/CategoryPicker';
 import { createRestaurantSchema, type CreateRestaurantFormData } from '@/validations/restaurantSchema';
 import type { Restaurant } from '@/types/restaurant';
+
+const LocationPicker = dynamic(() => import('@/components/ui/LocationPicker'), {
+  ssr: false,
+  loading: () => <div className="h-[300px] rounded-xl bg-gray-100 animate-pulse" />,
+});
 
 export default function EditRestaurantPage() {
   const { id } = useParams<{ id: string }>();
@@ -40,7 +47,7 @@ function EditForm({ id, restaurant }: { id: string; restaurant: Restaurant }) {
   const router = useRouter();
   const updateMutation = useUpdateRestaurant(id);
 
-  const { register, handleSubmit, formState: { errors } } = useForm<CreateRestaurantFormData>({
+  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<CreateRestaurantFormData>({
     resolver: zodResolver(createRestaurantSchema),
     defaultValues: {
       name: restaurant.name,
@@ -63,6 +70,7 @@ function EditForm({ id, restaurant }: { id: string; restaurant: Restaurant }) {
       hasWifi: restaurant.hasWifi,
       hasAirConditioning: restaurant.hasAirConditioning,
       isAccessible: restaurant.isAccessible,
+      categoryIds: restaurant.categoryIds ?? [],
     },
   });
 
@@ -164,6 +172,22 @@ function EditForm({ id, restaurant }: { id: string; restaurant: Restaurant }) {
               <label className="block text-sm font-medium text-gray-700 mb-1">Longitud</label>
               <input {...register('longitude', { valueAsNumber: true })} type="number" step="0.000001" className={inputCls} />
             </div>
+
+            {/* Mapa: clic para fijar la ubicación */}
+            <div className="sm:col-span-2">
+              <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1.5">
+                <MapPin className="h-4 w-4 text-orange-500" /> Marca la ubicación en el mapa
+              </label>
+              <LocationPicker
+                lat={watch('latitude')}
+                lng={watch('longitude')}
+                onChange={(la, ln) => {
+                  setValue('latitude', la, { shouldValidate: true });
+                  setValue('longitude', ln, { shouldValidate: true });
+                }}
+              />
+              <p className="text-xs text-gray-400 mt-1.5">Haz clic en el punto exacto de tu restaurante; las coordenadas se rellenan solas.</p>
+            </div>
           </div>
         </section>
 
@@ -205,6 +229,13 @@ function EditForm({ id, restaurant }: { id: string; restaurant: Restaurant }) {
               </label>
             ))}
           </div>
+        </section>
+
+        {/* Tipo de comida */}
+        <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+          <h2 className="font-display text-base font-semibold text-gray-900 mb-1">Tipo de comida</h2>
+          <p className="text-sm text-gray-500 mb-4">Elige las categorías que mejor describan tu restaurante.</p>
+          <CategoryPicker value={watch('categoryIds') ?? []} onChange={(ids) => setValue('categoryIds', ids)} />
         </section>
 
         {/* Botones */}

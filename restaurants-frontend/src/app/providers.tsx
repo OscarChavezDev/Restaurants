@@ -6,6 +6,9 @@ import { useState } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { ThemeProvider } from '@/components/ui/ThemeProvider';
 import { TopControls } from '@/components/ui/TopControls';
+import { OnboardingTour } from '@/components/ui/OnboardingTour';
+import { OwnerOnboardingTour } from '@/components/ui/OwnerOnboardingTour';
+import { ReservationAssistant } from '@/components/ui/ReservationAssistant';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -26,6 +29,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <ThemeProvider>
         {children}
         <TopControls />
+        <OnboardingTour />
+        <OwnerOnboardingTour />
+        <ReservationAssistant />
       </ThemeProvider>
       <Toaster
         position="top-right"
