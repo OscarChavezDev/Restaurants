@@ -1,9 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { Star, BadgeCheck, Loader2, ChevronDown } from 'lucide-react';
+import { Star, BadgeCheck, Loader2, ChevronDown, MessageSquareReply, Loader, X } from 'lucide-react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRestaurantRatings, useRatingStats } from '@/hooks/useRestaurants';
+import { ratingService } from '@/services/ratingService';
 import { cn } from '@/utils/cn';
+import toast from 'react-hot-toast';
 
 function StarRow({ label, value }: { label: string; value?: number }) {
   if (!value) return null;
@@ -32,9 +35,32 @@ function DistributionBar({ score, count, total }: { score: number; count: number
   );
 }
 
-function RatingCard({ rating }: { rating: any }) {
+function SubScore({ label, value }: { label: string; value?: number }) {
+  if (!value) return null;
   return (
-    <div className="py-4 border-b border-gray-50 last:border-0">
+    <div className="flex items-center gap-1.5">
+      <span className="text-xs text-gray-500 dark:text-gray-400">{label}</span>
+      <div className="flex">
+        {[1, 2, 3, 4, 5].map(i => (
+          <Star key={i} className={cn('h-3 w-3', i <= value ? 'fill-yellow-400 text-yellow-400' : 'text-gray-200 dark:text-gray-600')} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function RatingCard({ rating, canReply, onReply, replyPending }: { rating: any; canReply?: boolean; onReply?: (id: string, text: string) => Promise<void>; replyPending?: boolean }) {
+  const [editing, setEditing] = useState(false);
+  const [text, setText] = useState(rating.ownerReply ?? '');
+
+  const submit = async () => {
+    if (!onReply) return;
+    await onReply(rating.id, text.trim());
+    setEditing(false);
+  };
+
+  return (
+    <div className="py-4 border-b border-gray-50 dark:border-gray-700 last:border-0">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-2">
           <div className="h-8 w-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-semibold text-sm flex-shrink-0">
@@ -64,20 +90,78 @@ function RatingCard({ rating }: { rating: any }) {
         <p className="text-sm text-gray-600 mt-2 leading-relaxed">{rating.comment}</p>
       )}
       {(rating.foodScore || rating.serviceScore || rating.ambianceScore) && (
-        <div className="flex gap-3 mt-2 flex-wrap">
-          {rating.foodScore && <span className="text-xs text-gray-400">Comida: <strong>{rating.foodScore}/5</strong></span>}
-          {rating.serviceScore && <span className="text-xs text-gray-400">Servicio: <strong>{rating.serviceScore}/5</strong></span>}
-          {rating.ambianceScore && <span className="text-xs text-gray-400">Ambiente: <strong>{rating.ambianceScore}/5</strong></span>}
+        <div className="flex gap-4 mt-2 flex-wrap">
+          <SubScore label="Comida" value={rating.foodScore} />
+          <SubScore label="Servicio" value={rating.serviceScore} />
+          <SubScore label="Ambiente" value={rating.ambianceScore} />
+        </div>
+      )}
+
+      {/* Respuesta del dueño (pública) */}
+      {rating.ownerReply && !editing && (
+        <div className="mt-3 ml-6 rounded-xl bg-orange-50 dark:bg-gray-700/50 border-l-2 border-orange-400 px-3 py-2">
+          <p className="text-xs font-semibold text-orange-700 dark:text-orange-400 flex items-center gap-1 mb-0.5">
+            <MessageSquareReply className="h-3.5 w-3.5" /> Respuesta del restaurante
+          </p>
+          <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{rating.ownerReply}</p>
+        </div>
+      )}
+
+      {/* Acciones del dueño */}
+      {canReply && !editing && (
+        <button
+          onClick={() => { setText(rating.ownerReply ?? ''); setEditing(true); }}
+          className="mt-2 ml-6 inline-flex items-center gap-1.5 text-xs font-medium text-orange-600 hover:text-orange-700"
+        >
+          <MessageSquareReply className="h-3.5 w-3.5" /> {rating.ownerReply ? 'Editar respuesta' : 'Responder'}
+        </button>
+      )}
+
+      {canReply && editing && (
+        <div className="mt-3 ml-6">
+          <textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            rows={2}
+            placeholder="Escribe una respuesta pública a esta reseña…"
+            className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none"
+          />
+          <div className="flex items-center gap-2 mt-2">
+            <button
+              onClick={submit}
+              disabled={replyPending}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white text-xs font-semibold rounded-lg transition-all active:scale-95"
+            >
+              {replyPending ? <Loader className="h-3.5 w-3.5 animate-spin" /> : <MessageSquareReply className="h-3.5 w-3.5" />} Publicar
+            </button>
+            {rating.ownerReply && (
+              <button onClick={() => onReply?.(rating.id, '')} disabled={replyPending} className="text-xs font-medium text-red-500 hover:text-red-600">Eliminar</button>
+            )}
+            <button onClick={() => setEditing(false)} className="inline-flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-gray-700">
+              <X className="h-3.5 w-3.5" /> Cancelar
+            </button>
+          </div>
         </div>
       )}
     </div>
   );
 }
 
-export function RatingsSection({ restaurantId }: { restaurantId: string }) {
+export function RatingsSection({ restaurantId, canReply = false }: { restaurantId: string; canReply?: boolean }) {
   const [page, setPage] = useState(0);
+  const qc = useQueryClient();
   const { data: stats, isLoading: statsLoading } = useRatingStats(restaurantId);
   const { data: ratingsPage, isLoading: ratingsLoading } = useRestaurantRatings(restaurantId, page);
+
+  const replyMut = useMutation({
+    mutationFn: ({ id, text }: { id: string; text: string }) => ratingService.reply(id, text),
+    onSuccess: (_, { text }) => {
+      qc.invalidateQueries({ queryKey: ['restaurants', 'ratings', restaurantId] });
+      toast.success(text ? 'Respuesta publicada' : 'Respuesta eliminada');
+    },
+    onError: () => toast.error('No se pudo guardar la respuesta'),
+  });
+  const handleReply = async (id: string, text: string) => { await replyMut.mutateAsync({ id, text }); };
 
   if (statsLoading) return (
     <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-6">
@@ -142,7 +226,7 @@ export function RatingsSection({ restaurantId }: { restaurantId: string }) {
       ) : (
         <>
           <div>
-            {ratingsPage?.content.map(r => <RatingCard key={r.id} rating={r} />)}
+            {ratingsPage?.content.map(r => <RatingCard key={r.id} rating={r} canReply={canReply} onReply={handleReply} replyPending={replyMut.isPending} />)}
           </div>
 
           {ratingsPage && !ratingsPage.last && (

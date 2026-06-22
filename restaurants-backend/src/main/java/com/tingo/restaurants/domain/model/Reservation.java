@@ -21,6 +21,7 @@ public class Reservation {
     private UUID restaurantId;
     private UUID customerId;
     private UUID tableId;
+    private UUID sectionId;
 
     private String customerName;
     private String customerEmail;
@@ -30,6 +31,10 @@ public class Reservation {
     private LocalTime startTime;
     private LocalTime endTime;
     private int partySize;
+    private java.math.BigDecimal advanceAmount;
+    private boolean termsAccepted;
+    private String priority;
+    private String paymentStatus;
     private ReservationStatus status;
     private String notes;
     private String specialRequests;
@@ -61,29 +66,9 @@ public class Reservation {
         if (!isConfirmable()) {
             throw new IllegalStateException("La reserva en estado " + status + " no puede ser confirmada");
         }
-        return Reservation.builder()
-                .id(this.id)
-                .restaurantId(this.restaurantId)
-                .customerId(this.customerId)
-                .tableId(this.tableId)
-                .customerName(this.customerName)
-                .customerEmail(this.customerEmail)
-                .customerPhone(this.customerPhone)
-                .reservationDate(this.reservationDate)
-                .startTime(this.startTime)
-                .endTime(this.endTime)
-                .partySize(this.partySize)
+        return this.toBuilder()
                 .status(ReservationStatus.CONFIRMED)
-                .notes(this.notes)
-                .specialRequests(this.specialRequests)
-                .confirmationCode(this.confirmationCode)
-                .relatedEventId(this.relatedEventId)
-                .relatedEventName(this.relatedEventName)
-                .isEventRelated(this.isEventRelated)
                 .confirmedAt(LocalDateTime.now())
-                .cancelledAt(this.cancelledAt)
-                .cancellationReason(this.cancellationReason)
-                .createdAt(this.createdAt)
                 .updatedAt(LocalDateTime.now())
                 .build();
     }
@@ -92,29 +77,10 @@ public class Reservation {
         if (!isCancellable()) {
             throw new IllegalStateException("La reserva en estado " + status + " no puede ser cancelada");
         }
-        return Reservation.builder()
-                .id(this.id)
-                .restaurantId(this.restaurantId)
-                .customerId(this.customerId)
-                .tableId(this.tableId)
-                .customerName(this.customerName)
-                .customerEmail(this.customerEmail)
-                .customerPhone(this.customerPhone)
-                .reservationDate(this.reservationDate)
-                .startTime(this.startTime)
-                .endTime(this.endTime)
-                .partySize(this.partySize)
+        return this.toBuilder()
                 .status(ReservationStatus.CANCELLED)
-                .notes(this.notes)
-                .specialRequests(this.specialRequests)
-                .confirmationCode(this.confirmationCode)
-                .relatedEventId(this.relatedEventId)
-                .relatedEventName(this.relatedEventName)
-                .isEventRelated(this.isEventRelated)
-                .confirmedAt(this.confirmedAt)
                 .cancelledAt(LocalDateTime.now())
                 .cancellationReason(reason)
-                .createdAt(this.createdAt)
                 .updatedAt(LocalDateTime.now())
                 .build();
     }

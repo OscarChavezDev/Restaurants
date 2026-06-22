@@ -5,8 +5,10 @@ import com.tingo.restaurants.domain.model.Restaurant;
 import com.tingo.restaurants.domain.model.Schedule;
 import com.tingo.restaurants.domain.model.enums.RestaurantStatus;
 import com.tingo.restaurants.domain.repository.RestaurantRepository;
+import com.tingo.restaurants.infrastructure.persistence.entity.FoodCategoryEntity;
 import com.tingo.restaurants.infrastructure.persistence.entity.RestaurantEntity;
 import com.tingo.restaurants.infrastructure.persistence.entity.ScheduleEntity;
+import com.tingo.restaurants.infrastructure.persistence.repository.FoodCategoryJpaRepository;
 import com.tingo.restaurants.infrastructure.persistence.repository.RestaurantJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -25,6 +27,7 @@ import java.util.stream.Collectors;
 public class RestaurantRepositoryAdapter implements RestaurantRepository {
 
     private final RestaurantJpaRepository jpaRepository;
+    private final FoodCategoryJpaRepository categoryJpaRepository;
 
     @Override
     public Restaurant save(Restaurant restaurant) {
@@ -56,9 +59,9 @@ public class RestaurantRepositoryAdapter implements RestaurantRepository {
     }
 
     @Override
-    public Page<Restaurant> findByFilters(String name, String city, String category,
+    public Page<Restaurant> findByFilters(String name, String city, String categoryId, String priceRange,
                                            RestaurantStatus status, Pageable pageable) {
-        return jpaRepository.findByFilters(name, city, pageable).map(this::toDomain);
+        return jpaRepository.findByFilters(name, city, categoryId, priceRange, pageable).map(this::toDomain);
     }
 
     @Override
@@ -114,7 +117,7 @@ public class RestaurantRepositoryAdapter implements RestaurantRepository {
                 .website(e.getWebsite()).ruc(e.getRuc()).status(e.getStatus())
                 .address(e.getAddress()).district(e.getDistrict()).city(e.getCity())
                 .region(e.getRegion()).latitude(e.getLatitude()).longitude(e.getLongitude())
-                .totalCapacity(e.getTotalCapacity()).priceLevel(e.getPriceLevel()).minReservationSize(e.getMinReservationSize())
+                .totalCapacity(e.getTotalCapacity()).priceLevel(e.getPriceLevel()).avgDishPrice(e.getAvgDishPrice()).minReservationSize(e.getMinReservationSize())
                 .maxReservationSize(e.getMaxReservationSize()).coverImageUrl(e.getCoverImageUrl())
                 .logoUrl(e.getLogoUrl()).avgRating(e.getAvgRating()).totalRatings(e.getTotalRatings())
                 .acceptsReservations(e.isAcceptsReservations()).acceptsEvents(e.isAcceptsEvents())
@@ -145,13 +148,25 @@ public class RestaurantRepositoryAdapter implements RestaurantRepository {
         e.setEmail(r.getEmail()); e.setWebsite(r.getWebsite()); e.setRuc(r.getRuc());
         e.setStatus(r.getStatus()); e.setAddress(r.getAddress()); e.setDistrict(r.getDistrict());
         e.setCity(r.getCity()); e.setRegion(r.getRegion()); e.setLatitude(r.getLatitude());
-        e.setLongitude(r.getLongitude()); e.setTotalCapacity(r.getTotalCapacity()); e.setPriceLevel(r.getPriceLevel()); e.setMinReservationSize(r.getMinReservationSize());
+        e.setLongitude(r.getLongitude()); e.setTotalCapacity(r.getTotalCapacity()); e.setPriceLevel(r.getPriceLevel()); e.setAvgDishPrice(r.getAvgDishPrice()); e.setMinReservationSize(r.getMinReservationSize());
         e.setMaxReservationSize(r.getMaxReservationSize());
         e.setCoverImageUrl(r.getCoverImageUrl()); e.setLogoUrl(r.getLogoUrl());
         e.setAvgRating(r.getAvgRating()); e.setTotalRatings(r.getTotalRatings());
         e.setAcceptsReservations(r.isAcceptsReservations()); e.setAcceptsEvents(r.isAcceptsEvents());
         e.setHasParking(r.isHasParking()); e.setHasWifi(r.isHasWifi());
         e.setHasAirConditioning(r.isHasAirConditioning()); e.setAccessible(r.isAccessible());
+
+        // Categorías (M:N): carga las entidades gestionadas a partir de los ids del dominio.
+        if (r.getCategories() != null && !r.getCategories().isEmpty()) {
+            List<UUID> ids = r.getCategories().stream()
+                    .map(FoodCategory::getId)
+                    .filter(java.util.Objects::nonNull)
+                    .collect(Collectors.toList());
+            List<FoodCategoryEntity> cats = categoryJpaRepository.findAllById(ids);
+            e.setCategories(cats);
+        } else {
+            e.setCategories(new java.util.ArrayList<>());
+        }
         return e;
     }
 }

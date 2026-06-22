@@ -27,6 +27,12 @@ public class ReservationResponse {
     private LocalTime startTime;
     private LocalTime endTime;
     private int partySize;
+    private UUID sectionId;
+    private java.math.BigDecimal advanceAmount;
+    private String priority;
+    private String paymentStatus;
+    private java.math.BigDecimal orderTotal;
+    private java.util.List<ReservationOrderItemResponse> orderItems;
     private ReservationStatus status;
     private String notes;
     private String specialRequests;

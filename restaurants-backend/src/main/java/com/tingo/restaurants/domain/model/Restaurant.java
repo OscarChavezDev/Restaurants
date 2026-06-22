@@ -39,6 +39,7 @@ public class Restaurant {
     // Capacidad
     private int totalCapacity;
     private int priceLevel;
+    private BigDecimal avgDishPrice;
     private int minReservationSize;
     private int maxReservationSize;
 

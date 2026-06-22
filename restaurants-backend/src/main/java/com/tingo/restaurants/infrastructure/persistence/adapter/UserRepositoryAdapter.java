@@ -41,6 +41,11 @@ public class UserRepositoryAdapter implements UserRepository {
     }
 
     @Override
+    public Optional<User> findByGoogleId(String googleId) {
+        return jpaRepository.findByGoogleIdAndDeletedAtIsNull(googleId).map(this::toDomain);
+    }
+
+    @Override
     public void deleteById(UUID id) {
         jpaRepository.findById(id).ifPresent(entity -> {
             entity.softDelete();
@@ -61,7 +66,10 @@ public class UserRepositoryAdapter implements UserRepository {
                 .fullName(e.getFullName())
                 .phone(e.getPhone())
                 .role(e.getRole())
+                .provider(e.getProvider())
+                .googleId(e.getGoogleId())
                 .isActive(e.isActive())
+                .accountStatus(e.getAccountStatus())
                 .emailVerified(e.isEmailVerified())
                 .lastLoginAt(e.getLastLoginAt())
                 .createdAt(e.getCreatedAt())
@@ -78,7 +86,11 @@ public class UserRepositoryAdapter implements UserRepository {
                 .fullName(u.getFullName())
                 .phone(u.getPhone())
                 .role(u.getRole())
+                .provider(u.getProvider() != null ? u.getProvider() : com.tingo.restaurants.domain.model.enums.AuthProvider.LOCAL)
+                .googleId(u.getGoogleId())
                 .active(u.isActive())
+                .accountStatus(u.getAccountStatus() != null ? u.getAccountStatus()
+                        : com.tingo.restaurants.domain.model.enums.AccountStatus.ACTIVE)
                 .emailVerified(u.isEmailVerified())
                 .lastLoginAt(u.getLastLoginAt())
                 .build();

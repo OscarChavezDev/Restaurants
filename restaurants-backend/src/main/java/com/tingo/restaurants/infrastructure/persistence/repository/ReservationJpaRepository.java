@@ -26,6 +26,12 @@ public interface ReservationJpaRepository extends JpaRepository<ReservationEntit
     List<ReservationEntity> findByRestaurantIdAndReservationDateAndStatus(
             UUID restaurantId, LocalDate date, ReservationStatus status);
 
+    /** Reservas de una fecha en cierto estado (para el scheduler de recordatorios, S11). */
+    List<ReservationEntity> findByReservationDateAndStatus(LocalDate date, ReservationStatus status);
+
+    /** Reservas en cierto estado y estado de pago (para auto-cancelar impagas, S12-06). */
+    List<ReservationEntity> findByStatusAndPaymentStatus(ReservationStatus status, String paymentStatus);
+
     long countByRestaurantIdAndReservationDateAndStatus(
             UUID restaurantId, LocalDate date, ReservationStatus status);
 

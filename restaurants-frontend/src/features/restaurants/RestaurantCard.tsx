@@ -4,19 +4,24 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { MapPin, Star, Users, Wifi, Car, UtensilsCrossed, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { cn } from '@/utils/cn';
+import { RestaurantLogo } from '@/components/ui/RestaurantLogo';
+import { FavoriteButton } from '@/components/ui/FavoriteButton';
+import { PromoBadge } from '@/features/restaurants/PromoBadge';
 import { formatDistance, formatRating } from '@/utils/formatters';
 import type { Restaurant } from '@/types/restaurant';
 
 // Visually rich gradients — one is picked deterministically per restaurant
+// Portadas de respaldo (sin foto): set cálido y cohesionado con la marca
+// "Brasa & Selva" — terracota/ámbar/arcilla + dos verdes selva de acento.
 const GRADIENTS = [
-  { bg: 'linear-gradient(135deg, #f97316 0%, #c2410c 100%)', icon: '#fed7aa' },  // orange
-  { bg: 'linear-gradient(135deg, #f59e0b 0%, #b45309 100%)', icon: '#fde68a' },  // amber
-  { bg: 'linear-gradient(135deg, #ef4444 0%, #991b1b 100%)', icon: '#fecaca' },  // red
-  { bg: 'linear-gradient(135deg, #10b981 0%, #065f46 100%)', icon: '#a7f3d0' },  // emerald
-  { bg: 'linear-gradient(135deg, #3b82f6 0%, #1e3a8a 100%)', icon: '#bfdbfe' },  // blue
-  { bg: 'linear-gradient(135deg, #8b5cf6 0%, #4c1d95 100%)', icon: '#ddd6fe' },  // violet
-  { bg: 'linear-gradient(135deg, #ec4899 0%, #9d174d 100%)', icon: '#fbcfe8' },  // pink
-  { bg: 'linear-gradient(135deg, #14b8a6 0%, #134e4a 100%)', icon: '#99f6e4' },  // teal
+  { bg: 'linear-gradient(135deg, #E8590C 0%, #9A3412 100%)', icon: '#FFD9BF' },  // brasa
+  { bg: 'linear-gradient(135deg, #D97706 0%, #92400E 100%)', icon: '#FDE6C0' },  // ámbar
+  { bg: 'linear-gradient(135deg, #157F5B 0%, #0A3E2D 100%)', icon: '#A7E0C8' },  // selva
+  { bg: 'linear-gradient(135deg, #C2410C 0%, #7C2D12 100%)', icon: '#FBC9A6' },  // terracota
+  { bg: 'linear-gradient(135deg, #B45309 0%, #6B330C 100%)', icon: '#FCD9A8' },  // caramelo
+  { bg: 'linear-gradient(135deg, #9A3412 0%, #4A1D0C 100%)', icon: '#F6A472' },  // arcilla
+  { bg: 'linear-gradient(135deg, #2F9C6E 0%, #0D513A 100%)', icon: '#BFEAD6' },  // selva claro
+  { bg: 'linear-gradient(135deg, #EA580C 0%, #B3340C 100%)', icon: '#FECABF' },  // brasa intensa
 ];
 
 function pickGradient(seed: string) {
@@ -84,24 +89,26 @@ export function RestaurantCard({ restaurant, showDistance }: Props) {
             {status.label}
           </span>
 
+          {/* Favorito (corazón) */}
+          <FavoriteButton restaurantId={restaurant.id} className="absolute top-2.5 right-2.5 z-10" />
+
           {/* Distance badge */}
           {showDistance && restaurant.distanceKm !== undefined && (
-            <span className="absolute top-3 right-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-black/50 text-white backdrop-blur-sm border border-white/10">
+            <span className="absolute top-3 right-14 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-black/50 text-white backdrop-blur-sm border border-white/10">
               <MapPin className="h-3 w-3" />
               {formatDistance(restaurant.distanceKm)}
             </span>
           )}
+
+          {/* Badge de promociones activas */}
+          <PromoBadge restaurantId={restaurant.id} />
         </div>
 
         {/* Card body */}
         <div className="p-5 flex-1 flex flex-col">
           {/* Logo + Name */}
           <div className="flex items-start gap-3 mb-3">
-            {restaurant.logoUrl && (
-              <div className="relative h-10 w-10 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100 dark:bg-gray-700">
-                <Image src={restaurant.logoUrl} alt="" fill className="object-cover" />
-              </div>
-            )}
+            <RestaurantLogo name={restaurant.name} logoUrl={restaurant.logoUrl} className="h-10 w-10 rounded-xl text-base" />
             <div className="min-w-0">
               <h3 className="font-display font-semibold text-gray-900 dark:text-gray-50 group-hover:text-orange-500 transition-colors leading-tight line-clamp-1">
                 {restaurant.name}

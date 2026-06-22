@@ -49,6 +49,12 @@ public class RatingEntity {
     @Column(name = "is_verified", nullable = false)
     private boolean verified;
 
+    @Column(name = "owner_reply", columnDefinition = "TEXT")
+    private String ownerReply;
+
+    @Column(name = "owner_reply_at")
+    private LocalDateTime ownerReplyAt;
+
     @CreatedDate
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

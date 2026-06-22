@@ -7,6 +7,11 @@ RUN npm install --legacy-peer-deps
 
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
+# Las variables NEXT_PUBLIC_* se hornean en build; se reciben como build args.
+ARG NEXT_PUBLIC_API_URL=http://localhost:8080/api
+ARG NEXT_PUBLIC_GOOGLE_CLIENT_ID
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_GOOGLE_CLIENT_ID=$NEXT_PUBLIC_GOOGLE_CLIENT_ID
 RUN npm run build
 
 # ====== STAGE 2: Runner ======

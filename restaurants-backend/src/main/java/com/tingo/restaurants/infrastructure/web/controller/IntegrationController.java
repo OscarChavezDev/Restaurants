@@ -68,7 +68,7 @@ public class IntegrationController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "50") int size) {
         return ResponseEntity.ok(
-                ApiResponse.ok(restaurantService.search(null, city, null,
+                ApiResponse.ok(restaurantService.search(null, city, null, null,
                         org.springframework.data.domain.PageRequest.of(page, size))));
     }
 }

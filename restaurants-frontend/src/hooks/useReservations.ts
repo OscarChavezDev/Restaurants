@@ -1,6 +1,8 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
 import { reservationService } from '@/services/reservationService';
-import type { CreateReservationDto } from '@/types/reservation';
+import { useMyRestaurants, useRestaurants } from '@/hooks/useRestaurants';
+import { useAuthStore } from '@/store/authStore';
+import type { CreateReservationDto, Reservation } from '@/types/reservation';
 
 export const RESERVATION_KEYS = {
   all: ['reservations'] as const,
@@ -8,6 +10,35 @@ export const RESERVATION_KEYS = {
   restaurant: (id: string) => [...RESERVATION_KEYS.all, 'restaurant', id] as const,
   code: (code: string) => [...RESERVATION_KEYS.all, 'code', code] as const,
 };
+
+/**
+ * Reservas de los restaurantes que administra el usuario:
+ * - OWNER: las de sus restaurantes
+ * - ADMIN: las de todos los restaurantes del sistema
+ * Agrega vía el mismo endpoint por-restaurante que usa la lista de reservas,
+ * de modo que los conteos siempre coinciden con esa vista.
+ */
+export function useManagedReservations() {
+  const isAdmin = useAuthStore((s) => s.isAdmin());
+  const { data: mine } = useMyRestaurants();
+  const { data: all } = useRestaurants(0, 100);
+  const list = isAdmin ? all : mine;
+  const ids = list?.content.map((r) => r.id) ?? [];
+
+  const queries = useQueries({
+    queries: ids.map((id) => ({
+      queryKey: [...RESERVATION_KEYS.restaurant(id), 'agg'] as const,
+      queryFn: () => reservationService.getByRestaurant(id, 0, 200),
+      enabled: !!id,
+      staleTime: 1000 * 60,
+    })),
+  });
+
+  const reservations: Reservation[] = queries.flatMap((q) => q.data?.content ?? []);
+  const isLoading = ids.length > 0 && queries.some((q) => q.isLoading);
+
+  return { reservations, isLoading };
+}
 
 export function useMyReservations(page = 0, size = 10) {
   return useQuery({

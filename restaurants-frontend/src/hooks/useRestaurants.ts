@@ -44,7 +44,8 @@ export function useRestaurantBySlug(slug: string) {
 export function useSearchRestaurants(params: {
   name?: string;
   city?: string;
-  category?: string;
+  categoryId?: string;
+  priceRange?: string;
   page?: number;
   size?: number;
 }) {
@@ -75,6 +76,16 @@ export function useCreateRestaurant() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: CreateRestaurantDto) => restaurantService.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: RESTAURANT_KEYS.all });
+    },
+  });
+}
+
+export function useUpdateRestaurant(id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: CreateRestaurantDto) => restaurantService.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: RESTAURANT_KEYS.all });
     },

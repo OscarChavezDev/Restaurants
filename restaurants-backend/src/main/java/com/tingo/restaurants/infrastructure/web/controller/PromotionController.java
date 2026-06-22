@@ -60,6 +60,28 @@ public class PromotionController {
         return ResponseEntity.ok(ApiResponse.ok(promotionService.findActiveByRestaurant(restaurantId)));
     }
 
+    @GetMapping("/showcase")
+    @Operation(summary = "Ofertas activas (con flyer) de todos los restaurantes, para el carrusel (público)")
+    public ResponseEntity<ApiResponse<List<PromotionResponse>>> showcase() {
+        return ResponseEntity.ok(ApiResponse.ok(promotionService.showcase()));
+    }
+
+    @PostMapping("/{id}/flyer")
+    @PreAuthorize("hasAnyRole('ADMIN', 'RESTAURANTE_OWNER')")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Generar el copy del flyer con IA para una promoción")
+    public ResponseEntity<ApiResponse<PromotionResponse>> generateFlyer(@PathVariable UUID id) {
+        return ResponseEntity.ok(ApiResponse.ok("Flyer generado", promotionService.generateFlyer(id)));
+    }
+
+    @PatchMapping("/{id}/toggle")
+    @PreAuthorize("hasAnyRole('ADMIN', 'RESTAURANTE_OWNER')")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Activar / desactivar una promoción")
+    public ResponseEntity<ApiResponse<PromotionResponse>> toggle(@PathVariable UUID id) {
+        return ResponseEntity.ok(ApiResponse.ok("Estado actualizado", promotionService.toggleActive(id)));
+    }
+
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'RESTAURANTE_OWNER')")
     @SecurityRequirement(name = "bearerAuth")

@@ -40,6 +40,16 @@ public class CreateReservationRequest {
     @Max(value = 500, message = "El tamaño del grupo no puede superar 500")
     private int partySize;
 
+    /** Sección preferida del local (opcional, S9-04). */
+    private UUID sectionId;
+
+    /** El cliente aceptó los términos y condiciones (S10-04). */
+    private boolean termsAccepted;
+
+    /** Pre-pedido del menú (opcional, S10-07). */
+    @jakarta.validation.Valid
+    private java.util.List<OrderItemRequest> orderItems;
+
     @Size(max = 500)
     private String notes;
 

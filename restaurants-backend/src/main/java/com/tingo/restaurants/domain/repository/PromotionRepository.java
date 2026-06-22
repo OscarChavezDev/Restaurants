@@ -11,5 +11,6 @@ public interface PromotionRepository {
     Optional<Promotion> findById(UUID id);
     List<Promotion> findByRestaurantId(UUID restaurantId);
     List<Promotion> findActiveByRestaurantId(UUID restaurantId);
+    List<Promotion> findShowcase();
     void deleteById(UUID id);
 }

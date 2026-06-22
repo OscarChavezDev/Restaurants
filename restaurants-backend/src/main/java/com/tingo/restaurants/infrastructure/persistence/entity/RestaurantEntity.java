@@ -76,6 +76,9 @@ public class RestaurantEntity extends BaseEntity {
     @Column(name = "price_level", nullable = false)
     private int priceLevel = 2;
 
+    @Column(name = "avg_dish_price")
+    private java.math.BigDecimal avgDishPrice;
+
     @Builder.Default
     @Column(name = "min_reservation_size", nullable = false)
     private int minReservationSize = 1;

@@ -6,6 +6,7 @@ import com.tingo.restaurants.application.dto.response.RestaurantResponse;
 import com.tingo.restaurants.application.dto.response.ScheduleResponse;
 import com.tingo.restaurants.application.mapper.RestaurantMapper;
 import com.tingo.restaurants.domain.exception.RestaurantNotFoundException;
+import com.tingo.restaurants.domain.model.FoodCategory;
 import com.tingo.restaurants.domain.model.Restaurant;
 import com.tingo.restaurants.domain.model.Schedule;
 import com.tingo.restaurants.domain.model.enums.RestaurantStatus;
@@ -67,6 +68,7 @@ public class RestaurantService {
                 .hasWifi(request.isHasWifi())
                 .hasAirConditioning(request.isHasAirConditioning())
                 .isAccessible(request.isAccessible())
+                .categories(toCategories(request.getCategoryIds()))
                 .avgRating(BigDecimal.ZERO)
                 .totalRatings(0)
                 .build();
@@ -107,9 +109,9 @@ public class RestaurantService {
     }
 
     public PagedResponse<RestaurantResponse> search(String name, String city,
-                                                     String category, Pageable pageable) {
+                                                     String categoryId, String priceRange, Pageable pageable) {
         Page<RestaurantResponse> page = restaurantRepository
-                .findByFilters(name, city, category, RestaurantStatus.ACTIVE, pageable)
+                .findByFilters(name, city, categoryId, priceRange, RestaurantStatus.ACTIVE, pageable)
                 .map(restaurantMapper::toResponse);
         return PagedResponse.from(page);
     }
@@ -137,6 +139,69 @@ public class RestaurantService {
     }
 
     @Transactional
+    public RestaurantResponse update(UUID id, CreateRestaurantRequest request, UUID requesterId, boolean isAdmin) {
+        Restaurant existing = restaurantRepository.findById(id)
+                .orElseThrow(() -> new RestaurantNotFoundException(id));
+
+        // Solo el dueño del restaurante (o un ADMIN) puede editarlo
+        if (!isAdmin && !existing.getOwnerId().equals(requesterId)) {
+            throw new org.springframework.security.access.AccessDeniedException(
+                    "No puedes editar un restaurante que no te pertenece");
+        }
+
+        log.info("Actualizando restaurante: {} ({})", existing.getName(), id);
+
+        // Se preservan los campos no editables desde este formulario:
+        // id, ownerId, slug, status, calificaciones y auditoría.
+        Restaurant updated = Restaurant.builder()
+                .id(existing.getId())
+                .ownerId(existing.getOwnerId())
+                .slug(existing.getSlug())
+                .status(existing.getStatus())
+                .avgRating(existing.getAvgRating())
+                .totalRatings(existing.getTotalRatings())
+                .createdAt(existing.getCreatedAt())
+                .name(request.getName())
+                .description(request.getDescription())
+                .phone(request.getPhone())
+                .email(request.getEmail())
+                .website(request.getWebsite())
+                .ruc(existing.getRuc())   // el RUC no se edita desde el panel; se preserva
+                .address(request.getAddress())
+                .district(request.getDistrict())
+                .city(request.getCity())
+                .region(request.getRegion())
+                .latitude(request.getLatitude())
+                .longitude(request.getLongitude())
+                .totalCapacity(request.getTotalCapacity())
+                .priceLevel(request.getPriceLevel() != null ? request.getPriceLevel() : existing.getPriceLevel())
+                .avgDishPrice(existing.getAvgDishPrice())
+                .minReservationSize(request.getMinReservationSize())
+                .maxReservationSize(request.getMaxReservationSize())
+                .coverImageUrl(request.getCoverImageUrl())
+                .logoUrl(request.getLogoUrl())
+                .acceptsReservations(request.isAcceptsReservations())
+                .acceptsEvents(request.isAcceptsEvents())
+                .hasParking(request.isHasParking())
+                .hasWifi(request.isHasWifi())
+                .hasAirConditioning(request.isHasAirConditioning())
+                .isAccessible(request.isAccessible())
+                .categories(toCategories(request.getCategoryIds()))
+                .build();
+
+        return restaurantMapper.toResponse(restaurantRepository.save(updated));
+    }
+
+    /** Convierte una lista de ids de categoría en modelos de dominio (solo el id; el adapter resuelve la entidad). */
+    private List<FoodCategory> toCategories(List<UUID> categoryIds) {
+        if (categoryIds == null) return List.of();
+        return categoryIds.stream()
+                .filter(java.util.Objects::nonNull)
+                .map(id -> FoodCategory.builder().id(id).build())
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
     public RestaurantResponse updateStatus(UUID id, RestaurantStatus newStatus) {
         Restaurant restaurant = restaurantRepository.findById(id)
                 .orElseThrow(() -> new RestaurantNotFoundException(id));
@@ -159,6 +224,8 @@ public class RestaurantService {
                 .latitude(restaurant.getLatitude())
                 .longitude(restaurant.getLongitude())
                 .totalCapacity(restaurant.getTotalCapacity())
+                .priceLevel(restaurant.getPriceLevel())
+                .avgDishPrice(restaurant.getAvgDishPrice())
                 .minReservationSize(restaurant.getMinReservationSize())
                 .maxReservationSize(restaurant.getMaxReservationSize())
                 .coverImageUrl(restaurant.getCoverImageUrl())
@@ -169,6 +236,7 @@ public class RestaurantService {
                 .hasWifi(restaurant.isHasWifi())
                 .hasAirConditioning(restaurant.isHasAirConditioning())
                 .isAccessible(restaurant.isAccessible())
+                .categories(restaurant.getCategories())
                 .avgRating(restaurant.getAvgRating())
                 .totalRatings(restaurant.getTotalRatings())
                 .build();
@@ -177,9 +245,13 @@ public class RestaurantService {
     }
 
     @Transactional
-    public void delete(UUID id) {
-        restaurantRepository.findById(id)
+    public void delete(UUID id, UUID requesterId, boolean isAdmin) {
+        Restaurant existing = restaurantRepository.findById(id)
                 .orElseThrow(() -> new RestaurantNotFoundException(id));
+        if (!isAdmin && !existing.getOwnerId().equals(requesterId)) {
+            throw new org.springframework.security.access.AccessDeniedException(
+                    "No puedes eliminar un restaurante que no te pertenece");
+        }
         restaurantRepository.deleteById(id);
         log.info("Restaurante eliminado (soft delete): {}", id);
     }

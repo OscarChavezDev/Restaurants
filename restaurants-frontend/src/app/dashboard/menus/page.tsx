@@ -1,13 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, ChevronDown, Trash2, UtensilsCrossed, Loader2, Pencil, Eye, EyeOff } from 'lucide-react';
+import { Plus, ChevronDown, Trash2, UtensilsCrossed, Loader2, Pencil, Eye, EyeOff, X } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useMyRestaurants, useRestaurants } from '@/hooks/useRestaurants';
 import { useAuthStore } from '@/store/authStore';
 import { api } from '@/services/api';
 import { formatCurrency } from '@/utils/formatters';
 import { RestaurantPicker } from '@/components/ui/RestaurantPicker';
+import { ImageUploader } from '@/components/ui/ImageUploader';
 import toast from 'react-hot-toast';
 import type { Menu, Dish } from '@/types/restaurant';
 
@@ -24,9 +25,9 @@ export default function MenusPage() {
   const [showDishForm, setShowDishForm] = useState<string | null>(null);
   const [menuName, setMenuName] = useState('');
   const [menuDesc, setMenuDesc] = useState('');
-  const [dish, setDish] = useState({ name: '', description: '', category: 'PLATOS_PRINCIPALES', price: '', preparationTime: '' });
+  const [dish, setDish] = useState({ name: '', description: '', category: 'PLATOS_PRINCIPALES', price: '', preparationTime: '', imageUrl: '' });
   const [editingDishId, setEditingDishId] = useState<string | null>(null);
-  const [editDish, setEditDish] = useState({ name: '', description: '', category: 'PLATOS_PRINCIPALES', price: '', preparationTime: '' });
+  const [editDish, setEditDish] = useState({ name: '', description: '', category: 'PLATOS_PRINCIPALES', price: '', preparationTime: '', imageUrl: '' });
   const qc = useQueryClient();
 
   const startEdit = (d: Dish) => {
@@ -37,6 +38,7 @@ export default function MenusPage() {
       category: d.category,
       price: String(d.price),
       preparationTime: d.preparationTime ? String(d.preparationTime) : '',
+      imageUrl: d.imageUrl ?? '',
     });
   };
 
@@ -59,9 +61,9 @@ export default function MenusPage() {
     mutationFn: (menuId: string) => api.post('/v1/dishes', {
       menuId, name: dish.name, description: dish.description, category: dish.category,
       price: parseFloat(dish.price), preparationTime: dish.preparationTime ? parseInt(dish.preparationTime) : null,
-      isAvailable: true, isFeatured: false,
+      imageUrl: dish.imageUrl || null, isAvailable: true, isFeatured: false,
     }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['menus', restaurantId] }); toast.success('Plato agregado'); setDish({ name: '', description: '', category: 'PLATOS_PRINCIPALES', price: '', preparationTime: '' }); setShowDishForm(null); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['menus', restaurantId] }); toast.success('Plato agregado'); setDish({ name: '', description: '', category: 'PLATOS_PRINCIPALES', price: '', preparationTime: '', imageUrl: '' }); setShowDishForm(null); },
     onError: () => toast.error('Error al agregar plato'),
   });
 
@@ -174,6 +176,20 @@ export default function MenusPage() {
                       {createDish.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />} Agregar Plato
                     </button>
                   </div>
+                  {/* Foto del plato (Cloudinary) */}
+                  <div className="mt-3">
+                    {dish.imageUrl ? (
+                      <div className="relative inline-block">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={dish.imageUrl} alt="Plato" className="h-24 w-24 object-cover rounded-xl border border-gray-200" />
+                        <button onClick={() => setDish({ ...dish, imageUrl: '' })} className="absolute -top-2 -right-2 bg-white border border-gray-200 rounded-full p-1 text-red-500 hover:bg-red-50 shadow-sm">
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <ImageUploader compact folder={`${restaurantId}/platos`} onUploaded={(url) => setDish({ ...dish, imageUrl: url })} label="Foto del plato (opcional)" />
+                    )}
+                  </div>
                 </div>
               )}
 
@@ -184,11 +200,17 @@ export default function MenusPage() {
                   ) : menu.dishes.map(d => (
                     <div key={d.id} className={`border-b border-gray-50 last:border-0 ${!d.isAvailable ? 'bg-gray-50/60' : ''}`}>
                       <div className="flex items-center justify-between px-5 py-3 hover:bg-gray-50">
-                        <div className={!d.isAvailable ? 'opacity-60' : ''}>
+                        <div className={`flex items-center gap-3 ${!d.isAvailable ? 'opacity-60' : ''}`}>
+                          {d.imageUrl && (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={d.imageUrl} alt={d.name} className="h-10 w-10 rounded-lg object-cover border border-gray-100 flex-shrink-0" />
+                          )}
+                          <div>
                           <span className="text-sm font-medium text-gray-900">{d.name}</span>
                           <span className="ml-2 text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">{d.category?.replace(/_/g,' ')}</span>
                           {!d.isAvailable && <span className="ml-2 text-xs font-semibold text-red-600 bg-red-50 px-1.5 py-0.5 rounded">Agotado</span>}
                           {d.description && <p className="text-xs text-gray-400 mt-0.5">{d.description}</p>}
+                          </div>
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="font-semibold text-orange-600 text-sm mr-1">{formatCurrency(d.price)}</span>
@@ -233,6 +255,7 @@ export default function MenusPage() {
                                   name: editDish.name, description: editDish.description, category: editDish.category,
                                   price: parseFloat(editDish.price),
                                   preparationTime: editDish.preparationTime ? parseInt(editDish.preparationTime) : null,
+                                  imageUrl: editDish.imageUrl || null,
                                 } })}
                                 disabled={!editDish.name || !editDish.price || updateDish.isPending}
                                 className="flex-1 px-4 py-2 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white text-sm font-semibold rounded-xl flex items-center justify-center gap-1.5">
@@ -241,6 +264,20 @@ export default function MenusPage() {
                               <button onClick={() => setEditingDishId(null)}
                                 className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 text-sm font-semibold rounded-xl">Cancelar</button>
                             </div>
+                          </div>
+                          {/* Foto del plato */}
+                          <div className="mt-3">
+                            {editDish.imageUrl ? (
+                              <div className="relative inline-block">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={editDish.imageUrl} alt="Plato" className="h-24 w-24 object-cover rounded-xl border border-gray-200" />
+                                <button onClick={() => setEditDish({ ...editDish, imageUrl: '' })} className="absolute -top-2 -right-2 bg-white border border-gray-200 rounded-full p-1 text-red-500 hover:bg-red-50 shadow-sm">
+                                  <X className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+                            ) : (
+                              <ImageUploader compact folder={`${restaurantId}/platos`} onUploaded={(url) => setEditDish({ ...editDish, imageUrl: url })} label="Foto del plato (opcional)" />
+                            )}
                           </div>
                         </div>
                       )}

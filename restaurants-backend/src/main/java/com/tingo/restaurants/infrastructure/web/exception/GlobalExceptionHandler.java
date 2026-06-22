@@ -1,11 +1,13 @@
 package com.tingo.restaurants.infrastructure.web.exception;
 
 import com.tingo.restaurants.application.dto.response.ApiResponse;
+import com.tingo.restaurants.domain.exception.AccountNotActiveException;
 import com.tingo.restaurants.domain.exception.DomainException;
 import com.tingo.restaurants.domain.exception.InvalidCredentialsException;
 import com.tingo.restaurants.domain.exception.RestaurantNotFoundException;
 import com.tingo.restaurants.domain.exception.UserAlreadyExistsException;
 import com.tingo.restaurants.domain.exception.UserNotFoundException;
+import com.tingo.restaurants.domain.exception.TooManyAttemptsException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -43,6 +45,18 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InvalidCredentialsException.class)
     public ResponseEntity<ApiResponse<Void>> handleInvalidCredentials(InvalidCredentialsException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ApiResponse.error(ex.getMessage(), ex.getErrorCode()));
+    }
+
+    @ExceptionHandler(TooManyAttemptsException.class)
+    public ResponseEntity<ApiResponse<Void>> handleTooManyAttempts(TooManyAttemptsException ex) {
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .body(ApiResponse.error(ex.getMessage(), "TOO_MANY_ATTEMPTS"));
+    }
+
+    @ExceptionHandler(AccountNotActiveException.class)
+    public ResponseEntity<ApiResponse<Void>> handleAccountNotActive(AccountNotActiveException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(ApiResponse.error(ex.getMessage(), ex.getErrorCode()));
     }
 

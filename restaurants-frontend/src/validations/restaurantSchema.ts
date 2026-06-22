@@ -22,6 +22,7 @@ export const createRestaurantSchema = z.object({
   hasWifi: z.boolean().default(false),
   hasAirConditioning: z.boolean().default(false),
   isAccessible: z.boolean().default(false),
+  categoryIds: z.array(z.string()).optional().default([]),
 });
 
 export type CreateRestaurantFormData = z.infer<typeof createRestaurantSchema>;

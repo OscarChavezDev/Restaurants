@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class Promotion {
@@ -30,6 +30,8 @@ public class Promotion {
     private boolean isActive;
     private Integer usageLimit;
     private int usageCount;
+    private String flyerHeadline;
+    private String flyerTagline;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;

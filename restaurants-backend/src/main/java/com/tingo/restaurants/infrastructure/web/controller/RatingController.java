@@ -5,12 +5,19 @@ import com.tingo.restaurants.application.dto.response.PagedResponse;
 import com.tingo.restaurants.application.dto.response.RatingResponse;
 import com.tingo.restaurants.application.dto.response.RatingStatsResponse;
 import com.tingo.restaurants.application.service.RatingService;
+import com.tingo.restaurants.infrastructure.persistence.entity.RatingEntity;
+import com.tingo.restaurants.infrastructure.persistence.repository.RatingJpaRepository;
+import com.tingo.restaurants.infrastructure.security.OwnershipGuard;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -20,6 +27,8 @@ import java.util.UUID;
 public class RatingController {
 
     private final RatingService ratingService;
+    private final RatingJpaRepository ratingJpaRepository;
+    private final OwnershipGuard ownershipGuard;
 
     @GetMapping("/restaurant/{restaurantId}")
     @Operation(summary = "Obtener reseñas de un restaurante")
@@ -45,5 +54,28 @@ public class RatingController {
         UUID userId = userDetails != null ? UUID.fromString(userDetails.getUsername()) : null;
         return ResponseEntity.status(org.springframework.http.HttpStatus.CREATED)
                 .body(ApiResponse.ok("Reseña creada exitosamente", ratingService.createRating(userId, request)));
+    }
+
+    @PatchMapping("/{id}/reply")
+    @PreAuthorize("hasAnyRole('ADMIN', 'RESTAURANTE_OWNER')")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Responder a una reseña (solo el dueño del restaurante)")
+    public ResponseEntity<ApiResponse<Void>> reply(
+            @PathVariable UUID id,
+            @RequestBody Map<String, String> body) {
+        RatingEntity rating = ratingJpaRepository.findById(id)
+                .orElseThrow(() -> new IllegalStateException("Reseña no encontrada"));
+        ownershipGuard.assertOwnsRestaurant(rating.getRestaurantId());
+
+        String reply = body.getOrDefault("reply", "").trim();
+        if (reply.isEmpty()) {
+            rating.setOwnerReply(null);
+            rating.setOwnerReplyAt(null);
+        } else {
+            rating.setOwnerReply(reply);
+            rating.setOwnerReplyAt(LocalDateTime.now());
+        }
+        ratingJpaRepository.save(rating);
+        return ResponseEntity.ok(ApiResponse.ok(reply.isEmpty() ? "Respuesta eliminada" : "Respuesta publicada", null));
     }
 }

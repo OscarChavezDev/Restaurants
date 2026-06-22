@@ -3,49 +3,51 @@
 @tailwind utilities;
 
 @layer base {
+  /* ── Paleta "Brasa & Selva" — claro ───────────────────── */
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --background: 36 30% 97%;        /* #FAF8F5 papel cálido */
+    --foreground: 20 12% 10%;        /* #1C1917 negro cálido */
+    --card: 0 0% 100%;               /* #FFFFFF */
+    --card-foreground: 20 12% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 24 95% 53%;
+    --popover-foreground: 20 12% 10%;
+    --primary: 22 90% 48%;           /* #E8590C Brasa */
     --primary-foreground: 0 0% 100%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 24 95% 53%;
+    --secondary: 37 28% 94%;         /* #F4F0EA superficie 2 */
+    --secondary-foreground: 20 12% 12%;
+    --muted: 37 28% 94%;
+    --muted-foreground: 27 6% 43%;   /* #78716C */
+    --accent: 159 72% 29%;           /* #157F5B Selva */
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 51%;        /* #DC2626 */
+    --destructive-foreground: 0 0% 100%;
+    --border: 34 24% 88%;            /* #E7E1D8 */
+    --input: 34 24% 88%;
+    --ring: 22 90% 48%;
     --radius: 0.75rem;
   }
 
+  /* ── Paleta "Brasa & Selva" — oscuro (tonos distintos) ── */
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 24 95% 53%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 24 95% 53%;
+    --background: 33 20% 7%;         /* #15120E carbón cálido */
+    --foreground: 40 33% 94%;        /* #F5F1EA blanco cálido */
+    --card: 30 19% 11%;              /* #211C17 */
+    --card-foreground: 40 33% 94%;
+    --popover: 30 19% 11%;
+    --popover-foreground: 40 33% 94%;
+    --primary: 20 93% 61%;           /* #F97A3D Brasa luminosa */
+    --primary-foreground: 24 60% 8%;
+    --secondary: 33 19% 14%;         /* #2C251E */
+    --secondary-foreground: 40 33% 94%;
+    --muted: 33 19% 14%;
+    --muted-foreground: 30 7% 64%;   /* #A8A29E */
+    --accent: 157 47% 47%;           /* #3FAE84 Selva luminosa */
+    --accent-foreground: 24 60% 8%;
+    --destructive: 0 91% 71%;        /* #F87171 */
+    --destructive-foreground: 24 60% 8%;
+    --border: 30 19% 17%;            /* #352D25 */
+    --input: 30 19% 17%;
+    --ring: 20 93% 61%;
   }
 }
 
@@ -53,8 +55,31 @@
   * {
     @apply border-border;
   }
+  /* Fondo del documento raíz: evita la franja oscura del navegador (overscroll/
+     scrollbar) cuando el SO está en modo oscuro, y alinea controles nativos. */
+  /* Fuentes cargadas vía <link> en runtime (no en build): definimos las variables
+     que usa Tailwind (font-sans / font-display). */
+  :root {
+    --font-inter: 'Inter', system-ui, sans-serif;
+    --font-poppins: 'Poppins', system-ui, sans-serif;
+  }
+  html {
+    background-color: hsl(var(--background));
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
   body {
     @apply bg-background text-foreground;
+  }
+
+  /* Transición suave al cambiar de modo (claro/oscuro). Solo color/fondo/borde,
+     para no interferir con transforms/animaciones. Se respeta prefers-reduced-motion. */
+  *, *::before, *::after {
+    transition-property: background-color, border-color, color, fill, stroke;
+    transition-duration: 0.28s;
+    transition-timing-function: ease;
   }
 }
 
@@ -71,39 +96,93 @@
    utilities so existing components get dark mode for free.
    ────────────────────────────────────────────────────── */
 @layer utilities {
-  /* Backgrounds — only applied to non-form elements */
-  .dark :not(input):not(textarea):not(select).bg-white  { background-color: rgb(31 41 55);  }   /* gray-800  */
-  .dark .bg-gray-50      { background-color: rgb(17 24 39);  }   /* gray-900  */
-  .dark .bg-gray-100     { background-color: rgb(31 41 55);  }   /* gray-800  */
-  .dark .bg-gray-200     { background-color: rgb(55 65 81);  }   /* gray-700  */
+  /* Superficies cálidas en oscuro */
+  .dark :not(input):not(textarea):not(select).bg-white  { background-color: #211C17; }   /* superficie */
+  .dark .bg-gray-50      { background-color: #15120E; }   /* fondo app  */
+  .dark .bg-gray-100     { background-color: #211C17; }   /* superficie */
+  .dark .bg-gray-200     { background-color: #2C251E; }   /* superficie 2 */
+  .dark .bg-gray-700     { background-color: #2C251E; }   /* superficie 2 */
+  .dark .bg-gray-800     { background-color: #211C17; }   /* superficie */
+  .dark .bg-gray-900     { background-color: #15120E; }   /* fondo app  */
 
-  /* Text */
-  .dark .text-gray-900   { color: rgb(249 250 251); }             /* gray-50   */
-  .dark .text-gray-800   { color: rgb(243 244 246); }             /* gray-100  */
-  .dark .text-gray-700   { color: rgb(209 213 219); }             /* gray-300  */
-  .dark .text-gray-600   { color: rgb(156 163 175); }             /* gray-400  */
-  .dark .text-gray-500   { color: rgb(107 114 128); }             /* gray-500  */
+  /* Texto (se invierte y queda cálido) */
+  .dark .text-gray-900   { color: #F5F1EA; }
+  .dark .text-gray-800   { color: #ECE6DD; }
+  .dark .text-gray-700   { color: #D6CFC6; }
+  .dark .text-gray-600   { color: #A8A29E; }
+  .dark .text-gray-500   { color: #A8A29E; }
+  .dark .text-gray-400   { color: #8A827A; }
 
-  /* Borders */
-  .dark .border-gray-100 { border-color: rgb(55 65 81);  }        /* gray-700  */
-  .dark .border-gray-200 { border-color: rgb(75 85 99);  }        /* gray-600  */
+  /* Bordes cálidos */
+  .dark .border-gray-100 { border-color: #352D25; }
+  .dark .border-gray-200 { border-color: #44403C; }
+  .dark .border-gray-700 { border-color: #352D25; }
 
-  /* Hover overrides */
-  .dark .hover\:bg-gray-50:hover  { background-color: rgb(31 41 55); }
-  .dark .hover\:bg-gray-100:hover { background-color: rgb(55 65 81); }
+  /* Hover */
+  .dark .hover\:bg-gray-50:hover  { background-color: #211C17; }
+  .dark .hover\:bg-gray-100:hover { background-color: #2C251E; }
+
+  /* Primario "Brasa" — más luminoso en oscuro (distinto del claro) */
+  .dark .bg-orange-500          { background-color: #F97A3D; }
+  .dark .bg-orange-600          { background-color: #E0662C; }
+  .dark .hover\:bg-orange-600:hover { background-color: #FB8C5A; }
+  .dark .hover\:bg-orange-500:hover { background-color: #F97A3D; }
+  .dark .text-orange-500        { color: #F97A3D; }
+  .dark .text-orange-600        { color: #F97A3D; }
+  .dark .text-orange-700        { color: #FB8C5A; }
+  .dark .text-orange-400        { color: #FB8C5A; }
+  .dark .bg-orange-50           { background-color: #2A1B12; }
+  .dark .bg-orange-100          { background-color: #2A1B12; }
+  .dark .border-orange-100      { border-color: #3A2516; }
+  .dark .border-orange-200      { border-color: #4A2F1C; }
+
+  /* ── Colores semánticos en oscuro ──────────────────────────
+     Los badges/iconos usan bg-{color}-50/100 + text-{color}-600/700/800.
+     En oscuro: fondo tintado profundo + texto luminoso (legible). */
+
+  /* Azul (reservas / info) */
+  .dark .bg-blue-50,  .dark .bg-blue-100   { background-color: #15233A; }
+  .dark .text-blue-600, .dark .text-blue-700, .dark .text-blue-800 { color: #7FB2F0; }
+
+  /* Verde (éxito / confirmado) */
+  .dark .bg-green-50, .dark .bg-green-100  { background-color: #13291D; }
+  .dark .text-green-600, .dark .text-green-700, .dark .text-green-800 { color: #5FD08A; }
+
+  /* Esmeralda */
+  .dark .bg-emerald-50, .dark .bg-emerald-100 { background-color: #112A20; }
+  .dark .text-emerald-600, .dark .text-emerald-700, .dark .text-emerald-800 { color: #4FD3A0; }
+
+  /* Ámbar / amarillo (pendiente / aviso) */
+  .dark .bg-yellow-50, .dark .bg-yellow-100, .dark .bg-amber-50, .dark .bg-amber-100 { background-color: #2A2310; }
+  .dark .text-yellow-600, .dark .text-yellow-700, .dark .text-yellow-800,
+  .dark .text-amber-600,  .dark .text-amber-700,  .dark .text-amber-800 { color: #F2C24B; }
+
+  /* Rojo / rosa (error / cancelado) */
+  .dark .bg-red-50,  .dark .bg-red-100,  .dark .bg-rose-50, .dark .bg-rose-100 { background-color: #2A1518; }
+  .dark .text-red-500,  .dark .text-red-600,  .dark .text-red-700,  .dark .text-red-800,
+  .dark .text-rose-500, .dark .text-rose-600, .dark .text-rose-700, .dark .text-rose-800 { color: #F4868C; }
+
+  /* Púrpura / índigo */
+  .dark .bg-purple-50, .dark .bg-purple-100, .dark .bg-indigo-50, .dark .bg-indigo-100 { background-color: #201A30; }
+  .dark .text-purple-600, .dark .text-purple-700, .dark .text-purple-800,
+  .dark .text-indigo-600, .dark .text-indigo-700, .dark .text-indigo-800 { color: #BFA0F0; }
+
+  /* Cielo (sky) */
+  .dark .bg-sky-50, .dark .bg-sky-100 { background-color: #142430; }
+  .dark .text-sky-600, .dark .text-sky-700, .dark .text-sky-800 { color: #6FC0EE; }
 }
 
-/* Dark mode form inputs — global fallback for components without explicit dark: classes */
+/* Inputs en oscuro — superficie cálida */
 .dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not(.no-dark),
 .dark textarea:not(.no-dark),
 .dark select:not(.no-dark) {
-  background-color: rgb(55 65 81);   /* gray-700 */
-  color: rgb(249 250 251);           /* gray-50  */
-  border-color: rgb(75 85 99);       /* gray-600 */
+  background-color: #2C251E;
+  color: #F5F1EA;
+  border-color: #44403C;
 }
 .dark input::placeholder,
 .dark textarea::placeholder {
-  color: rgb(107 114 128);           /* gray-500 */
+  color: #8A827A;
 }
 
 /* Respeta preferencia de movimiento reducido */
@@ -114,6 +193,40 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ──────────────────────────────────────────────────────
+   Leaflet usa z-index internos muy altos (controles = 1000, panes 400+)
+   que, sin aislar, se dibujan por ENCIMA de las modales/overlays de la app
+   (CategoryModal, tour, etc.). Aislamos el contexto de apilamiento del mapa
+   para que esos z-index queden contenidos dentro del propio mapa.
+   ────────────────────────────────────────────────────── */
+.leaflet-container {
+  isolation: isolate;
+  z-index: 0;
+}
+
+/* ──────────────────────────────────────────────────────
+   Popups de Leaflet: respetar el tema (claro/oscuro) y evitar
+   los links azules por defecto que rompían el botón "Ver y reservar".
+   ────────────────────────────────────────────────────── */
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: #ffffff;
+  color: #1C1917;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+}
+.dark .leaflet-popup-content-wrapper,
+.dark .leaflet-popup-tip {
+  background: #211C17;
+  color: #F5F1EA;
+}
+.leaflet-popup-content-wrapper { border-radius: 14px; }
+.leaflet-popup-content { margin: 12px 14px; }
+.leaflet-popup-content a { text-decoration: none; }
+.leaflet-popup-close-button { color: #78716C !important; }
+.dark .leaflet-popup-close-button { color: #A8A29E !important; }
+/* Botón de acción dentro del popup: fuerza texto blanco (Leaflet pinta links de azul) */
+.map-popup-btn { color: #ffffff !important; text-decoration: none !important; }
 
 /* Scrollbar personalizado */
 ::-webkit-scrollbar {
@@ -127,4 +240,10 @@
 }
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-gray-400;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background-color: #44403C;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background-color: #57534E;
 }

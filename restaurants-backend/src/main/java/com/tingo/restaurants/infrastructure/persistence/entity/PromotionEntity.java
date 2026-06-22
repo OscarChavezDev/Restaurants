@@ -62,4 +62,10 @@ public class PromotionEntity extends BaseEntity {
     @Builder.Default
     @Column(name = "usage_count", nullable = false)
     private int usageCount = 0;
+
+    @Column(name = "flyer_headline", length = 120)
+    private String flyerHeadline;
+
+    @Column(name = "flyer_tagline", length = 200)
+    private String flyerTagline;
 }
