@@ -42,6 +42,12 @@ public class DishController {
         return ResponseEntity.ok(ApiResponse.ok(dishService.findByMenu(menuId)));
     }
 
+    @GetMapping("/restaurant/{restaurantId}")
+    @Operation(summary = "Platos disponibles de un restaurante (público, para pre-pedido)")
+    public ResponseEntity<ApiResponse<List<DishResponse>>> findByRestaurant(@PathVariable UUID restaurantId) {
+        return ResponseEntity.ok(ApiResponse.ok(dishService.findAvailableByRestaurant(restaurantId)));
+    }
+
     @GetMapping("/{id}")
     @Operation(summary = "Obtener detalle de un plato (público)")
     public ResponseEntity<ApiResponse<DishResponse>> findById(@PathVariable UUID id) {

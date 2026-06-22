@@ -46,8 +46,8 @@ function ReservationRow({
   noShowPending: boolean;
 }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center justify-between gap-4">
-      <div className="flex items-center gap-4">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex items-center gap-4 min-w-0">
         <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-50 text-orange-600">
           <Calendar className="h-5 w-5" />
         </div>
@@ -69,7 +69,7 @@ function ReservationRow({
         </div>
       </div>
 
-      <div className="flex items-center gap-3 flex-shrink-0">
+      <div className="flex items-center gap-2 flex-wrap sm:flex-shrink-0 sm:justify-end">
         <span className={cn('inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium', STATUS_COLORS[res.status])}>
           {STATUS_LABELS[res.status]}
         </span>

@@ -17,6 +17,7 @@ import java.util.UUID;
 public class RestaurantResponse {
 
     private UUID id;
+    private UUID ownerId;
     private String name;
     private String slug;
     private String description;
@@ -34,6 +35,8 @@ public class RestaurantResponse {
 
     private int totalCapacity;
     private int priceLevel;
+    private BigDecimal avgDishPrice;
+    private String priceRange; // LOW | MEDIUM | HIGH (derivado de avgDishPrice)
     private int minReservationSize;
     private int maxReservationSize;
 
@@ -52,6 +55,7 @@ public class RestaurantResponse {
     private boolean isAccessible;
 
     private List<String> categories;
+    private List<UUID> categoryIds;
     private List<ScheduleResponse> schedules;
 
     private LocalDateTime createdAt;

@@ -20,7 +20,7 @@ public class SwaggerConfig {
     public OpenAPI openAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("🍽️ Restaurants Service API")
+                        .title("Restaurants Service API")
                         .description("""
                             **Sistema Independiente de Restaurantes**
 

@@ -44,13 +44,15 @@ public class SecurityConfig {
                         .requestMatchers("/v1/auth/**").permitAll()
                         // GET públicos
                         .requestMatchers(HttpMethod.GET, "/v1/restaurants/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/v1/categories/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/v1/menus/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/v1/dishes/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/v1/promotions/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/v1/ratings/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/v1/ratings").permitAll()
                         .requestMatchers(HttpMethod.GET, "/v1/reservations/code/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/v1/reservations").permitAll()
+                        // Asistente con IA (consulta pública por código)
+                        .requestMatchers(HttpMethod.POST, "/v1/assistant/**").permitAll()
+                        // Reservar y reseñar exige cuenta de cliente (login con Google) — Etapa 3
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

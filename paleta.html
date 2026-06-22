@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Paleta — Restaurantes Tingo María</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: #e9e6e1;
+    color: #1c1917;
+    padding: 28px 18px 60px;
+    line-height: 1.45;
+  }
+  .page-head { max-width: 1200px; margin: 0 auto 26px; }
+  .page-head h1 { font-family: 'Poppins', sans-serif; font-size: 26px; letter-spacing: -.02em; }
+  .page-head p { color: #6b6259; font-size: 14px; margin-top: 4px; }
+
+  .grid { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+  @media (max-width: 880px) { .grid { grid-template-columns: 1fr; } }
+
+  /* ── Tokens por modo ───────────────────────────────── */
+  .panel.light {
+    --bg:#FAF8F5; --surface:#FFFFFF; --surface2:#F4F0EA;
+    --text:#1C1917; --text2:#78716C; --faint:#A8A29E; --border:#E7E1D8;
+    --primary:#E8590C; --primary-hover:#C2410C; --primary-soft:#FFF1E7; --on-primary:#FFFFFF;
+    --accent:#157F5B; --accent-soft:#E6F4EE;
+    --success:#15A34A; --warning:#D97706; --error:#DC2626; --info:#2563EB;
+    --shadow: 0 1px 2px rgba(28,25,23,.06), 0 8px 24px rgba(28,25,23,.05);
+  }
+  .panel.dark {
+    --bg:#15120E; --surface:#211C17; --surface2:#2C251E;
+    --text:#F5F1EA; --text2:#A8A29E; --faint:#7C746C; --border:#352D25;
+    --primary:#F97A3D; --primary-hover:#FB8C5A; --primary-soft:#2A1B12; --on-primary:#1C1208;
+    --accent:#3FAE84; --accent-soft:#13241D;
+    --success:#4ADE80; --warning:#FBBF24; --error:#F87171; --info:#60A5FA;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.45);
+  }
+
+  .panel {
+    background: var(--bg); color: var(--text);
+    border-radius: 20px; padding: 22px; border: 1px solid var(--border);
+    box-shadow: 0 10px 40px rgba(0,0,0,.10);
+  }
+  .panel-title { display: flex; align-items: center; gap: 8px; font-family:'Poppins',sans-serif; font-size: 15px; margin-bottom: 18px; color: var(--text); }
+  .panel-title .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--primary); }
+
+  .section-label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--faint); margin: 22px 0 10px; font-weight: 600; }
+
+  /* Swatches */
+  .swatches { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .sw { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 8px 10px; }
+  .sw .chip { width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0; border: 1px solid rgba(120,113,108,.25); }
+  .sw .meta { min-width: 0; }
+  .sw .meta b { font-size: 12px; font-weight: 600; display: block; color: var(--text); }
+  .sw .meta span { font-size: 11px; color: var(--text2); font-family: ui-monospace, monospace; }
+
+  /* Buttons */
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .btn { font: inherit; font-weight: 600; font-size: 13px; padding: 9px 16px; border-radius: 12px; border: 1px solid transparent; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+  .btn-primary { background: var(--primary); color: var(--on-primary); }
+  .btn-accent { background: var(--accent); color: #fff; }
+  .btn-outline { background: transparent; color: var(--text); border-color: var(--border); }
+  .btn-ghost { background: var(--surface2); color: var(--text); }
+  .btn-danger { background: var(--error); color: #fff; }
+
+  /* Badges */
+  .badge { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 999px; display: inline-flex; align-items: center; gap: 5px; }
+  .b-promo { background: var(--primary-soft); color: var(--primary); }
+  .b-open  { background: var(--accent-soft); color: var(--accent); }
+  .b-sold  { background: color-mix(in srgb, var(--error) 16%, transparent); color: var(--error); }
+  .b-pend  { background: color-mix(in srgb, var(--warning) 18%, transparent); color: var(--warning); }
+  .b-info  { background: color-mix(in srgb, var(--info) 16%, transparent); color: var(--info); }
+
+  /* Card mock */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; box-shadow: var(--shadow); }
+  .card .cover { height: 110px; position: relative; background:
+      radial-gradient(120% 120% at 80% 10%, color-mix(in srgb, var(--primary) 70%, #000 0%) 0%, var(--primary) 45%, var(--primary-hover) 100%); }
+  .card .cover .status { position: absolute; top: 10px; left: 10px; }
+  .card .cover .promo { position: absolute; bottom: 10px; left: 10px; box-shadow: 0 2px 8px rgba(0,0,0,.25); }
+  .card .body { padding: 14px; }
+  .card .head { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
+  .avatar { width: 38px; height: 38px; border-radius: 11px; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-family:'Poppins',sans-serif; font-weight: 700; flex-shrink: 0; }
+  .card h3 { font-family:'Poppins',sans-serif; font-size: 15px; color: var(--text); }
+  .card .loc { font-size: 12px; color: var(--text2); display: flex; align-items: center; gap: 4px; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0; }
+  .chip-cat { font-size: 11px; font-weight: 500; padding: 2px 9px; border-radius: 999px; background: var(--primary-soft); color: var(--primary); border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent); }
+  .card .foot { display: flex; align-items: center; gap: 12px; padding-top: 10px; margin-top: 6px; border-top: 1px solid var(--border); font-size: 12px; color: var(--text2); }
+  .stars { color: var(--warning); font-weight: 600; display:flex; align-items:center; gap:3px; }
+  .price-on { color: var(--accent); font-weight: 700; }
+  .reservar { margin-left: auto; color: var(--primary); font-weight: 700; }
+
+  /* Inputs */
+  .field { width: 100%; font: inherit; font-size: 13px; padding: 10px 12px; border-radius: 12px; background: var(--surface2); border: 1px solid var(--border); color: var(--text); }
+  .field::placeholder { color: var(--faint); }
+
+  /* Alerts */
+  .alert { display: flex; gap: 10px; align-items: flex-start; padding: 11px 13px; border-radius: 12px; font-size: 13px; }
+  .a-success { background: var(--accent-soft); color: var(--accent); border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent); }
+  .a-error { background: color-mix(in srgb, var(--error) 12%, transparent); color: var(--error); border: 1px solid color-mix(in srgb, var(--error) 35%, transparent); }
+
+  /* Typography sample */
+  .type h2 { font-family:'Poppins',sans-serif; font-size: 20px; color: var(--text); letter-spacing: -.02em; }
+  .type p { font-size: 13px; color: var(--text2); margin-top: 3px; }
+  .type small { font-size: 12px; color: var(--faint); }
+
+  .stack > * + * { margin-top: 10px; }
+</style>
+</head>
+<body>
+  <div class="page-head">
+    <h1>🍽️ Paleta — Restaurantes Tingo María</h1>
+    <p>Claro y oscuro lado a lado. Ningún color se repite entre modos: claros más saturados, oscuros más luminosos.</p>
+  </div>
+
+  <div class="grid">
+    <section class="panel light" data-mode="light"></section>
+    <section class="panel dark" data-mode="dark"></section>
+  </div>
+
+<script>
+  const ROLES = [
+    { name: 'Primario "Brasa"',  light: '#E8590C', dark: '#F97A3D' },
+    { name: 'Primario hover',    light: '#C2410C', dark: '#FB8C5A' },
+    { name: 'Primario suave',    light: '#FFF1E7', dark: '#2A1B12' },
+    { name: 'Acento "Selva"',    light: '#157F5B', dark: '#3FAE84' },
+    { name: 'Acento suave',      light: '#E6F4EE', dark: '#13241D' },
+    { name: 'Fondo app',         light: '#FAF8F5', dark: '#15120E' },
+    { name: 'Superficie',        light: '#FFFFFF', dark: '#211C17' },
+    { name: 'Superficie 2',      light: '#F4F0EA', dark: '#2C251E' },
+    { name: 'Texto principal',   light: '#1C1917', dark: '#F5F1EA' },
+    { name: 'Texto secundario',  light: '#78716C', dark: '#A8A29E' },
+    { name: 'Borde',             light: '#E7E1D8', dark: '#352D25' },
+    { name: 'Éxito',             light: '#15A34A', dark: '#4ADE80' },
+    { name: 'Aviso',             light: '#D97706', dark: '#FBBF24' },
+    { name: 'Error',             light: '#DC2626', dark: '#F87171' },
+    { name: 'Info',              light: '#2563EB', dark: '#60A5FA' },
+  ];
+
+  function swatches(mode) {
+    return `<div class="swatches">` + ROLES.map(r => `
+      <div class="sw">
+        <span class="chip" style="background:${r[mode]}"></span>
+        <span class="meta"><b>${r.name}</b><span>${r[mode].toUpperCase()}</span></span>
+      </div>`).join('') + `</div>`;
+  }
+
+  function demo() {
+    return `
+      <div class="section-label">Tipografía</div>
+      <div class="type">
+        <h2>El Carbón Resto Bar</h2>
+        <p>Restobar con vista al río Huallaga, especializado en parrillas y gastronomía criolla-amazónica.</p>
+        <small>Poppins para títulos · Inter para texto</small>
+      </div>
+
+      <div class="section-label">Botones</div>
+      <div class="row">
+        <button class="btn btn-primary">Reservar →</button>
+        <button class="btn btn-accent">Disponible</button>
+        <button class="btn btn-outline">Ver menú</button>
+        <button class="btn btn-ghost">Cancelar</button>
+        <button class="btn btn-danger">Eliminar</button>
+      </div>
+
+      <div class="section-label">Badges / estados</div>
+      <div class="row">
+        <span class="badge b-promo">● 2 promos</span>
+        <span class="badge b-open">● Abierto ahora</span>
+        <span class="badge b-pend">● Pendiente</span>
+        <span class="badge b-sold">● Agotado</span>
+        <span class="badge b-info">● Confirmada</span>
+      </div>
+
+      <div class="section-label">Tarjeta de restaurante</div>
+      <div class="card">
+        <div class="cover">
+          <span class="badge b-open status" style="background:rgba(255,255,255,.92);color:#157F5B">● Activo</span>
+          <span class="badge b-promo promo" style="background:#fff">● 1 promo</span>
+        </div>
+        <div class="body">
+          <div class="head">
+            <span class="avatar">E</span>
+            <div>
+              <h3>El Carbón Resto Bar</h3>
+              <span class="loc">📍 Rupa Rupa, Tingo María</span>
+            </div>
+          </div>
+          <div class="chips">
+            <span class="chip-cat">Comida Peruana</span>
+            <span class="chip-cat">Parrillas</span>
+          </div>
+          <div class="foot">
+            <span class="stars">★ 4.8 <span style="color:var(--faint)">(4)</span></span>
+            <span class="price-on">$$<span style="color:var(--faint)">$$</span></span>
+            <span class="reservar">Reservar →</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label">Formulario</div>
+      <div class="stack">
+        <input class="field" placeholder="Buscar restaurante...">
+        <input class="field" placeholder="Ciudad">
+      </div>
+
+      <div class="section-label">Alertas / toasts</div>
+      <div class="stack">
+        <div class="alert a-success">✓ Reserva creada exitosamente. Código: RES-7K2M9XQ4</div>
+        <div class="alert a-error">✕ No se pudo guardar los horarios</div>
+      </div>
+    `;
+  }
+
+  document.querySelectorAll('.panel').forEach(p => {
+    const mode = p.dataset.mode;
+    p.innerHTML = `
+      <div class="panel-title"><span class="dot"></span> Modo ${mode === 'light' ? 'claro ☀️' : 'oscuro 🌙'}</div>
+      <div class="section-label">Paleta</div>
+      ${swatches(mode)}
+      ${demo()}
+    `;
+  });
+</script>
+</body>
+</html>

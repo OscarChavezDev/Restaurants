@@ -31,6 +31,13 @@ public interface RestaurantJpaRepository extends JpaRepository<RestaurantEntity,
           AND r.status = 'ACTIVE'
           AND (CAST(:name AS text) IS NULL OR LOWER(r.name) LIKE LOWER(CONCAT('%', CAST(:name AS text), '%')))
           AND (CAST(:city AS text) IS NULL OR LOWER(r.city) = LOWER(CAST(:city AS text)))
+          AND (CAST(:categoryId AS uuid) IS NULL OR EXISTS (
+                SELECT 1 FROM restaurant_food_categories rfc
+                WHERE rfc.restaurant_id = r.id AND rfc.category_id = CAST(:categoryId AS uuid)))
+          AND (CAST(:priceRange AS text) IS NULL OR (r.avg_dish_price IS NOT NULL AND (
+                (:priceRange = 'LOW'    AND r.avg_dish_price < 15) OR
+                (:priceRange = 'MEDIUM' AND r.avg_dish_price >= 15 AND r.avg_dish_price <= 35) OR
+                (:priceRange = 'HIGH'   AND r.avg_dish_price > 35))))
         ORDER BY r.avg_rating DESC, r.total_ratings DESC
         """,
         countQuery = """
@@ -39,11 +46,20 @@ public interface RestaurantJpaRepository extends JpaRepository<RestaurantEntity,
           AND r.status = 'ACTIVE'
           AND (CAST(:name AS text) IS NULL OR LOWER(r.name) LIKE LOWER(CONCAT('%', CAST(:name AS text), '%')))
           AND (CAST(:city AS text) IS NULL OR LOWER(r.city) = LOWER(CAST(:city AS text)))
+          AND (CAST(:categoryId AS uuid) IS NULL OR EXISTS (
+                SELECT 1 FROM restaurant_food_categories rfc
+                WHERE rfc.restaurant_id = r.id AND rfc.category_id = CAST(:categoryId AS uuid)))
+          AND (CAST(:priceRange AS text) IS NULL OR (r.avg_dish_price IS NOT NULL AND (
+                (:priceRange = 'LOW'    AND r.avg_dish_price < 15) OR
+                (:priceRange = 'MEDIUM' AND r.avg_dish_price >= 15 AND r.avg_dish_price <= 35) OR
+                (:priceRange = 'HIGH'   AND r.avg_dish_price > 35))))
         """,
         nativeQuery = true)
     Page<RestaurantEntity> findByFilters(
             @Param("name") String name,
             @Param("city") String city,
+            @Param("categoryId") String categoryId,
+            @Param("priceRange") String priceRange,
             Pageable pageable);
 
     @Query(value = """

@@ -15,6 +15,8 @@ public interface UserRepository {
 
     Optional<User> findByEmail(String email);
 
+    Optional<User> findByGoogleId(String googleId);
+
     boolean existsByEmail(String email);
 
     void deleteById(UUID id);

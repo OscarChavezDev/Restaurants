@@ -1,121 +1,35 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import toast from 'react-hot-toast';
+import dynamic from 'next/dynamic';
 import {
   MapPin, Star, Phone, Mail, Globe, Clock, Users, Wifi, Car,
-  Wind, Accessibility, Calendar, ArrowLeft, Loader2, ChevronDown, ChevronUp, UtensilsCrossed, CheckCircle
+  Wind, Accessibility, Calendar, ArrowLeft, UtensilsCrossed
 } from 'lucide-react';
 import { useRestaurantBySlug } from '@/hooks/useRestaurants';
-import { restaurantService } from '@/services/restaurantService';
-import { useCreateReservation } from '@/hooks/useReservations';
 import { useAuthStore } from '@/store/authStore';
-import { createReservationSchema, type CreateReservationFormData } from '@/validations/restaurantSchema';
-import { formatRating, formatDistance, DAY_LABELS } from '@/utils/formatters';
+import { formatRating, formatTime, DAY_LABELS } from '@/utils/formatters';
+import { ReservationModal } from '@/features/restaurants/ReservationModal';
 import { cn } from '@/utils/cn';
 import { MenuSection } from '@/features/restaurants/MenuSection';
 import { ImageGallery } from '@/features/restaurants/ImageGallery';
 import { PromotionsSection } from '@/features/restaurants/PromotionsSection';
 import { RestaurantLogo } from '@/components/ui/RestaurantLogo';
 import { RatingsSection } from '@/features/restaurants/RatingsSection';
+import { FavoriteButton } from '@/components/ui/FavoriteButton';
 
-const TODAY = new Date().toISOString().split('T')[0];
+const LocationMap = dynamic(() => import('@/components/ui/LocationMap'), {
+  ssr: false,
+  loading: () => <div className="h-[220px] rounded-xl bg-gray-100 animate-pulse" />,
+});
 
 export default function RestaurantDetailPage() {
   const { slug } = useParams<{ slug: string }>();
-  const router = useRouter();
   const user = useAuthStore(s => s.user);
   const { data: restaurant, isLoading, error } = useRestaurantBySlug(slug);
-  const createReservation = useCreateReservation();
-  const [showReservationForm, setShowReservationForm] = useState(false);
-  const [successReservation, setSuccessReservation] = useState<{ code: string } | null>(null);
-
-  const { register, handleSubmit, watch, setValue, getValues, formState: { errors } } = useForm<CreateReservationFormData>({
-    resolver: zodResolver(createReservationSchema),
-    defaultValues: {
-      restaurantId: '',
-      partySize: 2,
-      reservationDate: TODAY,
-      startTime: '13:00',
-      customerName: user?.fullName ?? '',
-      customerEmail: user?.email ?? '',
-    },
-  });
-
-  const [availability, setAvailability] = useState<{ available: boolean; remainingSeats: number; totalCapacity: number; occupiedSeats: number } | null>(null);
-  const [checkingAvailability, setCheckingAvailability] = useState(false);
-
-  const watchDate = watch('reservationDate');
-  const watchTime = watch('startTime');
-  const watchPartySize = watch('partySize');
-
-  const [selectedDaySchedule, setSelectedDaySchedule] = useState<{ open: string, close: string, isClosed: boolean } | null>(null);
-
-  useEffect(() => {
-    if (restaurant && watchDate) {
-      const [year, month, day] = watchDate.split('-').map(Number);
-      const localDate = new Date(year, month - 1, day);
-      const days = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
-      const dayStr = days[localDate.getDay()];
-      
-      const schedule = restaurant.schedules?.find(s => s.dayOfWeek === dayStr);
-      if (schedule) {
-        setSelectedDaySchedule({
-          open: schedule.openingTime,
-          close: schedule.closingTime,
-          isClosed: schedule.isClosed
-        });
-      } else {
-        setSelectedDaySchedule({ open: '00:00', close: '23:59', isClosed: true });
-      }
-    }
-  }, [restaurant, watchDate]);
-
-  useEffect(() => {
-    if (selectedDaySchedule && !selectedDaySchedule.isClosed) {
-      const current = getValues('startTime');
-      if (current < selectedDaySchedule.open || current > selectedDaySchedule.close) {
-        setValue('startTime', selectedDaySchedule.open);
-      }
-    }
-  }, [selectedDaySchedule, setValue, getValues]);
-
-  useEffect(() => {
-    if (restaurant && watchDate && watchTime && watchPartySize && showReservationForm) {
-      const check = async () => {
-        try {
-          setCheckingAvailability(true);
-          const result = await restaurantService.checkAvailability(restaurant.id, watchDate, watchTime, watchPartySize);
-          setAvailability(result);
-        } catch (err) {
-          console.error('Error al consultar disponibilidad', err);
-        } finally {
-          setCheckingAvailability(false);
-        }
-      };
-      
-      const timeoutId = setTimeout(check, 500);
-      return () => clearTimeout(timeoutId);
-    }
-  }, [restaurant, watchDate, watchTime, watchPartySize, showReservationForm]);
-
-  const onReserve = async (data: CreateReservationFormData) => {
-    if (!restaurant) return;
-    try {
-      const reservation = await createReservation.mutateAsync({
-        ...data,
-        restaurantId: restaurant.id,
-      });
-      toast.success('¡Reserva creada con éxito!');
-      setSuccessReservation({ code: reservation.confirmationCode });
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message ?? 'Error al crear la reserva');
-    }
-  };
+  const [reserveOpen, setReserveOpen] = useState(false);
 
   if (isLoading) return (
     <div className="min-h-screen bg-gray-50">
@@ -149,10 +63,23 @@ export default function RestaurantDetailPage() {
     { show: restaurant.acceptsReservations, icon: Users, label: 'Acepta reservas' },
   ].filter(f => f.show);
 
+  // ── Horario: día de hoy y "abierto ahora" ──
+  const DAY_ORDER = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
+  const now = new Date();
+  const todayKey = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'][now.getDay()];
+  const sortedSchedules = [...(restaurant.schedules ?? [])].sort(
+    (a, b) => DAY_ORDER.indexOf(a.dayOfWeek) - DAY_ORDER.indexOf(b.dayOfWeek)
+  );
+  const todaySchedule = restaurant.schedules?.find((s) => s.dayOfWeek === todayKey);
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  const toMin = (t?: string) => (t ? Number(t.split(':')[0]) * 60 + Number(t.split(':')[1]) : 0);
+  const isOpenNow = !!todaySchedule && !todaySchedule.isClosed
+    && nowMin >= toMin(todaySchedule.openingTime) && nowMin <= toMin(todaySchedule.closingTime);
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Cover */}
-      <div className="relative h-72 bg-gradient-to-br from-orange-100 to-orange-200 overflow-hidden">
+      <div className="relative h-72 overflow-hidden bg-gradient-to-br from-[#7C2D12] via-[#C2410C] to-[#E8590C] dark:from-[#240B03] dark:via-[#5A1F0C] dark:to-[#7C2D12]">
         {restaurant.coverImageUrl ? (
           <>
             {/* Hero difuminado: portadas de baja resolución lucen como fondo intencional */}
@@ -165,15 +92,17 @@ export default function RestaurantDetailPage() {
             <div className="absolute inset-0 bg-black/30" />
           </>
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center opacity-20"><UtensilsCrossed className="h-32 w-32 text-orange-300" /></div>
+          <div className="absolute inset-0 flex items-center justify-center opacity-20"><UtensilsCrossed className="h-32 w-32 text-white" /></div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
 
         <div className="absolute top-4 left-4">
-          <Link href="/restaurants" className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/90 rounded-xl text-sm font-medium text-gray-700 hover:bg-white transition-colors">
+          <Link href="/restaurants" className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-medium shadow-sm bg-white text-orange-600 hover:bg-orange-50 border border-white/50 dark:bg-white/10 dark:text-white dark:border-white/20 dark:backdrop-blur-md dark:hover:bg-white/20">
             <ArrowLeft className="h-4 w-4" /> Volver
           </Link>
         </div>
+
+        <FavoriteButton restaurantId={restaurant.id} className="absolute top-4 right-4 h-10 w-10 z-10" />
 
         <div className="absolute bottom-6 left-6 right-6">
           <div className="flex items-end gap-4">
@@ -235,20 +164,46 @@ export default function RestaurantDetailPage() {
             )}
 
             {/* Horarios */}
-            {restaurant.schedules?.length > 0 && (
+            {sortedSchedules.length > 0 && (
               <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-6">
-                <h2 className="font-display text-lg font-semibold text-gray-900 dark:text-gray-50 mb-4 flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-orange-500" /> Horarios
-                </h2>
-                <div className="space-y-2">
-                  {restaurant.schedules.map(s => (
-                    <div key={s.id} className="flex items-center justify-between py-2 border-b border-gray-50 dark:border-gray-700 last:border-0">
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{DAY_LABELS[s.dayOfWeek] ?? s.dayOfWeek}</span>
-                      <span className="text-sm text-gray-500 dark:text-gray-400">
-                        {s.isClosed ? <span className="text-red-500">Cerrado</span> : `${s.openingTime} - ${s.closingTime}`}
-                      </span>
-                    </div>
-                  ))}
+                <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+                  <h2 className="font-display text-lg font-semibold text-gray-900 dark:text-gray-50 flex items-center gap-2">
+                    <Clock className="h-5 w-5 text-orange-500" /> Horarios
+                  </h2>
+                  <span className={cn(
+                    'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold',
+                    isOpenNow ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+                  )}>
+                    <span className={cn('h-2 w-2 rounded-full', isOpenNow ? 'bg-green-500 animate-pulse' : 'bg-gray-400')} />
+                    {isOpenNow ? 'Abierto ahora' : 'Cerrado ahora'}
+                  </span>
+                </div>
+                <div className="space-y-1">
+                  {sortedSchedules.map(s => {
+                    const isToday = s.dayOfWeek === todayKey;
+                    return (
+                      <div
+                        key={s.id}
+                        className={cn(
+                          'flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors',
+                          isToday
+                            ? 'bg-orange-50 dark:bg-orange-500/10 ring-1 ring-orange-500/30'
+                            : 'hover:bg-gray-50 dark:hover:bg-gray-700/30'
+                        )}
+                      >
+                        <span className={cn('flex items-center gap-2.5', isToday ? 'font-semibold text-gray-900 dark:text-gray-50' : 'font-medium text-gray-700 dark:text-gray-300')}>
+                          <span className={cn('h-1.5 w-1.5 rounded-full flex-shrink-0', s.isClosed ? 'bg-gray-300 dark:bg-gray-600' : 'bg-green-500')} />
+                          {DAY_LABELS[s.dayOfWeek] ?? s.dayOfWeek}
+                          {isToday && <span className="text-[10px] font-bold uppercase tracking-wide text-orange-600 bg-orange-100 px-1.5 py-0.5 rounded">Hoy</span>}
+                        </span>
+                        <span className={cn(
+                          s.isClosed ? 'text-red-500' : isToday ? 'text-orange-600 dark:text-orange-400 font-semibold' : 'text-gray-500 dark:text-gray-400'
+                        )}>
+                          {s.isClosed ? 'Cerrado' : `${formatTime(s.openingTime)} – ${formatTime(s.closingTime)}`}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -263,128 +218,25 @@ export default function RestaurantDetailPage() {
             <ImageGallery restaurantId={restaurant.id} />
 
             {/* Reseñas */}
-            <RatingsSection restaurantId={restaurant.id} />
+            <RatingsSection
+              restaurantId={restaurant.id}
+              canReply={!!user && (user.userId === restaurant.ownerId || user.role === 'ADMIN')}
+            />
           </div>
 
           {/* Sidebar */}
           <div className="space-y-4">
-            {/* Reserva */}
+            {/* Reserva (S9-02: abre el modal moderno) */}
             {restaurant.acceptsReservations && (
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-                <div className="flex items-center justify-between mb-1">
-                  <h2 className="font-display text-lg font-semibold text-gray-900">Hacer una reserva</h2>
-                </div>
-                <p className="text-sm text-gray-500 mb-4">Para {restaurant.minReservationSize}–{restaurant.maxReservationSize} personas</p>
-
-                {successReservation ? (
-                  <div className="bg-green-50 rounded-xl p-6 text-center border border-green-100">
-                    <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-3" />
-                    <h3 className="text-green-800 font-bold text-lg mb-1">¡Reserva enviada!</h3>
-                    <p className="text-green-700 text-sm mb-4">Tu solicitud de reserva está pendiente de confirmación. Guarda este código para consultarla o cancelarla:</p>
-                    <div className="bg-white rounded-lg py-3 px-4 shadow-sm border border-green-100 mb-5">
-                      <code className="text-xl font-mono text-gray-900 font-bold select-all tracking-wider">{successReservation.code}</code>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <Link href={`/reservations?code=${successReservation.code}`} className="w-full py-2.5 bg-green-600 hover:bg-green-700 text-white font-medium rounded-xl text-sm transition-colors block text-center">
-                        Ver estado de reserva
-                      </Link>
-                      <button onClick={() => { setSuccessReservation(null); setShowReservationForm(false); }} className="w-full py-2.5 bg-white border border-green-200 text-green-700 hover:bg-green-50 font-medium rounded-xl text-sm transition-colors">
-                        Cerrar
-                      </button>
-                    </div>
-                  </div>
-                ) : !showReservationForm ? (
-                  <button
-                    onClick={() => setShowReservationForm(true)}
-                    className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl transition-colors"
-                  >
-                    Reservar mesa
-                  </button>
-                ) : (
-                  <form onSubmit={handleSubmit(onReserve)} className="space-y-3">
-                    {availability && (
-                      <div className={cn("p-3 rounded-xl text-sm", availability.available ? "bg-green-50 text-green-700" : "bg-amber-50 text-amber-700")}>
-                        {availability.available ? (
-                          <div className="flex items-center gap-2">
-                            <CheckCircle className="w-4 h-4" />
-                            <span>¡Hay mesas disponibles! (Quedan {availability.remainingSeats} asientos)</span>
-                          </div>
-                        ) : (
-                          <div className="flex items-start gap-2">
-                            <Wind className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                            <div>
-                              <p className="font-medium">Poca disponibilidad</p>
-                              <p className="text-xs opacity-90">El restaurante está lleno para esta hora (capacidad: {availability.totalCapacity}, ocupados: {availability.occupiedSeats}). Tu reserva quedará pendiente de revisión especial.</p>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                    <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Tu nombre *</label>
-                      <input {...register('customerName')} className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
-                      {errors.customerName && <p className="text-xs text-red-500 mt-0.5">{errors.customerName.message}</p>}
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Teléfono *</label>
-                      <input {...register('customerPhone')} placeholder="+51 962 000 000" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
-                      {errors.customerPhone && <p className="text-xs text-red-500 mt-0.5">{errors.customerPhone.message}</p>}
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Email</label>
-                      <input {...register('customerEmail')} type="email" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Fecha *</label>
-                      <input {...register('reservationDate')} type="date" min={TODAY} className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Hora *</label>
-                      <input 
-                        {...register('startTime')} 
-                        type="time" 
-                        min={selectedDaySchedule && !selectedDaySchedule.isClosed ? selectedDaySchedule.open : undefined}
-                        max={selectedDaySchedule && !selectedDaySchedule.isClosed ? selectedDaySchedule.close : undefined}
-                        className={cn("w-full border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2", 
-                          selectedDaySchedule && !selectedDaySchedule.isClosed && (watchTime < selectedDaySchedule.open || watchTime > selectedDaySchedule.close)
-                            ? "border-red-300 focus:ring-red-500 bg-red-50"
-                            : "border-gray-200 focus:ring-orange-500"
-                        )} 
-                      />
-                      {selectedDaySchedule?.isClosed ? (
-                        <p className="text-xs text-red-500 mt-1">El restaurante está cerrado este día.</p>
-                      ) : selectedDaySchedule ? (
-                        <>
-                          <p className="text-xs text-gray-400 mt-1">Horario: {selectedDaySchedule.open} - {selectedDaySchedule.close}</p>
-                          {(watchTime < selectedDaySchedule.open || watchTime > selectedDaySchedule.close) && (
-                            <p className="text-xs text-red-500 mt-1 font-medium">La hora debe estar dentro del horario de atención.</p>
-                          )}
-                        </>
-                      ) : null}
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Personas *</label>
-                      <input {...register('partySize', { valueAsNumber: true })} type="number" min={restaurant.minReservationSize} max={restaurant.maxReservationSize} className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Notas (opcional)</label>
-                      <textarea {...register('notes')} rows={2} className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none" />
-                    </div>
-                    <div className="flex gap-2 pt-1">
-                      <button 
-                        type="submit" 
-                        disabled={createReservation.isPending || (selectedDaySchedule?.isClosed ?? false) || (selectedDaySchedule != null && !selectedDaySchedule.isClosed && (watchTime < selectedDaySchedule.open || watchTime > selectedDaySchedule.close))} 
-                        className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-orange-500 hover:bg-orange-600 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-xl text-sm transition-colors"
-                      >
-                        {createReservation.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                        {createReservation.isPending ? 'Reservando...' : 'Confirmar'}
-                      </button>
-                      <button type="button" onClick={() => setShowReservationForm(false)} className="px-4 py-2.5 border border-gray-200 rounded-xl text-sm hover:bg-gray-50 transition-colors">
-                        Cancelar
-                      </button>
-                    </div>
-                  </form>
-                )}
+              <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-6">
+                <h2 className="font-display text-lg font-semibold text-gray-900 dark:text-gray-50 mb-1">Hacer una reserva</h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Para {restaurant.minReservationSize}–{restaurant.maxReservationSize} personas</p>
+                <button
+                  onClick={() => setReserveOpen(true)}
+                  className="w-full inline-flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl shadow-lg shadow-orange-500/25 transition-all active:scale-95"
+                >
+                  <Calendar className="h-4 w-4" /> Reservar mesa
+                </button>
               </div>
             )}
 
@@ -396,6 +248,21 @@ export default function RestaurantDetailPage() {
                   <MapPin className="h-4 w-4 text-orange-500 flex-shrink-0 mt-0.5" />
                   <span>{restaurant.address}, {restaurant.city}</span>
                 </div>
+
+                {/* Mapa de ubicación */}
+                {!!restaurant.latitude && !!restaurant.longitude && (
+                  <div className="pt-1">
+                    <LocationMap lat={restaurant.latitude} lng={restaurant.longitude} />
+                    <a
+                      href={`https://www.google.com/maps/dir/?api=1&destination=${restaurant.latitude},${restaurant.longitude}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-orange-600 hover:text-orange-700 transition-colors"
+                    >
+                      <MapPin className="h-4 w-4" /> Cómo llegar
+                    </a>
+                  </div>
+                )}
                 {restaurant.phone && (
                   <a href={`tel:${restaurant.phone}`} className="flex items-center gap-3 text-sm text-gray-600 hover:text-orange-600 transition-colors">
                     <Phone className="h-4 w-4 text-orange-500" />
@@ -427,6 +294,9 @@ export default function RestaurantDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Modal de reserva moderno (Sprint 9) */}
+      <ReservationModal restaurant={restaurant} open={reserveOpen} onClose={() => setReserveOpen(false)} />
     </div>
   );
 }

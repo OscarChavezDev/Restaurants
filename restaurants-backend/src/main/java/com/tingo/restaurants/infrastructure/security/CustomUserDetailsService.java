@@ -30,9 +30,14 @@ public class CustomUserDetailsService implements UserDetailsService {
             throw new UsernameNotFoundException("Usuario inactivo o eliminado: " + userId);
         }
 
+        // Los usuarios de Google no tienen contraseña local. La autenticación es
+        // por JWT (no se valida la contraseña aquí), pero Spring User no admite
+        // password null, así que usamos un placeholder inutilizable.
+        String password = user.getPasswordHash() != null ? user.getPasswordHash() : "{noop}__google_oauth__";
+
         return User.builder()
                 .username(user.getId().toString())
-                .password(user.getPasswordHash())
+                .password(password)
                 .authorities(List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name())))
                 .accountExpired(false)
                 .accountLocked(false)

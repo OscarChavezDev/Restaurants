@@ -12,6 +12,8 @@ export interface Reservation {
   endTime?: string;
   partySize: number;
   status: ReservationStatus;
+  advanceAmount?: number;
+  paymentStatus?: string;
   notes?: string;
   specialRequests?: string;
   confirmationCode: string;
@@ -32,6 +34,9 @@ export interface CreateReservationDto {
   startTime: string;
   endTime?: string;
   partySize: number;
+  sectionId?: string;
+  termsAccepted?: boolean;
+  orderItems?: { dishId: string; quantity: number }[];
   notes?: string;
   specialRequests?: string;
   relatedEventId?: string;

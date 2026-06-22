@@ -48,6 +48,8 @@ public class RatingRepositoryAdapter implements RatingRepository {
                 .ambianceScore(r.getAmbianceScore())
                 .isVerified(r.isVerified())
                 .createdAt(r.getCreatedAt())
+                .ownerReply(r.getOwnerReply())
+                .ownerReplyAt(r.getOwnerReplyAt())
                 .build());
 
         return PagedResponse.from(responsePage);

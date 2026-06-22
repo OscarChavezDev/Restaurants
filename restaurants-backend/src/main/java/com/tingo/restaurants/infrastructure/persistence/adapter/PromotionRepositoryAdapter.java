@@ -41,6 +41,11 @@ public class PromotionRepositoryAdapter implements PromotionRepository {
     }
 
     @Override
+    public List<Promotion> findShowcase() {
+        return jpaRepository.findShowcase().stream().map(this::toDomain).collect(Collectors.toList());
+    }
+
+    @Override
     public void deleteById(UUID id) {
         jpaRepository.findById(id).ifPresent(e -> { e.softDelete(); jpaRepository.save(e); });
     }
@@ -53,6 +58,7 @@ public class PromotionRepositoryAdapter implements PromotionRepository {
                 .promoCode(e.getPromoCode()).imageUrl(e.getImageUrl())
                 .validFrom(e.getValidFrom()).validUntil(e.getValidUntil())
                 .isActive(e.isActive()).usageLimit(e.getUsageLimit()).usageCount(e.getUsageCount())
+                .flyerHeadline(e.getFlyerHeadline()).flyerTagline(e.getFlyerTagline())
                 .createdAt(e.getCreatedAt()).updatedAt(e.getUpdatedAt()).deletedAt(e.getDeletedAt())
                 .build();
     }
@@ -65,6 +71,7 @@ public class PromotionRepositoryAdapter implements PromotionRepository {
         e.setPromoCode(p.getPromoCode()); e.setImageUrl(p.getImageUrl());
         e.setValidFrom(p.getValidFrom()); e.setValidUntil(p.getValidUntil());
         e.setActive(p.isActive()); e.setUsageLimit(p.getUsageLimit()); e.setUsageCount(p.getUsageCount());
+        e.setFlyerHeadline(p.getFlyerHeadline()); e.setFlyerTagline(p.getFlyerTagline());
         return e;
     }
 }

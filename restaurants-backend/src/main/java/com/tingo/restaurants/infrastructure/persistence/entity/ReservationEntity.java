@@ -31,6 +31,9 @@ public class ReservationEntity extends BaseEntity {
     @Column(name = "table_id")
     private UUID tableId;
 
+    @Column(name = "section_id")
+    private UUID sectionId;
+
     @Column(name = "customer_name", nullable = false, length = 150)
     private String customerName;
 
@@ -51,6 +54,29 @@ public class ReservationEntity extends BaseEntity {
 
     @Column(name = "party_size", nullable = false)
     private int partySize;
+
+    @Column(name = "advance_amount")
+    private java.math.BigDecimal advanceAmount;
+
+    @Builder.Default
+    @Column(name = "terms_accepted", nullable = false)
+    private boolean termsAccepted = false;
+
+    @Builder.Default
+    @Column(nullable = false, length = 10)
+    private String priority = "NORMAL"; // NORMAL | HIGH
+
+    @Builder.Default
+    @Column(name = "payment_status", nullable = false, length = 20)
+    private String paymentStatus = "NOT_REQUIRED"; // NOT_REQUIRED | PENDING_PAYMENT | PROOF_SUBMITTED | PAYMENT_VERIFIED
+
+    @Builder.Default
+    @Column(name = "reminder_24h_sent", nullable = false)
+    private boolean reminder24hSent = false;
+
+    @Builder.Default
+    @Column(name = "reminder_2h_sent", nullable = false)
+    private boolean reminder2hSent = false;
 
     @Builder.Default
     @Enumerated(EnumType.STRING)

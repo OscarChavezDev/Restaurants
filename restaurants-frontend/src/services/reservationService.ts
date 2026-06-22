@@ -11,6 +11,10 @@ export const reservationService = {
     return extractData<Reservation>(await api.get(`/v1/reservations/code/${code}`));
   },
 
+  async updateSpecialRequests(id: string, text: string) {
+    return extractData<Reservation>(await api.patch(`/v1/reservations/${id}/special-requests`, { text }));
+  },
+
   async getByRestaurant(restaurantId: string, page = 0, size = 20) {
     return extractData<PagedResponse<Reservation>>(
       await api.get(`/v1/reservations/restaurant/${restaurantId}`, { params: { page, size } })

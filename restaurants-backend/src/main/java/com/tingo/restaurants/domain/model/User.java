@@ -1,5 +1,7 @@
 package com.tingo.restaurants.domain.model;
 
+import com.tingo.restaurants.domain.model.enums.AccountStatus;
+import com.tingo.restaurants.domain.model.enums.AuthProvider;
 import com.tingo.restaurants.domain.model.enums.UserRole;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,7 +12,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class User {
@@ -21,7 +23,10 @@ public class User {
     private String fullName;
     private String phone;
     private UserRole role;
+    private AuthProvider provider;
+    private String googleId;
     private boolean isActive;
+    private AccountStatus accountStatus;
     private boolean emailVerified;
     private LocalDateTime lastLoginAt;
     private LocalDateTime createdAt;

@@ -22,4 +22,6 @@ public class RatingResponse {
     @JsonProperty("isVerified")
     private boolean isVerified;
     private LocalDateTime createdAt;
+    private String ownerReply;
+    private LocalDateTime ownerReplyAt;
 }

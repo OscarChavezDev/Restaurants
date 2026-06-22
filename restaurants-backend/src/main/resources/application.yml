@@ -105,3 +105,25 @@ cors:
   allowed-methods: GET,POST,PUT,PATCH,DELETE,OPTIONS
   allowed-headers: "*"
   max-age: 3600
+
+app:
+  # URL pública del frontend (para los enlaces de los correos).
+  frontend-url: ${FRONTEND_URL:http://localhost:3000}
+
+gemini:
+  # API key gratuita de Google AI Studio (https://aistudio.google.com/apikey)
+  # para el asistente con IA. Si está vacía, el asistente cae a modo reglas.
+  api-key: ${GEMINI_API_KEY:}
+  model: ${GEMINI_MODEL:gemini-2.5-flash-lite}
+
+google:
+  oauth:
+    # Client ID del OAuth Client (tipo "Aplicación web") de Google Cloud.
+    # Se usa como "audience" para validar el ID token que envía el frontend.
+    client-id: ${GOOGLE_CLIENT_ID:}
+
+cloudinary:
+  cloud-name: ${CLOUDINARY_CLOUD_NAME:}
+  api-key: ${CLOUDINARY_API_KEY:}
+  api-secret: ${CLOUDINARY_API_SECRET:}
+  folder: ${CLOUDINARY_FOLDER:tingo-restaurants}

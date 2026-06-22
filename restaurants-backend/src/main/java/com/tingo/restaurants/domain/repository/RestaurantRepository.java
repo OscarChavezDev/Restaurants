@@ -22,7 +22,7 @@ public interface RestaurantRepository {
 
     Page<Restaurant> findByStatus(RestaurantStatus status, Pageable pageable);
 
-    Page<Restaurant> findByFilters(String name, String city, String category,
+    Page<Restaurant> findByFilters(String name, String city, String categoryId, String priceRange,
                                    RestaurantStatus status, Pageable pageable);
 
     List<Restaurant> findNearby(BigDecimal latitude, BigDecimal longitude, double radiusKm);

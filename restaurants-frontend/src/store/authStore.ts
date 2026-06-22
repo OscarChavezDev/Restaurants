@@ -6,8 +6,11 @@ interface AuthState {
   user: AuthUser | null;
   accessToken: string | null;
   isAuthenticated: boolean;
+  /** true una vez que el store se rehidrató desde localStorage (evita falsos "no logueado" tras F5). */
+  hasHydrated: boolean;
   setUser: (user: AuthUser) => void;
   logout: () => void;
+  setHasHydrated: (v: boolean) => void;
   hasRole: (role: UserRole) => boolean;
   isAdmin: () => boolean;
   isOwner: () => boolean;
@@ -19,6 +22,7 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       accessToken: null,
       isAuthenticated: false,
+      hasHydrated: false,
 
       setUser: (user) =>
         set({
@@ -26,6 +30,8 @@ export const useAuthStore = create<AuthState>()(
           accessToken: user.accessToken,
           isAuthenticated: true,
         }),
+
+      setHasHydrated: (v) => set({ hasHydrated: v }),
 
       logout: () =>
         set({
@@ -53,6 +59,9 @@ export const useAuthStore = create<AuthState>()(
         accessToken: state.accessToken,
         isAuthenticated: state.isAuthenticated,
       }),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
     }
   )
 );

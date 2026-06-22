@@ -4,9 +4,10 @@ import { useState } from 'react';
 import { cn } from '@/utils/cn';
 
 // Avatar de respaldo cuando el logo no existe o la URL está rota.
+// Paleta "Brasa & Selva": tonos cálidos (brasa/ámbar/terracota) + selva.
 const COLORS = [
-  'bg-orange-500', 'bg-amber-500', 'bg-red-500', 'bg-emerald-500',
-  'bg-blue-500', 'bg-violet-500', 'bg-pink-500', 'bg-teal-500',
+  'bg-orange-500', 'bg-amber-500', 'bg-selva-500', 'bg-orange-600',
+  'bg-selva-600', 'bg-amber-600', 'bg-orange-700', 'bg-selva-400',
 ];
 
 function pickColor(seed: string) {
