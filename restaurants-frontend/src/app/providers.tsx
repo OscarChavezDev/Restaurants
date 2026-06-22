@@ -9,6 +9,7 @@ import { TopControls } from '@/components/ui/TopControls';
 import { OnboardingTour } from '@/components/ui/OnboardingTour';
 import { OwnerOnboardingTour } from '@/components/ui/OwnerOnboardingTour';
 import { ReservationAssistant } from '@/components/ui/ReservationAssistant';
+import { Toaster } from 'react-hot-toast';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
