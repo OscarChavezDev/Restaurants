@@ -18,4 +18,5 @@ public class AuthResponse {
     private String refreshToken;
     private long expiresIn;
     private String tokenType;
+    private java.time.LocalDateTime createdAt;
 }

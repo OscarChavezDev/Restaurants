@@ -9,6 +9,8 @@ export interface AuthUser {
   refreshToken: string;
   expiresIn: number;
   tokenType: string;
+  createdAt?: string;
+  phone?: string;
 }
 
 export interface LoginDto {

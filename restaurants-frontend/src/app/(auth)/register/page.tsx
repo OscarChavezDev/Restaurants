@@ -261,7 +261,7 @@ export default function RegisterPage() {
               <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/30 p-4 text-center">
                 <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">¿Vas a reservar como cliente?</p>
                 <div className="flex justify-center">
-                  <GoogleLoginButton text="signup_with" onSuccess={(u) => router.push(u.role === 'CLIENTE' ? '/restaurants' : '/dashboard')} />
+                  <GoogleLoginButton text="signup_with" onSuccess={(u) => router.push(u.role === 'CLIENTE' ? '/profile/restaurants' : '/dashboard')} />
                 </div>
                 <p className="mt-2 text-xs text-gray-400">Los clientes se registran con Google para reservar, guardar favoritos y reseñar.</p>
               </div>
