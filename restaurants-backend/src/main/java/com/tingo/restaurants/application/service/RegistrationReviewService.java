@@ -39,7 +39,7 @@ public class RegistrationReviewService {
     }
 
     @Transactional
-    public void approve(UUID userId) {
+    public void approve(UUID userId, UUID requesterId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId));
 
@@ -51,7 +51,7 @@ public class RegistrationReviewService {
 
         // Publica sus restaurantes (PENDING_APPROVAL -> ACTIVE).
         ownerRestaurants(userId).forEach(r ->
-                restaurantService.updateStatus(r.getId(), RestaurantStatus.ACTIVE));
+                restaurantService.updateStatus(r.getId(), RestaurantStatus.ACTIVE, requesterId));
 
         emailService.sendOwnerApplicationApproved(user.getEmail(), user.getFullName());
         log.info("Solicitud aprobada: {}", user.getEmail());

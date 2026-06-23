@@ -25,6 +25,7 @@ public class PaymentService {
     private final PaymentJpaRepository paymentRepository;
     private final ReservationJpaRepository reservationRepository;
     private final OwnershipGuard ownershipGuard;
+    private final AuditLogService auditLogService;
 
     @Transactional
     public PaymentResponse submitProof(PaymentProofRequest req, UUID customerId, boolean isAdmin) {
@@ -62,6 +63,8 @@ public class PaymentService {
         payment.setVerifiedAt(LocalDateTime.now());
         payment.setVerifiedBy(verifierId);
         paymentRepository.save(payment);
+        auditLogService.record("PAYMENT", payment.getId(), "VERIFY_PAYMENT", verifierId,
+                "Monto: S/ " + payment.getAmount() + " · Método: " + payment.getMethod());
 
         ReservationEntity reservation = reservationRepository.findById(payment.getReservationId()).orElse(null);
         if (reservation != null) {
@@ -81,6 +84,8 @@ public class PaymentService {
         payment.setVerifiedAt(LocalDateTime.now());
         payment.setVerifiedBy(verifierId);
         paymentRepository.save(payment);
+        auditLogService.record("PAYMENT", payment.getId(), "REJECT_PAYMENT", verifierId,
+                "Monto: S/ " + payment.getAmount() + " · Método: " + payment.getMethod());
 
         // El comprobante no es válido / no llegó el pago: la reserva vuelve a
         // quedar pendiente de pago para que el cliente pueda reintentar.

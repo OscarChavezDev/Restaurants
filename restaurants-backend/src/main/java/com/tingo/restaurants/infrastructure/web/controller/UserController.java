@@ -76,22 +76,28 @@ public class UserController {
     @Operation(summary = "Cambiar rol de un usuario")
     public ResponseEntity<ApiResponse<UserResponse>> updateRole(
             @PathVariable UUID id,
-            @RequestParam UserRole role) {
-        return ResponseEntity.ok(ApiResponse.ok(userService.updateRole(id, role)));
+            @RequestParam UserRole role,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        UUID requesterId = UUID.fromString(userDetails.getUsername());
+        return ResponseEntity.ok(ApiResponse.ok(userService.updateRole(id, role, requesterId)));
     }
 
     @PatchMapping("/{id}/toggle-active")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Activar o desactivar un usuario")
-    public ResponseEntity<ApiResponse<UserResponse>> toggleActive(@PathVariable UUID id) {
-        return ResponseEntity.ok(ApiResponse.ok(userService.toggleActive(id)));
+    public ResponseEntity<ApiResponse<UserResponse>> toggleActive(
+            @PathVariable UUID id, @AuthenticationPrincipal UserDetails userDetails) {
+        UUID requesterId = UUID.fromString(userDetails.getUsername());
+        return ResponseEntity.ok(ApiResponse.ok(userService.toggleActive(id, requesterId)));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Eliminar un usuario (soft delete)")
-    public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable UUID id) {
-        userService.deleteUser(id);
+    public ResponseEntity<ApiResponse<Void>> deleteUser(
+            @PathVariable UUID id, @AuthenticationPrincipal UserDetails userDetails) {
+        UUID requesterId = UUID.fromString(userDetails.getUsername());
+        userService.deleteUser(id, requesterId);
         return ResponseEntity.ok(ApiResponse.<Void>builder().success(true).message("Usuario eliminado").build());
     }
 }

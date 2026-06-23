@@ -5,6 +5,7 @@ import com.tingo.restaurants.application.dto.response.ApiResponse;
 import com.tingo.restaurants.application.dto.response.PagedResponse;
 import com.tingo.restaurants.application.dto.response.RestaurantResponse;
 import com.tingo.restaurants.application.dto.response.RestaurantStatsResponse;
+import com.tingo.restaurants.application.service.ReportExportService;
 import com.tingo.restaurants.application.service.RestaurantService;
 import com.tingo.restaurants.application.service.RestaurantStatsService;
 import com.tingo.restaurants.domain.model.enums.RestaurantStatus;
@@ -17,7 +18,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -25,6 +28,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,6 +41,7 @@ public class RestaurantController {
     private final RestaurantService restaurantService;
     private final com.tingo.restaurants.application.service.ReservationService reservationService;
     private final RestaurantStatsService restaurantStatsService;
+    private final ReportExportService reportExportService;
     private final OwnershipGuard ownershipGuard;
 
     @PostMapping
@@ -116,6 +121,32 @@ public class RestaurantController {
         return ResponseEntity.ok(ApiResponse.ok(restaurantStatsService.getStats(id, from, to, groupBy)));
     }
 
+    @GetMapping("/{id}/reports/export")
+    @PreAuthorize("hasAnyRole('ADMIN', 'RESTAURANTE_OWNER')")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Exportar reporte de reservas, ingresos y reseñas en Excel o PDF (S15-02)")
+    public ResponseEntity<byte[]> exportReport(
+            @PathVariable UUID id,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(defaultValue = "xlsx") String format) {
+        ownershipGuard.assertOwnsRestaurant(id);
+        LocalDate effectiveTo = to != null ? to : LocalDate.now();
+        LocalDate effectiveFrom = from != null ? from : effectiveTo.minusDays(90);
+
+        boolean pdf = "pdf".equalsIgnoreCase(format);
+        byte[] content = pdf
+                ? reportExportService.exportPdf(id, effectiveFrom, effectiveTo)
+                : reportExportService.exportXlsx(id, effectiveFrom, effectiveTo);
+        String filename = "reporte-" + id + (pdf ? ".pdf" : ".xlsx");
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                .contentType(pdf ? MediaType.APPLICATION_PDF
+                        : MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(content);
+    }
+
     @GetMapping("/admin/all")
     @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
@@ -182,8 +213,10 @@ public class RestaurantController {
     @Operation(summary = "Actualizar estado del restaurante (solo ADMIN)")
     public ResponseEntity<ApiResponse<RestaurantResponse>> updateStatus(
             @PathVariable UUID id,
-            @RequestParam RestaurantStatus status) {
-        return ResponseEntity.ok(ApiResponse.ok(restaurantService.updateStatus(id, status)));
+            @RequestParam RestaurantStatus status,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        UUID requesterId = UUID.fromString(userDetails.getUsername());
+        return ResponseEntity.ok(ApiResponse.ok(restaurantService.updateStatus(id, status, requesterId)));
     }
 
     @DeleteMapping("/{id}")

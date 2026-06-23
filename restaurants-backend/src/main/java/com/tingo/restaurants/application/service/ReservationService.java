@@ -45,6 +45,7 @@ public class ReservationService {
     private final ReservationConfigService reservationConfigService;
     private final com.tingo.restaurants.infrastructure.persistence.repository.DishJpaRepository dishRepository;
     private final com.tingo.restaurants.infrastructure.persistence.repository.ReservationOrderItemJpaRepository orderItemRepository;
+    private final AuditLogService auditLogService;
 
     @Transactional
     public ReservationResponse create(CreateReservationRequest request, UUID customerId) {
@@ -218,6 +219,8 @@ public class ReservationService {
 
         Reservation cancelled = reservation.cancel(reason);
         Reservation saved = reservationRepository.save(cancelled);
+        auditLogService.record("RESERVATION", saved.getId(), "CANCEL_RESERVATION", requesterId,
+                "Código: " + saved.getConfirmationCode() + (reason != null ? " · Motivo: " + reason : ""));
         eventPublisher.publishEvent(new ReservationCancelledEvent(saved));
         emailService.sendReservationCancelled(saved);
         return mapToResponse(saved);
@@ -240,7 +243,10 @@ public class ReservationService {
         requireRestaurantOwnership(reservation, requesterId, isAdmin);
         Reservation noShow = reservation.markNoShow();
         log.info("Reserva {} marcada como NO_SHOW", noShow.getConfirmationCode());
-        return mapToResponse(reservationRepository.save(noShow));
+        Reservation saved = reservationRepository.save(noShow);
+        auditLogService.record("RESERVATION", saved.getId(), "MARK_NO_SHOW", requesterId,
+                "Código: " + saved.getConfirmationCode());
+        return mapToResponse(saved);
     }
 
     /** Confirmación de llegada vía QR (S14-02): el dueño escanea el QR del email del cliente. */
@@ -251,7 +257,10 @@ public class ReservationService {
         requireRestaurantOwnership(reservation, requesterId, isAdmin);
         Reservation arrived = reservation.arrive();
         log.info("Reserva {} marcada como ARRIVED", arrived.getConfirmationCode());
-        return mapToResponse(reservationRepository.save(arrived));
+        Reservation saved = reservationRepository.save(arrived);
+        auditLogService.record("RESERVATION", saved.getId(), "MARK_ARRIVED", requesterId,
+                "Código: " + saved.getConfirmationCode());
+        return mapToResponse(saved);
     }
 
     // ── Autorización: el restaurante de la reserva debe pertenecer al solicitante ──

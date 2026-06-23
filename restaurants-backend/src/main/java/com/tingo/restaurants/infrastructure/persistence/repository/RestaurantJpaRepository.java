@@ -82,4 +82,8 @@ public interface RestaurantJpaRepository extends JpaRepository<RestaurantEntity,
             @Param("latitude") BigDecimal latitude,
             @Param("longitude") BigDecimal longitude,
             @Param("radiusMeters") double radiusMeters);
+
+    /** Panel admin global (S15-01): cantidad de restaurantes por estado. */
+    @Query("SELECT r.status, COUNT(r) FROM RestaurantEntity r WHERE r.deletedAt IS NULL GROUP BY r.status")
+    List<Object[]> countByStatus();
 }

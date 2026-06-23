@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   UtensilsCrossed, Calendar, BarChart3, Tag,
-  LogOut, Home, Users, X, SlidersHorizontal, ClipboardCheck, Wallet, QrCode
+  LogOut, Home, Users, X, SlidersHorizontal, ClipboardCheck, Wallet, QrCode,
+  LayoutDashboard, ShieldCheck
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useUiStore } from '@/store/uiStore';
@@ -23,6 +24,8 @@ const navItems = [
   { href: '/dashboard/reports',      icon: BarChart3,       labelKey: 'reports',      roles: ['ADMIN', 'RESTAURANTE_OWNER'] },
   { href: '/dashboard/solicitudes',  icon: ClipboardCheck,  labelKey: 'registrationRequests', roles: ['ADMIN'] },
   { href: '/dashboard/users',        icon: Users,           labelKey: 'users',        roles: ['ADMIN'] },
+  { href: '/dashboard/admin',        icon: LayoutDashboard, labelKey: 'adminPanel',   roles: ['ADMIN'] },
+  { href: '/dashboard/auditoria',    icon: ShieldCheck,     labelKey: 'auditLogs',    roles: ['ADMIN'] },
 ] as const;
 
 export function Sidebar({ open = false, onClose }: { open?: boolean; onClose?: () => void }) {

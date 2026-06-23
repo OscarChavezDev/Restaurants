@@ -5,6 +5,7 @@ import com.tingo.restaurants.infrastructure.persistence.entity.UserEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,4 +22,8 @@ public interface UserJpaRepository extends JpaRepository<UserEntity, UUID> {
     Page<UserEntity> findByDeletedAtIsNull(Pageable pageable);
 
     List<UserEntity> findByAccountStatusAndDeletedAtIsNullOrderByCreatedAtDesc(AccountStatus accountStatus);
+
+    /** Panel admin global (S15-01): cantidad de usuarios por rol. */
+    @Query("SELECT u.role, COUNT(u) FROM UserEntity u WHERE u.deletedAt IS NULL GROUP BY u.role")
+    List<Object[]> countByRole();
 }

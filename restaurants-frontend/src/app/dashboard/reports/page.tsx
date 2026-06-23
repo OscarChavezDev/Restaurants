@@ -6,10 +6,12 @@ import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from 'recharts';
-import { TrendingUp, AlertTriangle, Wallet, UtensilsCrossed } from 'lucide-react';
+import { TrendingUp, AlertTriangle, Wallet, UtensilsCrossed, FileSpreadsheet, FileText, Loader2 } from 'lucide-react';
 import { useMyRestaurants, useRestaurants } from '@/hooks/useRestaurants';
 import { useRestaurantStats } from '@/hooks/useRestaurantStats';
 import { useAuthStore } from '@/store/authStore';
+import { reportExportService } from '@/services/reportExportService';
+import toast from 'react-hot-toast';
 import type { StatsGroupBy } from '@/types/stats';
 
 const RANGE_PRESETS = {
@@ -34,6 +36,7 @@ export default function ReportsPage() {
   const [restaurantId, setRestaurantId] = useState('');
   const [range, setRange] = useState<RangeKey>('month');
   const [groupBy, setGroupBy] = useState<StatsGroupBy>('day');
+  const [exporting, setExporting] = useState<'xlsx' | 'pdf' | null>(null);
 
   useEffect(() => {
     if (!restaurantId && restaurantList.length > 0) {
@@ -48,6 +51,18 @@ export default function ReportsPage() {
   }), [range, groupBy]);
 
   const { data: stats, isLoading } = useRestaurantStats(restaurantId, params);
+
+  const handleExport = async (fmt: 'xlsx' | 'pdf') => {
+    setExporting(fmt);
+    try {
+      await reportExportService.download(restaurantId, fmt, { from: params.from, to: params.to });
+      toast.success('Reporte descargado');
+    } catch {
+      toast.error('No se pudo generar el reporte');
+    } finally {
+      setExporting(null);
+    }
+  };
 
   return (
     <div>
@@ -105,6 +120,25 @@ export default function ReportsPage() {
                   {g === 'day' ? 'Día' : g === 'week' ? 'Semana' : 'Mes'}
                 </button>
               ))}
+            </div>
+
+            <div className="flex items-center gap-2 ml-auto">
+              <button
+                onClick={() => handleExport('xlsx')}
+                disabled={!restaurantId || exporting !== null}
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-gray-200 bg-white text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-60 transition-colors"
+              >
+                {exporting === 'xlsx' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileSpreadsheet className="h-3.5 w-3.5 text-green-600" />}
+                Excel
+              </button>
+              <button
+                onClick={() => handleExport('pdf')}
+                disabled={!restaurantId || exporting !== null}
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-gray-200 bg-white text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-60 transition-colors"
+              >
+                {exporting === 'pdf' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileText className="h-3.5 w-3.5 text-red-600" />}
+                PDF
+              </button>
             </div>
           </div>
 

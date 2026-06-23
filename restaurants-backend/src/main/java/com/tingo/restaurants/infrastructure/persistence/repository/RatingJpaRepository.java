@@ -48,4 +48,12 @@ public interface RatingJpaRepository extends JpaRepository<RatingEntity, UUID> {
             @Param("from") LocalDateTime from,
             @Param("to") LocalDateTime to,
             @Param("unit") String unit);
+
+    /** Panel admin global (S15-01): rating promedio de todo el sistema en un rango. */
+    @Query("SELECT AVG(r.score) FROM RatingEntity r WHERE r.createdAt BETWEEN :from AND :to")
+    Double getGlobalAvgScore(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+
+    /** Exportación de reportes (S15-02): reseñas de un restaurante en un rango. */
+    List<RatingEntity> findByRestaurantIdAndCreatedAtBetweenOrderByCreatedAtDesc(
+            UUID restaurantId, LocalDateTime from, LocalDateTime to);
 }

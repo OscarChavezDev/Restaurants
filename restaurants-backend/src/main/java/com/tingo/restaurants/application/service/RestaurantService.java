@@ -32,6 +32,7 @@ public class RestaurantService {
 
     private final RestaurantRepository restaurantRepository;
     private final RestaurantMapper restaurantMapper;
+    private final AuditLogService auditLogService;
 
     @Transactional
     public RestaurantResponse create(CreateRestaurantRequest request, UUID ownerId) {
@@ -202,9 +203,10 @@ public class RestaurantService {
     }
 
     @Transactional
-    public RestaurantResponse updateStatus(UUID id, RestaurantStatus newStatus) {
+    public RestaurantResponse updateStatus(UUID id, RestaurantStatus newStatus, UUID requesterId) {
         Restaurant restaurant = restaurantRepository.findById(id)
                 .orElseThrow(() -> new RestaurantNotFoundException(id));
+        RestaurantStatus previousStatus = restaurant.getStatus();
 
         Restaurant updated = Restaurant.builder()
                 .id(restaurant.getId())
@@ -241,7 +243,10 @@ public class RestaurantService {
                 .totalRatings(restaurant.getTotalRatings())
                 .build();
 
-        return restaurantMapper.toResponse(restaurantRepository.save(updated));
+        Restaurant saved = restaurantRepository.save(updated);
+        auditLogService.record("RESTAURANT", saved.getId(), "UPDATE_RESTAURANT_STATUS", requesterId,
+                previousStatus + " → " + newStatus + " (" + saved.getName() + ")");
+        return restaurantMapper.toResponse(saved);
     }
 
     @Transactional

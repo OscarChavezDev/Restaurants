@@ -24,6 +24,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuditLogService auditLogService;
 
     public UserResponse getMyProfile(UUID id) {
         return toResponse(userRepository.findById(id)
@@ -65,20 +66,24 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponse updateRole(UUID id, UserRole newRole) {
+    public UserResponse updateRole(UUID id, UserRole newRole, UUID requesterId) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
+        UserRole previousRole = user.getRole();
         User updated = User.builder()
                 .id(user.getId()).email(user.getEmail()).passwordHash(user.getPasswordHash())
                 .fullName(user.getFullName()).phone(user.getPhone()).role(newRole)
                 .isActive(user.isActive()).emailVerified(user.isEmailVerified())
                 .lastLoginAt(user.getLastLoginAt()).createdAt(user.getCreatedAt())
                 .updatedAt(LocalDateTime.now()).build();
-        return toResponse(userRepository.save(updated));
+        User saved = userRepository.save(updated);
+        auditLogService.record("USER", saved.getId(), "UPDATE_USER_ROLE", requesterId,
+                previousRole + " → " + newRole + " (" + saved.getEmail() + ")");
+        return toResponse(saved);
     }
 
     @Transactional
-    public UserResponse toggleActive(UUID id) {
+    public UserResponse toggleActive(UUID id, UUID requesterId) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
         User updated = User.builder()
@@ -87,14 +92,18 @@ public class UserService {
                 .isActive(!user.isActive()).emailVerified(user.isEmailVerified())
                 .lastLoginAt(user.getLastLoginAt()).createdAt(user.getCreatedAt())
                 .updatedAt(LocalDateTime.now()).build();
-        return toResponse(userRepository.save(updated));
+        User saved = userRepository.save(updated);
+        auditLogService.record("USER", saved.getId(), "TOGGLE_USER_ACTIVE", requesterId,
+                (saved.isActive() ? "Activado" : "Desactivado") + ": " + saved.getEmail());
+        return toResponse(saved);
     }
 
     @Transactional
-    public void deleteUser(UUID id) {
-        userRepository.findById(id)
+    public void deleteUser(UUID id, UUID requesterId) {
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
         userRepository.deleteById(id);
+        auditLogService.record("USER", id, "DELETE_USER", requesterId, user.getEmail());
     }
 
     private UserResponse toResponse(User u) {

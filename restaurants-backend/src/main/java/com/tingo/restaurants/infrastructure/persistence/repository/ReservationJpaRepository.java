@@ -109,4 +109,28 @@ public interface ReservationJpaRepository extends JpaRepository<ReservationEntit
     java.math.BigDecimal sumAdvanceAmountByCustomerAndStatus(
             @Param("customerId") UUID customerId,
             @Param("status") ReservationStatus status);
+
+    // ── Panel admin global (S15-01) ─────────────────────────────────────────
+
+    @Query("""
+        SELECT r.status, COUNT(r) FROM ReservationEntity r
+        WHERE r.reservationDate BETWEEN :from AND :to AND r.deletedAt IS NULL
+        GROUP BY r.status
+    """)
+    List<Object[]> countAllByStatusInRange(@Param("from") LocalDate from, @Param("to") LocalDate to);
+
+    @Query(value = """
+        SELECT r.restaurant_id, COUNT(*) AS cantidad
+        FROM reservations r
+        WHERE r.reservation_date BETWEEN :from AND :to AND r.deleted_at IS NULL
+        GROUP BY r.restaurant_id
+        ORDER BY cantidad DESC
+        LIMIT 5
+    """, nativeQuery = true)
+    List<Object[]> topRestaurantsByReservations(@Param("from") LocalDate from, @Param("to") LocalDate to);
+
+    // ── Exportación de reportes (S15-02) ────────────────────────────────────
+
+    List<ReservationEntity> findByRestaurantIdAndReservationDateBetweenOrderByReservationDateAscStartTimeAsc(
+            UUID restaurantId, LocalDate from, LocalDate to);
 }

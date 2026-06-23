@@ -9,6 +9,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -33,8 +35,9 @@ public class AdminRegistrationController {
 
     @PostMapping("/{userId}/approve")
     @Operation(summary = "Aprobar una solicitud (activa la cuenta y publica el restaurante)")
-    public ResponseEntity<ApiResponse<Void>> approve(@PathVariable UUID userId) {
-        reviewService.approve(userId);
+    public ResponseEntity<ApiResponse<Void>> approve(
+            @PathVariable UUID userId, @AuthenticationPrincipal UserDetails userDetails) {
+        reviewService.approve(userId, UUID.fromString(userDetails.getUsername()));
         return ResponseEntity.ok(ApiResponse.ok("Solicitud aprobada", null));
     }
 

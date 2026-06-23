@@ -23,4 +23,12 @@ public interface PaymentJpaRepository extends JpaRepository<PaymentEntity, UUID>
             @Param("restaurantId") UUID restaurantId,
             @Param("from") LocalDateTime from,
             @Param("to") LocalDateTime to);
+
+    /** Panel admin global (S15-01): ingreso total verificado de todo el sistema. */
+    @Query("SELECT COALESCE(SUM(p.amount), 0) FROM PaymentEntity p WHERE p.status = 'VERIFIED' AND p.createdAt BETWEEN :from AND :to")
+    BigDecimal sumAllVerifiedAmount(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+
+    /** Exportación de reportes (S15-02): pagos verificados de un restaurante en un rango. */
+    List<PaymentEntity> findByRestaurantIdAndStatusAndCreatedAtBetweenOrderByCreatedAtDesc(
+            UUID restaurantId, String status, LocalDateTime from, LocalDateTime to);
 }
