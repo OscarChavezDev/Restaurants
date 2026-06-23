@@ -40,6 +40,7 @@ public class ReservationResponse {
     private boolean isEventRelated;
     private String relatedEventName;
     private LocalDateTime confirmedAt;
+    private LocalDateTime arrivedAt;
     private LocalDateTime cancelledAt;
     private String cancellationReason;
     private LocalDateTime createdAt;

@@ -91,7 +91,7 @@ public class ReservationRepositoryAdapter implements ReservationRepository {
                 .notes(e.getNotes()).specialRequests(e.getSpecialRequests())
                 .confirmationCode(e.getConfirmationCode()).relatedEventId(e.getRelatedEventId())
                 .relatedEventName(e.getRelatedEventName()).isEventRelated(e.isEventRelated())
-                .confirmedAt(e.getConfirmedAt()).cancelledAt(e.getCancelledAt())
+                .confirmedAt(e.getConfirmedAt()).arrivedAt(e.getArrivedAt()).cancelledAt(e.getCancelledAt())
                 .cancellationReason(e.getCancellationReason())
                 .createdAt(e.getCreatedAt()).updatedAt(e.getUpdatedAt())
                 .build();
@@ -111,7 +111,7 @@ public class ReservationRepositoryAdapter implements ReservationRepository {
         e.setNotes(r.getNotes()); e.setSpecialRequests(r.getSpecialRequests());
         e.setConfirmationCode(r.getConfirmationCode()); e.setRelatedEventId(r.getRelatedEventId());
         e.setRelatedEventName(r.getRelatedEventName()); e.setEventRelated(r.isEventRelated());
-        e.setConfirmedAt(r.getConfirmedAt()); e.setCancelledAt(r.getCancelledAt());
+        e.setConfirmedAt(r.getConfirmedAt()); e.setArrivedAt(r.getArrivedAt()); e.setCancelledAt(r.getCancelledAt());
         e.setCancellationReason(r.getCancellationReason());
         return e;
     }

@@ -243,6 +243,17 @@ public class ReservationService {
         return mapToResponse(reservationRepository.save(noShow));
     }
 
+    /** Confirmación de llegada vía QR (S14-02): el dueño escanea el QR del email del cliente. */
+    @Transactional
+    public ReservationResponse arriveByCode(String code, UUID requesterId, boolean isAdmin) {
+        Reservation reservation = reservationRepository.findByConfirmationCode(code)
+                .orElseThrow(() -> ReservationException.notFound(code));
+        requireRestaurantOwnership(reservation, requesterId, isAdmin);
+        Reservation arrived = reservation.arrive();
+        log.info("Reserva {} marcada como ARRIVED", arrived.getConfirmationCode());
+        return mapToResponse(reservationRepository.save(arrived));
+    }
+
     // ── Autorización: el restaurante de la reserva debe pertenecer al solicitante ──
     private boolean isRestaurantOwner(Reservation reservation, UUID requesterId) {
         if (requesterId == null || reservation.getRestaurantId() == null) return false;

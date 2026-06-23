@@ -44,4 +44,8 @@ export const reservationService = {
   async markNoShow(id: string) {
     return extractData<Reservation>(await api.patch(`/v1/reservations/${id}/no-show`));
   },
+
+  async arriveByCode(code: string) {
+    return extractData<Reservation>(await api.patch(`/v1/reservations/code/${code}/arrive`));
+  },
 };

@@ -128,6 +128,16 @@ public class ReservationController {
                 reservationService.markNoShow(id, requesterId(userDetails), isAdmin(userDetails))));
     }
 
+    @PatchMapping("/code/{code}/arrive")
+    @PreAuthorize("hasAnyRole('ADMIN', 'RESTAURANTE_OWNER')")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Confirmar llegada del cliente escaneando el QR de su reserva (S14-02)")
+    public ResponseEntity<ApiResponse<ReservationResponse>> arrive(
+            @PathVariable String code, @AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(ApiResponse.ok("Llegada registrada",
+                reservationService.arriveByCode(code, requesterId(userDetails), isAdmin(userDetails))));
+    }
+
     // ── Helpers de identidad ──────────────────────────────────────────────
     private UUID requesterId(UserDetails userDetails) {
         return userDetails != null ? UUID.fromString(userDetails.getUsername()) : null;

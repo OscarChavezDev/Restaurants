@@ -45,6 +45,7 @@ public class Reservation {
     private boolean isEventRelated;
 
     private LocalDateTime confirmedAt;
+    private LocalDateTime arrivedAt;
     private LocalDateTime cancelledAt;
     private String cancellationReason;
     private LocalDateTime createdAt;
@@ -85,9 +86,25 @@ public class Reservation {
                 .build();
     }
 
+    public boolean isArrivable() {
+        return status == ReservationStatus.CONFIRMED;
+    }
+
+    /** Confirmación de llegada (S14-02): el dueño escanea el QR de la reserva confirmada. */
+    public Reservation arrive() {
+        if (!isArrivable()) {
+            throw new IllegalStateException("Solo se puede marcar la llegada de una reserva CONFIRMED (estado actual: " + status + ")");
+        }
+        return this.toBuilder()
+                .status(ReservationStatus.ARRIVED)
+                .arrivedAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+    }
+
     public Reservation complete() {
-        if (status != ReservationStatus.CONFIRMED) {
-            throw new IllegalStateException("Solo se puede completar una reserva CONFIRMED (estado actual: " + status + ")");
+        if (status != ReservationStatus.CONFIRMED && status != ReservationStatus.ARRIVED) {
+            throw new IllegalStateException("Solo se puede completar una reserva CONFIRMED o ARRIVED (estado actual: " + status + ")");
         }
         return this.toBuilder()
                 .status(ReservationStatus.COMPLETED)

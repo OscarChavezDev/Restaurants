@@ -5,6 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { DashboardTopBar } from '@/components/layout/DashboardTopBar';
 import { useAuthStore } from '@/store/authStore';
+import { useArrivalNotifications } from '@/hooks/useArrivalNotifications';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -16,6 +17,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   // El dashboard es solo para staff (dueño/admin). El cliente no debe entrar.
   const isStaff = user?.role === 'ADMIN' || user?.role === 'RESTAURANTE_OWNER';
+
+  // S14-04: notifica al dueño/admin cuando un cliente confirma su llegada (polling).
+  useArrivalNotifications();
 
   // Cierra el drawer al navegar (móvil)
   useEffect(() => {

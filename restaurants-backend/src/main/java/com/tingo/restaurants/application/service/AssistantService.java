@@ -129,6 +129,7 @@ public class AssistantService {
         return switch (r.getStatus()) {
             case PENDING -> "Pendiente de confirmación";
             case CONFIRMED -> "Confirmada";
+            case ARRIVED -> "El cliente ya llegó";
             case CANCELLED -> "Cancelada";
             case COMPLETED -> "Completada";
             case NO_SHOW -> "No se presentó";

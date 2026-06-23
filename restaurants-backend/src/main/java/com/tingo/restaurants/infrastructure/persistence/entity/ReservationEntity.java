@@ -105,6 +105,9 @@ public class ReservationEntity extends BaseEntity {
     @Column(name = "confirmed_at")
     private LocalDateTime confirmedAt;
 
+    @Column(name = "arrived_at")
+    private LocalDateTime arrivedAt;
+
     @Column(name = "cancelled_at")
     private LocalDateTime cancelledAt;
 

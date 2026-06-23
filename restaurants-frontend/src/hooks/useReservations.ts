@@ -18,7 +18,7 @@ export const RESERVATION_KEYS = {
  * Agrega vía el mismo endpoint por-restaurante que usa la lista de reservas,
  * de modo que los conteos siempre coinciden con esa vista.
  */
-export function useManagedReservations() {
+export function useManagedReservations(options?: { refetchInterval?: number }) {
   const isAdmin = useAuthStore((s) => s.isAdmin());
   const { data: mine } = useMyRestaurants();
   const { data: all } = useRestaurants(0, 100);
@@ -31,6 +31,7 @@ export function useManagedReservations() {
       queryFn: () => reservationService.getByRestaurant(id, 0, 200),
       enabled: !!id,
       staleTime: 1000 * 60,
+      refetchInterval: options?.refetchInterval,
     })),
   });
 
@@ -108,6 +109,16 @@ export function useNoShowReservation() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => reservationService.markNoShow(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: RESERVATION_KEYS.all });
+    },
+  });
+}
+
+export function useArriveReservation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (code: string) => reservationService.arriveByCode(code),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: RESERVATION_KEYS.all });
     },

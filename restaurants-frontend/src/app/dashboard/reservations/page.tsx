@@ -84,7 +84,7 @@ function ReservationRow({
           </button>
         )}
 
-        {canManage && res.status === 'CONFIRMED' && (
+        {canManage && (res.status === 'CONFIRMED' || res.status === 'ARRIVED') && (
           <>
             <button
               onClick={() => onComplete(res.id)}
@@ -93,13 +93,15 @@ function ReservationRow({
             >
               <CheckCheck className="h-3.5 w-3.5" /> Completar
             </button>
-            <button
-              onClick={() => onNoShow(res.id)}
-              disabled={noShowPending}
-              className="inline-flex items-center gap-1 px-3 py-1.5 bg-gray-500 hover:bg-gray-600 text-white text-xs font-medium rounded-lg transition-colors disabled:opacity-60"
-            >
-              <UserX className="h-3.5 w-3.5" /> No se presentó
-            </button>
+            {res.status === 'CONFIRMED' && (
+              <button
+                onClick={() => onNoShow(res.id)}
+                disabled={noShowPending}
+                className="inline-flex items-center gap-1 px-3 py-1.5 bg-gray-500 hover:bg-gray-600 text-white text-xs font-medium rounded-lg transition-colors disabled:opacity-60"
+              >
+                <UserX className="h-3.5 w-3.5" /> No se presentó
+              </button>
+            )}
           </>
         )}
 

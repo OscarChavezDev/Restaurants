@@ -1,4 +1,4 @@
-export type ReservationStatus = 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED' | 'NO_SHOW';
+export type ReservationStatus = 'PENDING' | 'CONFIRMED' | 'ARRIVED' | 'CANCELLED' | 'COMPLETED' | 'NO_SHOW';
 
 export interface Reservation {
   id: string;
@@ -20,6 +20,7 @@ export interface Reservation {
   isEventRelated: boolean;
   relatedEventName?: string;
   confirmedAt?: string;
+  arrivedAt?: string;
   cancelledAt?: string;
   cancellationReason?: string;
   createdAt: string;

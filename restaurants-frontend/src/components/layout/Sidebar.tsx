@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   UtensilsCrossed, Calendar, BarChart3, Tag,
-  LogOut, Home, Users, X, SlidersHorizontal, ClipboardCheck, Wallet
+  LogOut, Home, Users, X, SlidersHorizontal, ClipboardCheck, Wallet, QrCode
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useUiStore } from '@/store/uiStore';
@@ -15,6 +15,7 @@ const navItems = [
   { href: '/dashboard',              icon: Home,           labelKey: 'home',         roles: ['ADMIN', 'RESTAURANTE_OWNER', 'CLIENTE'] },
   { href: '/dashboard/restaurants',  icon: UtensilsCrossed, labelKey: 'restaurants', roles: ['ADMIN', 'RESTAURANTE_OWNER'] },
   { href: '/dashboard/reservations', icon: Calendar,        labelKey: 'reservations', roles: ['ADMIN', 'RESTAURANTE_OWNER', 'CLIENTE'] },
+  { href: '/dashboard/llegadas',     icon: QrCode,          labelKey: 'arrivals',     roles: ['ADMIN', 'RESTAURANTE_OWNER'] },
   { href: '/dashboard/menus',        icon: UtensilsCrossed, labelKey: 'menus',        roles: ['ADMIN', 'RESTAURANTE_OWNER'] },
   { href: '/dashboard/promotions',   icon: Tag,             labelKey: 'promotions',   roles: ['ADMIN', 'RESTAURANTE_OWNER'] },
   { href: '/dashboard/reservas-config', icon: SlidersHorizontal, labelKey: 'reservationConfig', roles: ['ADMIN', 'RESTAURANTE_OWNER'] },
