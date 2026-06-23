@@ -11,6 +11,8 @@ export interface Reservation {
   startTime: string;
   endTime?: string;
   partySize: number;
+  tableId?: string;
+  sectionId?: string;
   status: ReservationStatus;
   advanceAmount?: number;
   paymentStatus?: string;

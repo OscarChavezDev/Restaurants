@@ -37,6 +37,15 @@ public class RestaurantTableEntity {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "current_status", length = 20)
+    @Builder.Default
+    private String currentStatus = "AVAILABLE";
+
     @PrePersist
-    void onCreate() { if (createdAt == null) createdAt = LocalDateTime.now(); }
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
+        if (this.currentStatus == null) {
+            this.currentStatus = "AVAILABLE";
+        }
+    }
 }

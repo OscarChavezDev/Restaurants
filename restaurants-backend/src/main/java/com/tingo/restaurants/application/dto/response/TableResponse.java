@@ -16,4 +16,5 @@ public class TableResponse {
     private String sectionName;
     @JsonProperty("isActive")
     private boolean active;
+    private String currentStatus;
 }

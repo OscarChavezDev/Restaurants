@@ -40,8 +40,14 @@ public class LayoutController {
     @GetMapping("/sections")
     @Operation(summary = "Listar secciones del local")
     public ResponseEntity<ApiResponse<List<SectionResponse>>> listSections(@PathVariable UUID restaurantId) {
+        List<RestaurantTableEntity> allTables = tableRepository.findByRestaurantIdOrderByTableNumber(restaurantId);
         List<SectionResponse> data = sectionRepository.findByRestaurantIdOrderByName(restaurantId)
-                .stream().map(this::toSectionResponse).toList();
+                .stream().map(e -> {
+                    int sum = allTables.stream()
+                            .filter(t -> e.getId().equals(t.getSectionId()))
+                            .mapToInt(RestaurantTableEntity::getCapacity).sum();
+                    return toSectionResponse(e, sum > 0 ? sum : e.getCapacity());
+                }).toList();
         return ResponseEntity.ok(ApiResponse.ok(data));
     }
 
@@ -61,6 +67,22 @@ public class LayoutController {
                 .build();
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.ok("Sección creada", toSectionResponse(sectionRepository.save(e))));
+    }
+
+    @PutMapping("/sections/{sectionId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'RESTAURANTE_OWNER')")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Actualizar sección del local")
+    public ResponseEntity<ApiResponse<SectionResponse>> updateSection(
+            @PathVariable UUID restaurantId, @PathVariable UUID sectionId, @Valid @RequestBody CreateSectionRequest req) {
+        ownershipGuard.assertOwnsRestaurant(restaurantId);
+        RestaurantSectionEntity e = sectionRepository.findById(sectionId)
+                .orElseThrow(() -> new IllegalStateException("Sección no encontrada"));
+        if (!e.getRestaurantId().equals(restaurantId)) {
+            throw new AccessDeniedException("La sección no pertenece a este restaurante");
+        }
+        e.setName(req.getName());
+        return ResponseEntity.ok(ApiResponse.ok("Sección actualizada", toSectionResponse(sectionRepository.save(e))));
     }
 
     @DeleteMapping("/sections/{sectionId}")
@@ -129,11 +151,34 @@ public class LayoutController {
         return ResponseEntity.ok(ApiResponse.ok("Mesa eliminada", null));
     }
 
+    @PatchMapping("/tables/{tableId}/status")
+    @PreAuthorize("hasAnyRole('ADMIN', 'RESTAURANTE_OWNER')")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Actualizar estado manual de la mesa")
+    public ResponseEntity<ApiResponse<TableResponse>> updateTableStatus(
+            @PathVariable UUID restaurantId, @PathVariable UUID tableId, @RequestParam String status) {
+        ownershipGuard.assertOwnsRestaurant(restaurantId);
+        RestaurantTableEntity e = tableRepository.findById(tableId)
+                .orElseThrow(() -> new IllegalStateException("Mesa no encontrada"));
+        if (!e.getRestaurantId().equals(restaurantId)) {
+            throw new AccessDeniedException("La mesa no pertenece a este restaurante");
+        }
+        e.setCurrentStatus(status);
+        tableRepository.save(e);
+        Map<UUID, String> sectionNames = sectionRepository.findByRestaurantIdOrderByName(restaurantId)
+                .stream().collect(Collectors.toMap(RestaurantSectionEntity::getId, RestaurantSectionEntity::getName));
+        return ResponseEntity.ok(ApiResponse.ok("Estado actualizado", toTableResponse(e, sectionNames)));
+    }
+
     // ─── Mapeo ──────────────────────────────────────────────────
     private SectionResponse toSectionResponse(RestaurantSectionEntity e) {
+        return toSectionResponse(e, e.getCapacity());
+    }
+
+    private SectionResponse toSectionResponse(RestaurantSectionEntity e, int dynamicCapacity) {
         return SectionResponse.builder()
                 .id(e.getId()).name(e.getName()).type(e.getType())
-                .capacity(e.getCapacity()).active(e.isActive()).build();
+                .capacity(dynamicCapacity).active(e.isActive()).build();
     }
 
     private TableResponse toTableResponse(RestaurantTableEntity t, Map<UUID, String> sectionNames) {
@@ -141,6 +186,7 @@ public class LayoutController {
                 .id(t.getId()).tableNumber(t.getTableNumber()).capacity(t.getCapacity())
                 .sectionId(t.getSectionId())
                 .sectionName(t.getSectionId() != null ? sectionNames.get(t.getSectionId()) : null)
+                .currentStatus(t.getCurrentStatus())
                 .active(t.isActive()).build();
     }
 }

@@ -6,7 +6,7 @@ export function Footer() {
     <footer className="bg-white dark:bg-[#15120E] border-t border-gray-200 dark:border-gray-800 pt-16 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
-          
+
           {/* Col 1: About */}
           <div className="md:col-span-1">
             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 tracking-tight">
@@ -69,7 +69,7 @@ export function Footer() {
             © {new Date().getFullYear()} Tingo Restaurants. Todos los derechos reservados.
           </p>
           <div className="flex items-center gap-2 text-sm text-gray-500">
-            <span>Hecho con ❤️ para Tingo María</span>
+            <span>Hecho con CORAZÖN para Tingo María</span>
           </div>
         </div>
       </div>

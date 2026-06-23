@@ -27,6 +27,7 @@ public class ReservationResponse {
     private LocalTime startTime;
     private LocalTime endTime;
     private int partySize;
+    private UUID tableId;
     private UUID sectionId;
     private java.math.BigDecimal advanceAmount;
     private String priority;
