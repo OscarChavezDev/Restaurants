@@ -62,4 +62,51 @@ public interface ReservationJpaRepository extends JpaRepository<ReservationEntit
             @Param("restaurantId") UUID restaurantId,
             @Param("date") LocalDate date,
             @Param("time") java.time.LocalTime time);
+
+    // ── Estadísticas del dueño (S13-01) ────────────────────────────────────
+
+    long countByRestaurantIdAndReservationDateBetweenAndStatus(
+            UUID restaurantId, LocalDate from, LocalDate to, ReservationStatus status);
+
+    @Query(value = """
+        SELECT date_trunc(:unit, CAST(r.reservation_date AS timestamp)) AS periodo, COUNT(*) AS cantidad
+        FROM reservations r
+        WHERE r.restaurant_id = :restaurantId
+          AND r.reservation_date BETWEEN :from AND :to
+          AND r.deleted_at IS NULL
+        GROUP BY periodo
+        ORDER BY periodo
+    """, nativeQuery = true)
+    List<Object[]> countReservationsByPeriod(
+            @Param("restaurantId") UUID restaurantId,
+            @Param("from") LocalDate from,
+            @Param("to") LocalDate to,
+            @Param("unit") String unit);
+
+    @Query(value = """
+        SELECT s.name AS sectionName, COUNT(*) AS cantidad
+        FROM reservations r
+        JOIN restaurant_sections s ON s.id = r.section_id
+        WHERE r.restaurant_id = :restaurantId
+          AND r.reservation_date BETWEEN :from AND :to
+          AND r.deleted_at IS NULL
+        GROUP BY s.name
+        ORDER BY cantidad DESC
+    """, nativeQuery = true)
+    List<Object[]> occupancyBySection(
+            @Param("restaurantId") UUID restaurantId,
+            @Param("from") LocalDate from,
+            @Param("to") LocalDate to);
+
+    // ── Historial del cliente (S13-02) ─────────────────────────────────────
+
+    List<ReservationEntity> findByCustomerIdAndStatusAndReservationDateGreaterThanEqualOrderByReservationDateAscStartTimeAsc(
+            UUID customerId, ReservationStatus status, LocalDate fromDate);
+
+    List<ReservationEntity> findByCustomerIdAndStatus(UUID customerId, ReservationStatus status);
+
+    @Query("SELECT COALESCE(SUM(r.advanceAmount), 0) FROM ReservationEntity r WHERE r.customerId = :customerId AND r.status = :status")
+    java.math.BigDecimal sumAdvanceAmountByCustomerAndStatus(
+            @Param("customerId") UUID customerId,
+            @Param("status") ReservationStatus status);
 }

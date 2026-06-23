@@ -124,6 +124,9 @@ export interface RestaurantImage {
 
 export interface RatingResponse {
   id: string;
+  /** Solo viene poblado en el historial del cliente (/v1/users/me/history). */
+  restaurantId?: string;
+  restaurantName?: string;
   userName: string;
   score: number;
   comment?: string;

@@ -2,8 +2,10 @@ package com.tingo.restaurants.infrastructure.web.controller;
 
 import com.tingo.restaurants.application.dto.request.UpdateProfileRequest;
 import com.tingo.restaurants.application.dto.response.ApiResponse;
+import com.tingo.restaurants.application.dto.response.CustomerHistoryResponse;
 import com.tingo.restaurants.application.dto.response.PagedResponse;
 import com.tingo.restaurants.application.dto.response.UserResponse;
+import com.tingo.restaurants.application.service.CustomerHistoryService;
 import com.tingo.restaurants.application.service.UserService;
 import com.tingo.restaurants.domain.model.enums.UserRole;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,6 +31,7 @@ import java.util.UUID;
 public class UserController {
 
     private final UserService userService;
+    private final CustomerHistoryService customerHistoryService;
 
     @GetMapping("/me")
     @PreAuthorize("isAuthenticated()")
@@ -37,6 +40,15 @@ public class UserController {
             @AuthenticationPrincipal UserDetails userDetails) {
         UUID id = UUID.fromString(userDetails.getUsername());
         return ResponseEntity.ok(ApiResponse.ok(userService.getMyProfile(id)));
+    }
+
+    @GetMapping("/me/history")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Historial del cliente: próximas reservas, restaurantes visitados, reseñas, cocina favorita y gasto estimado")
+    public ResponseEntity<ApiResponse<CustomerHistoryResponse>> getMyHistory(
+            @AuthenticationPrincipal UserDetails userDetails) {
+        UUID id = UUID.fromString(userDetails.getUsername());
+        return ResponseEntity.ok(ApiResponse.ok(customerHistoryService.getHistory(id)));
     }
 
     @PatchMapping("/me")

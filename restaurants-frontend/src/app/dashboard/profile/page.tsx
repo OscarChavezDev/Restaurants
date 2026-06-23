@@ -8,6 +8,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { User, Phone, Lock, Eye, EyeOff, Save, Loader2, ShieldCheck } from 'lucide-react';
 import { api } from '@/services/api';
 import { useAuthStore } from '@/store/authStore';
+import { CustomerHistorySection } from '@/components/profile/CustomerHistorySection';
 import toast from 'react-hot-toast';
 
 const ROLE_LABELS: Record<string, string> = {
@@ -103,6 +104,7 @@ export default function ProfilePage() {
     .split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
 
   return (
+    <>
     <div className="max-w-2xl">
       <div className="mb-8">
         <h1 className="font-display text-2xl font-bold text-gray-900">Mi Perfil</h1>
@@ -226,5 +228,13 @@ export default function ProfilePage() {
         </form>
       </div>
     </div>
+
+    {profile?.role === 'CLIENTE' && (
+      <div className="max-w-4xl mt-8">
+        <h2 className="font-display text-xl font-bold text-gray-900 mb-4">Mi historial</h2>
+        <CustomerHistorySection />
+      </div>
+    )}
+    </>
   );
 }

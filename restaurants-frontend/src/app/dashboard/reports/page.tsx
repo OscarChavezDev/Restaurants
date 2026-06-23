@@ -1,124 +1,235 @@
 'use client';
 
-import { BarChart3, TrendingUp, Users, Calendar, UtensilsCrossed, Star } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { subDays, subMonths, subYears, format } from 'date-fns';
+import {
+  BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
+} from 'recharts';
+import { TrendingUp, AlertTriangle, Wallet, UtensilsCrossed } from 'lucide-react';
 import { useMyRestaurants, useRestaurants } from '@/hooks/useRestaurants';
-import { useManagedReservations } from '@/hooks/useReservations';
+import { useRestaurantStats } from '@/hooks/useRestaurantStats';
 import { useAuthStore } from '@/store/authStore';
+import type { StatsGroupBy } from '@/types/stats';
+
+const RANGE_PRESETS = {
+  week: { label: 'Última semana', from: () => subDays(new Date(), 7) },
+  month: { label: 'Último mes', from: () => subMonths(new Date(), 1) },
+  year: { label: 'Último año', from: () => subYears(new Date(), 1) },
+} as const;
+
+type RangeKey = keyof typeof RANGE_PRESETS;
+
+const PIE_COLORS = ['#f97316', '#3b82f6', '#22c55e', '#a855f7', '#ec4899', '#eab308'];
+
+const currency = new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN' });
 
 export default function ReportsPage() {
   const isAdmin = useAuthStore((s) => s.isAdmin());
-
   const { data: myRestaurants } = useMyRestaurants();
   const { data: allRestaurants } = useRestaurants(0, 100);
-  const { reservations } = useManagedReservations();
-
   const restaurants = isAdmin ? allRestaurants : myRestaurants;
+  const restaurantList = restaurants?.content ?? [];
 
-  const totalReservations = reservations.length;
-  const totalConfirmed = reservations.filter(r => r.status === 'CONFIRMED').length;
-  const totalCancelled = reservations.filter(r => r.status === 'CANCELLED').length;
-  const totalCompleted = reservations.filter(r => r.status === 'COMPLETED').length;
-  const totalPending   = reservations.filter(r => r.status === 'PENDING').length;
-  const eventRelated   = reservations.filter(r => r.isEventRelated).length;
+  const [restaurantId, setRestaurantId] = useState('');
+  const [range, setRange] = useState<RangeKey>('month');
+  const [groupBy, setGroupBy] = useState<StatsGroupBy>('day');
 
-  const stats = [
-    { label: 'Restaurantes',         value: restaurants?.totalElements ?? 0, icon: UtensilsCrossed, color: 'bg-orange-100 text-orange-600' },
-    { label: 'Reservas totales',     value: totalReservations,               icon: Calendar,       color: 'bg-blue-100 text-blue-600'   },
-    { label: 'Confirmadas',          value: totalConfirmed,                    icon: TrendingUp,     color: 'bg-green-100 text-green-600' },
-    { label: 'Canceladas',           value: totalCancelled,                    icon: Users,          color: 'bg-red-100 text-red-600'     },
-    { label: 'Completadas',          value: totalCompleted,                    icon: Star,           color: 'bg-purple-100 text-purple-600'},
-    { label: 'Pendientes',           value: totalPending,                      icon: BarChart3,      color: 'bg-yellow-100 text-yellow-600'},
-  ];
+  useEffect(() => {
+    if (!restaurantId && restaurantList.length > 0) {
+      setRestaurantId(restaurantList[0].id);
+    }
+  }, [restaurantList, restaurantId]);
 
-  const conversionRate  = totalReservations
-    ? Math.round((totalCompleted / totalReservations) * 100) : 0;
-  const cancellationRate = totalReservations
-    ? Math.round((totalCancelled / totalReservations) * 100) : 0;
+  const params = useMemo(() => ({
+    from: format(RANGE_PRESETS[range].from(), 'yyyy-MM-dd'),
+    to: format(new Date(), 'yyyy-MM-dd'),
+    groupBy,
+  }), [range, groupBy]);
+
+  const { data: stats, isLoading } = useRestaurantStats(restaurantId, params);
 
   return (
     <div>
       <div className="mb-8">
-        <h1 className="font-display text-2xl font-bold text-gray-900">Reportes</h1>
+        <h1 className="font-display text-2xl font-bold text-gray-900">Estadísticas</h1>
         <p className="text-gray-600 mt-1">
-          {isAdmin ? 'Métricas y estadísticas del sistema' : 'Estadísticas de tus restaurantes'}
+          {isAdmin ? 'Métricas del sistema por restaurante' : 'El rendimiento de tu restaurante en datos reales'}
         </p>
       </div>
 
-      {/* KPIs */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6 mb-8">
-        {stats.map((stat) => (
-          <div key={stat.label} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 text-center">
-            <div className={`inline-flex h-10 w-10 items-center justify-center rounded-xl ${stat.color} mb-2`}>
-              <stat.icon className="h-5 w-5" />
-            </div>
-            <p className="font-display text-2xl font-bold text-gray-900">{stat.value}</p>
-            <p className="text-xs text-gray-500 mt-1 leading-tight">{stat.label}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Tasas */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 mb-8">
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <p className="text-sm text-gray-500 mb-1">Tasa de conversión</p>
-          <p className="font-display text-3xl font-bold text-green-600">{conversionRate}%</p>
-          <p className="text-xs text-gray-400 mt-1">Reservas completadas / total</p>
+      {restaurantList.length === 0 ? (
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-10 text-center text-gray-400">
+          <UtensilsCrossed className="h-10 w-10 mx-auto mb-3 opacity-30" />
+          <p className="text-sm">Todavía no hay restaurantes para mostrar estadísticas.</p>
         </div>
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <p className="text-sm text-gray-500 mb-1">Tasa de cancelación</p>
-          <p className="font-display text-3xl font-bold text-red-500">{cancellationRate}%</p>
-          <p className="text-xs text-gray-400 mt-1">Reservas canceladas / total</p>
-        </div>
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <p className="text-sm text-gray-500 mb-1">Reservas por eventos</p>
-          <p className="font-display text-3xl font-bold text-blue-600">{eventRelated}</p>
-          <p className="text-xs text-gray-400 mt-1">Vinculadas a eventos externos</p>
-        </div>
-      </div>
-
-      {/* Tabla de restaurantes */}
-      {restaurants && restaurants.content.length > 0 && (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <h2 className="font-display text-lg font-semibold text-gray-900 mb-4">
-            {isAdmin ? 'Todos los restaurantes' : 'Mis restaurantes'}
-          </h2>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-gray-100">
-                  <th className="text-left py-2 text-gray-500 font-medium">Nombre</th>
-                  <th className="text-left py-2 text-gray-500 font-medium">Ciudad</th>
-                  <th className="text-right py-2 text-gray-500 font-medium">Calificación</th>
-                  <th className="text-right py-2 text-gray-500 font-medium">Capacidad</th>
-                  <th className="text-right py-2 text-gray-500 font-medium">Estado</th>
-                </tr>
-              </thead>
-              <tbody>
-                {restaurants.content.map((r) => (
-                  <tr key={r.id} className="border-b border-gray-50 hover:bg-gray-50">
-                    <td className="py-3 font-medium text-gray-900">{r.name}</td>
-                    <td className="py-3 text-gray-500">{r.city}</td>
-                    <td className="py-3 text-right text-gray-700">
-                      <span className="inline-flex items-center gap-1">
-                        <Star className="h-3.5 w-3.5 text-yellow-400 fill-yellow-400" />
-                        {r.avgRating.toFixed(1)} ({r.totalRatings})
-                      </span>
-                    </td>
-                    <td className="py-3 text-right text-gray-600">{r.totalCapacity} personas</td>
-                    <td className="py-3 text-right">
-                      <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
-                        r.status === 'ACTIVE'           ? 'bg-green-100 text-green-700' :
-                        r.status === 'PENDING_APPROVAL' ? 'bg-yellow-100 text-yellow-700' :
-                                                          'bg-gray-100 text-gray-600'
-                      }`}>{r.status}</span>
-                    </td>
-                  </tr>
+      ) : (
+        <>
+          {/* Filtros */}
+          <div className="flex flex-wrap items-center gap-3 mb-6">
+            {restaurantList.length > 1 && (
+              <select
+                value={restaurantId}
+                onChange={(e) => setRestaurantId(e.target.value)}
+                className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700"
+              >
+                {restaurantList.map((r) => (
+                  <option key={r.id} value={r.id}>{r.name}</option>
                 ))}
-              </tbody>
-            </table>
+              </select>
+            )}
+
+            <div className="flex rounded-xl border border-gray-200 bg-white p-1">
+              {Object.entries(RANGE_PRESETS).map(([key, preset]) => (
+                <button
+                  key={key}
+                  onClick={() => setRange(key as RangeKey)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                    range === key ? 'bg-orange-500 text-white' : 'text-gray-500 hover:bg-gray-50'
+                  }`}
+                >
+                  {preset.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex rounded-xl border border-gray-200 bg-white p-1">
+              {(['day', 'week', 'month'] as StatsGroupBy[]).map((g) => (
+                <button
+                  key={g}
+                  onClick={() => setGroupBy(g)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                    groupBy === g ? 'bg-gray-900 text-white' : 'text-gray-500 hover:bg-gray-50'
+                  }`}
+                >
+                  {g === 'day' ? 'Día' : g === 'week' ? 'Semana' : 'Mes'}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+
+          {isLoading || !stats ? (
+            <div className="text-center py-16 text-gray-400 text-sm">Cargando estadísticas...</div>
+          ) : (
+            <>
+              {/* KPIs */}
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 mb-8">
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex items-center gap-4">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-100 text-red-600 flex-shrink-0">
+                    <AlertTriangle className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Tasa de no-show</p>
+                    <p className="font-display text-2xl font-bold text-gray-900">{stats.tasaNoShow}%</p>
+                  </div>
+                </div>
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex items-center gap-4">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-green-100 text-green-600 flex-shrink-0">
+                    <Wallet className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Ingreso por adelantos</p>
+                    <p className="font-display text-2xl font-bold text-gray-900">{currency.format(stats.ingresoAdelantos)}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                {/* Reservas por período */}
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+                  <h2 className="font-display text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <TrendingUp className="h-4 w-4 text-orange-500" /> Reservas por período
+                  </h2>
+                  {stats.reservasPorPeriodo.length === 0 ? (
+                    <EmptyChart />
+                  ) : (
+                    <ResponsiveContainer width="100%" height={260}>
+                      <BarChart data={stats.reservasPorPeriodo}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                        <XAxis dataKey="periodo" tick={{ fontSize: 11 }} />
+                        <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
+                        <Tooltip />
+                        <Bar dataKey="cantidad" name="Reservas" fill="#f97316" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  )}
+                </div>
+
+                {/* Rating promedio en el tiempo */}
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+                  <h2 className="font-display text-base font-semibold text-gray-900 mb-4">Rating promedio en el tiempo</h2>
+                  {stats.ratingPromedioEnElTiempo.length === 0 ? (
+                    <EmptyChart />
+                  ) : (
+                    <ResponsiveContainer width="100%" height={260}>
+                      <LineChart data={stats.ratingPromedioEnElTiempo}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                        <XAxis dataKey="periodo" tick={{ fontSize: 11 }} />
+                        <YAxis domain={[0, 5]} tick={{ fontSize: 11 }} />
+                        <Tooltip />
+                        <Line type="monotone" dataKey="avgScore" name="Rating" stroke="#f97316" strokeWidth={2} dot={{ r: 3 }} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  )}
+                </div>
+
+                {/* Ocupación por sección */}
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+                  <h2 className="font-display text-base font-semibold text-gray-900 mb-4">Ocupación por sección</h2>
+                  {stats.ocupacionPorSeccion.length === 0 ? (
+                    <EmptyChart />
+                  ) : (
+                    <ResponsiveContainer width="100%" height={260}>
+                      <PieChart>
+                        <Pie
+                          data={stats.ocupacionPorSeccion}
+                          dataKey="cantidad"
+                          nameKey="sectionName"
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={90}
+                          label={({ sectionName, cantidad }) => `${sectionName} (${cantidad})`}
+                        >
+                          {stats.ocupacionPorSeccion.map((_, i) => (
+                            <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                        <Legend />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  )}
+                </div>
+
+                {/* Platos más pedidos */}
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+                  <h2 className="font-display text-base font-semibold text-gray-900 mb-4">Platos más pedidos</h2>
+                  {stats.platosMasPedidos.length === 0 ? (
+                    <EmptyChart />
+                  ) : (
+                    <ul className="space-y-2">
+                      {stats.platosMasPedidos.map((d, i) => (
+                        <li key={d.dishName} className="flex items-center justify-between text-sm py-1.5 border-b border-gray-50 last:border-0">
+                          <span className="text-gray-700"><span className="text-gray-400 mr-2">{i + 1}.</span>{d.dishName}</span>
+                          <span className="font-semibold text-gray-900">{d.cantidad}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+        </>
       )}
+    </div>
+  );
+}
+
+function EmptyChart() {
+  return (
+    <div className="h-[260px] flex items-center justify-center text-sm text-gray-400">
+      Sin datos en este período
     </div>
   );
 }

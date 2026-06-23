@@ -4,8 +4,11 @@ import com.tingo.restaurants.application.dto.request.CreateRestaurantRequest;
 import com.tingo.restaurants.application.dto.response.ApiResponse;
 import com.tingo.restaurants.application.dto.response.PagedResponse;
 import com.tingo.restaurants.application.dto.response.RestaurantResponse;
+import com.tingo.restaurants.application.dto.response.RestaurantStatsResponse;
 import com.tingo.restaurants.application.service.RestaurantService;
+import com.tingo.restaurants.application.service.RestaurantStatsService;
 import com.tingo.restaurants.domain.model.enums.RestaurantStatus;
+import com.tingo.restaurants.infrastructure.security.OwnershipGuard;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -33,6 +36,8 @@ public class RestaurantController {
 
     private final RestaurantService restaurantService;
     private final com.tingo.restaurants.application.service.ReservationService reservationService;
+    private final RestaurantStatsService restaurantStatsService;
+    private final OwnershipGuard ownershipGuard;
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'RESTAURANTE_OWNER')")
@@ -96,6 +101,19 @@ public class RestaurantController {
             @Parameter(description = "Radio de búsqueda en kilómetros")
             @RequestParam(defaultValue = "5.0") double radiusKm) {
         return ResponseEntity.ok(ApiResponse.ok(restaurantService.findNearby(lat, lon, radiusKm)));
+    }
+
+    @GetMapping("/{id}/stats")
+    @PreAuthorize("hasAnyRole('ADMIN', 'RESTAURANTE_OWNER')")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Estadísticas del dueño: reservas por período, no-show, ingresos, platos más pedidos, rating en el tiempo, ocupación por sección")
+    public ResponseEntity<ApiResponse<RestaurantStatsResponse>> getStats(
+            @PathVariable UUID id,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate from,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate to,
+            @RequestParam(defaultValue = "day") String groupBy) {
+        ownershipGuard.assertOwnsRestaurant(id);
+        return ResponseEntity.ok(ApiResponse.ok(restaurantStatsService.getStats(id, from, to, groupBy)));
     }
 
     @GetMapping("/admin/all")

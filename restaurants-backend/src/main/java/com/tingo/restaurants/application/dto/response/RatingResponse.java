@@ -13,6 +13,9 @@ import java.util.UUID;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class RatingResponse {
     private UUID id;
+    /** Solo poblado en el historial del cliente (S13-02), donde una reseña puede ser de cualquier restaurante. */
+    private UUID restaurantId;
+    private String restaurantName;
     private String userName;
     private int score;
     private String comment;
