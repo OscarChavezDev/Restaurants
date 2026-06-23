@@ -97,10 +97,23 @@ public class RestaurantStatsService {
         };
     }
 
-    /** Las filas nativas de date_trunc llegan como java.sql.Timestamp; se exponen como fecha ISO (yyyy-MM-dd). */
+    /**
+     * Las filas nativas de date_trunc pueden llegar como java.sql.Timestamp, Instant,
+     * LocalDateTime u OffsetDateTime según el driver/dialecto; siempre se exponen como
+     * fecha ISO simple (yyyy-MM-dd) en la zona de la app, nunca el timestamp técnico crudo.
+     */
     private String formatPeriod(Object value) {
         if (value instanceof Timestamp ts) {
             return ts.toLocalDateTime().toLocalDate().toString();
+        }
+        if (value instanceof java.time.Instant instant) {
+            return instant.atZone(java.time.ZoneId.systemDefault()).toLocalDate().toString();
+        }
+        if (value instanceof java.time.LocalDateTime ldt) {
+            return ldt.toLocalDate().toString();
+        }
+        if (value instanceof java.time.OffsetDateTime odt) {
+            return odt.toLocalDate().toString();
         }
         return value != null ? value.toString() : null;
     }

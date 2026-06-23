@@ -13,6 +13,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD:-tingo_pass}
       PGDATA: /var/lib/postgresql/data/pgdata
       POSTGRES_HOST_AUTH_METHOD: md5
+      TZ: America/Lima
     ports:
       - "5432:5432"
     volumes:
@@ -39,6 +40,7 @@ services:
       postgres:
         condition: service_healthy
     environment:
+      TZ: America/Lima
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
       DB_URL: jdbc:postgresql://postgres:5432/restaurants_db?sslmode=disable
       DB_USERNAME: ${DB_USERNAME:-tingo_user}
