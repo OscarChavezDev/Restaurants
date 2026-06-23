@@ -12,6 +12,8 @@ CREATE TABLE IF NOT EXISTS restaurant_sections (
 
 CREATE INDEX IF NOT EXISTS idx_sections_restaurant ON restaurant_sections(restaurant_id);
 
+ALTER TABLE restaurant_tables ADD COLUMN IF NOT EXISTS section_id UUID REFERENCES restaurant_sections(id) ON DELETE SET NULL;
+
 -- V1__init_schema.sql ya crea restaurant_tables (sin section_id), así que este
 -- CREATE TABLE solo aplica en bases de datos donde, por algún motivo, no exista
 -- todavía; en el caso normal (tabla creada por V1) se agrega la columna con ALTER.

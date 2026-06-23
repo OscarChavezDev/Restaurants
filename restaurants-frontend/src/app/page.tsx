@@ -5,6 +5,7 @@ import { MapPin, Star, Calendar, UtensilsCrossed, ArrowRight, Building2 } from '
 import { AnimateOnScroll } from '@/components/ui/AnimateOnScroll';
 import { ThemeLangSwitch } from '@/components/ui/ThemeLangSwitch';
 import { AuthNav } from '@/components/ui/AuthNav';
+import { Footer } from '@/components/ui/Footer';
 import { useTranslation } from '@/hooks/useTranslation';
 
 export default function HomePage() {
@@ -23,7 +24,7 @@ export default function HomePage() {
     <div className="min-h-screen bg-gray-50">
       {/* ── Hero ── */}
       <header
-        className="relative overflow-hidden bg-gradient-to-br from-[#7C2D12] via-[#C2410C] to-[#E8590C] dark:from-[#240B03] dark:via-[#5A1F0C] dark:to-[#7C2D12]"
+        className="relative overflow-hidden min-h-[100dvh] flex flex-col bg-gradient-to-br from-[#7C2D12] via-[#C2410C] to-[#E8590C] dark:from-[#240B03] dark:via-[#5A1F0C] dark:to-[#7C2D12]"
       >
         {/* glow cálido + textura diagonal sutil */}
         <div className="absolute inset-0" style={{ background: 'radial-gradient(70% 90% at 75% 8%, rgba(255,196,140,0.25) 0%, transparent 60%)' }} />
@@ -32,7 +33,7 @@ export default function HomePage() {
         />
 
         {/* ── Navbar ── */}
-        <nav className="relative mx-auto max-w-6xl px-4 pt-5 sm:px-6 lg:px-8 flex items-center justify-between gap-3 flex-wrap">
+        <nav className="relative w-full px-6 pt-5 sm:px-10 lg:px-12 flex items-center justify-between gap-3 flex-wrap">
           <span className="flex items-center gap-2 text-white font-bold text-lg tracking-tight">
             <UtensilsCrossed className="h-5 w-5 text-orange-200" />
             Tingo Restaurants
@@ -43,31 +44,31 @@ export default function HomePage() {
           </div>
         </nav>
 
-        <div className="relative mx-auto max-w-5xl px-4 py-20 sm:px-6 lg:px-8 text-center">
+        <div className="relative mx-auto max-w-5xl px-4 py-20 sm:px-6 lg:px-8 text-center flex-1 flex flex-col justify-center items-center w-full z-10 pb-32">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-sm text-white/90 text-sm font-medium mb-8 border border-white/20">
             <MapPin className="h-3.5 w-3.5" />
             Tingo María, Huánuco, Perú
           </div>
 
-          <h1 className="font-display text-4xl font-extrabold tracking-tight text-white sm:text-6xl leading-tight mb-6 [text-shadow:0_2px_24px_rgba(0,0,0,0.15)]">
+          <h1 className="font-display text-4xl font-extrabold tracking-tight text-white sm:text-6xl md:text-7xl leading-tight mb-6 [text-shadow:0_2px_24px_rgba(0,0,0,0.15)] max-w-4xl">
             {t('heroTitle')}
           </h1>
 
-          <p className="text-lg text-orange-100/90 max-w-xl mx-auto leading-relaxed mb-10">
+          <p className="text-lg md:text-xl text-orange-100/90 max-w-2xl mx-auto leading-relaxed mb-10">
             {t('heroSubtitle')}
           </p>
 
           <div className="flex gap-3 justify-center flex-wrap">
             <Link
               href="/restaurants"
-              className="inline-flex items-center gap-2 rounded-xl bg-white px-7 py-3.5 text-sm font-semibold text-orange-600 shadow-lg shadow-black/10 hover:bg-orange-50 hover:scale-105 transition-all duration-200"
+              className="inline-flex items-center gap-2 rounded-xl bg-white px-8 py-4 text-base font-bold text-orange-600 shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:bg-orange-50 hover:scale-105 transition-all duration-300 active:scale-95"
             >
-              <UtensilsCrossed className="h-4 w-4" />
+              <UtensilsCrossed className="h-5 w-5" />
               {t('viewRestaurants')}
             </Link>
             <Link
               href="/reservations"
-              className="inline-flex items-center gap-2 rounded-xl border-2 border-white/30 px-7 py-3.5 text-sm font-semibold text-white hover:bg-white/10 hover:scale-105 transition-all duration-200"
+              className="inline-flex items-center gap-2 rounded-xl border-2 border-white/30 bg-white/10 backdrop-blur-md px-8 py-4 text-base font-bold text-white hover:bg-white/20 hover:scale-105 hover:border-white/50 transition-all duration-300 active:scale-95"
             >
               {t('checkReservation')}
             </Link>
@@ -160,6 +161,8 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── Footer ── */}
+      <Footer />
     </div>
   );
 }

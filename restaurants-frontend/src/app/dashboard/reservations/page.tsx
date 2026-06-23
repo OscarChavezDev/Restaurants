@@ -19,6 +19,9 @@ import toast from 'react-hot-toast';
 import type { Reservation } from '@/types/reservation';
 import { RatingModal } from '@/components/ui/RatingModal';
 import { useRatings } from '@/hooks/useRatings';
+import { ReservationDetailsModal } from '@/components/ui/ReservationDetailsModal';
+
+import { ReservationRow } from '@/components/ui/ReservationRow';
 
 function ReservationRow({
   res,
@@ -137,9 +140,12 @@ export default function ReservationsPage() {
   const noShowMutation = useNoShowReservation();
   const [restaurantId, setRestaurantId] = useState('');
   const { createRating, loading: ratingLoading } = useRatings();
-  
+
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [reviewReservationId, setReviewReservationId] = useState('');
+
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
+  const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
 
   // Para owners/admins: selector de restaurante + reservas por restaurante
   const { data: myRestaurants } = useMyRestaurants();
@@ -149,8 +155,7 @@ export default function ReservationsPage() {
   const { data: restaurantReservations, isLoading: loadingRestaurant } =
     useRestaurantReservations(restaurantId, 0, 50);
 
-  // Para clientes: sus propias reservas
-  const { data: myReservations, isLoading: loadingMine } = useMyReservations();
+  const { data: myReservations } = useMyReservations(); // Mantenemos el hook para que no falle si TS lo usa pero lo ignoraremos. En un mundo ideal lo quitamos.
 
   const handleConfirm = async (id: string) => {
     try {
@@ -193,6 +198,11 @@ export default function ReservationsPage() {
     setReviewModalOpen(true);
   };
 
+  const handleViewDetails = (res: Reservation) => {
+    setSelectedReservation(res);
+    setDetailsModalOpen(true);
+  };
+
   const handleSubmitReview = async (data: any) => {
     try {
       await createRating({
@@ -217,6 +227,7 @@ export default function ReservationsPage() {
     cancelPending: cancelMutation.isPending,
     completePending: completeMutation.isPending,
     noShowPending: noShowMutation.isPending,
+    onViewDetails: handleViewDetails,
   };
 
   // ── Vista OWNER / ADMIN ──────────────────────────────────────
@@ -255,40 +266,15 @@ export default function ReservationsPage() {
             {reservations.map((res) => <ReservationRow key={res.id} res={res} {...rowProps} />)}
           </div>
         )}
+
+        <ReservationDetailsModal
+          isOpen={detailsModalOpen}
+          onClose={() => setDetailsModalOpen(false)}
+          reservation={selectedReservation}
+        />
       </div>
     );
   }
 
-  // ── Vista CLIENTE ────────────────────────────────────────────
-  const reservations = myReservations?.content ?? [];
-
-  return (
-    <div>
-      <div className="mb-8">
-        <h1 className="font-display text-2xl font-bold text-gray-900">Mis Reservas</h1>
-        <p className="text-gray-600 mt-1">Tu historial de reservas</p>
-      </div>
-
-      {loadingMine ? (
-        <div className="space-y-3">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-20 skeleton rounded-2xl" />)}</div>
-      ) : reservations.length === 0 ? (
-        <div className="text-center py-24">
-          <Calendar className="h-16 w-16 mx-auto text-gray-200 mb-4" />
-          <h3 className="font-display text-lg font-semibold text-gray-900 mb-2">Sin reservas</h3>
-          <p className="text-gray-500">No tienes reservas registradas</p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {reservations.map((res) => <ReservationRow key={res.id} res={res} {...rowProps} />)}
-        </div>
-      )}
-
-      <RatingModal
-        isOpen={reviewModalOpen}
-        onClose={() => setReviewModalOpen(false)}
-        onSubmit={handleSubmitReview}
-        loading={ratingLoading}
-      />
-    </div>
-  );
+  return null;
 }

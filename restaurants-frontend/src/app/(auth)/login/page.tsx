@@ -149,9 +149,11 @@ export default function LoginPage() {
           <div className="flex justify-center">
             <GoogleLoginButton
               text="continue_with"
-              onSuccess={(user) =>
-                router.push(user.role === 'CLIENTE' ? '/restaurants' : '/dashboard')
-              }
+              onSuccess={(res) => {
+                const user = useAuthStore.getState().user;
+                if (!user) return;
+                router.push(user.role === 'CLIENTE' ? '/profile/restaurants' : '/dashboard')
+              }}
             />
           </div>
           <p className="mt-3 text-center text-xs text-gray-400">

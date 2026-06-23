@@ -40,9 +40,10 @@ const STATUS_CONFIG: Record<string, { label: string; icon: React.ReactNode; cls:
 interface Props {
   restaurant: Restaurant;
   showDistance?: boolean;
+  onReview?: (restaurantId: string) => void;
 }
 
-export function RestaurantCard({ restaurant, showDistance }: Props) {
+export function RestaurantCard({ restaurant, showDistance, onReview }: Props) {
   const gradient = pickGradient(restaurant.id ?? restaurant.name);
   const status = STATUS_CONFIG[restaurant.status] ?? STATUS_CONFIG.INACTIVE;
 
@@ -152,11 +153,20 @@ export function RestaurantCard({ restaurant, showDistance }: Props) {
               <Users className="h-3.5 w-3.5" />
               <span>{restaurant.totalCapacity}</span>
             </div>
-            {restaurant.hasWifi && <Wifi className="h-3.5 w-3.5 text-blue-400" />}
-            {restaurant.hasParking && <Car className="h-3.5 w-3.5 text-green-400" />}
-            {restaurant.acceptsReservations && (
-              <span className="ml-auto font-semibold text-orange-500">Reservar →</span>
-            )}
+            
+            <div className="ml-auto flex items-center gap-3">
+              {onReview && (
+                <button 
+                  onClick={(e) => { e.preventDefault(); onReview(restaurant.id); }}
+                  className="font-semibold text-gray-500 hover:text-orange-500 transition-colors"
+                >
+                  Opinar
+                </button>
+              )}
+              {restaurant.acceptsReservations && (
+                <span className="font-semibold text-orange-500">Reservar →</span>
+              )}
+            </div>
           </div>
         </div>
       </article>

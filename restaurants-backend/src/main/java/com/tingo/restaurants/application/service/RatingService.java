@@ -31,32 +31,47 @@ public class RatingService {
 
     @Transactional
     public RatingResponse createRating(UUID userId, com.tingo.restaurants.application.dto.request.CreateRatingRequest request) {
-        com.tingo.restaurants.infrastructure.persistence.entity.ReservationEntity reservation = reservationJpaRepository.findById(request.getReservationId())
-                .orElseThrow(() -> new IllegalArgumentException("Reserva no encontrada"));
+        UUID finalRestaurantId = null;
+        String finalCustomerName = "Anónimo";
+        boolean isVerified = false;
 
-        if (userId != null && reservation.getCustomerId() != null && !reservation.getCustomerId().equals(userId)) {
-            throw new IllegalArgumentException("No puedes calificar una reserva que no es tuya");
-        }
+        if (request.getReservationId() != null) {
+            com.tingo.restaurants.infrastructure.persistence.entity.ReservationEntity reservation = reservationJpaRepository.findById(request.getReservationId())
+                    .orElseThrow(() -> new IllegalArgumentException("Reserva no encontrada"));
 
-        if (reservation.getStatus() != com.tingo.restaurants.domain.model.enums.ReservationStatus.COMPLETED) {
-            throw new IllegalArgumentException("Solo puedes calificar reservas completadas");
-        }
-
-        // Si es anónimo (userId == null), usamos reservationId para verificar duplicados
-        if (userId != null) {
-            if (ratingJpaRepository.existsByUserIdAndReservationId(userId, request.getReservationId())) {
-                throw new IllegalArgumentException("Ya has calificado esta reserva");
+            if (userId != null && reservation.getCustomerId() != null && !reservation.getCustomerId().equals(userId)) {
+                throw new IllegalArgumentException("No puedes calificar una reserva que no es tuya");
             }
+
+            if (reservation.getStatus() != com.tingo.restaurants.domain.model.enums.ReservationStatus.COMPLETED) {
+                throw new IllegalArgumentException("Solo puedes calificar reservas completadas");
+            }
+
+            if (userId != null) {
+                if (ratingJpaRepository.existsByUserIdAndReservationId(userId, request.getReservationId())) {
+                    throw new IllegalArgumentException("Ya has calificado esta reserva");
+                }
+            }
+
+            finalRestaurantId = reservation.getRestaurantId();
+            finalCustomerName = reservation.getCustomerName();
+            isVerified = userId != null;
+        } else if (request.getRestaurantId() != null) {
+            finalRestaurantId = request.getRestaurantId();
+            if (userId != null) {
+                finalCustomerName = userJpaRepository.findById(userId)
+                    .map(com.tingo.restaurants.infrastructure.persistence.entity.UserEntity::getFullName)
+                    .orElse("Anónimo");
+            }
+            // Las reseñas directas no son verificadas
+            isVerified = false;
         } else {
-            // Check by reservationId only (assuming one review per reservation)
-            // But ratingJpaRepository only has existsByUserIdAndReservationId. We'd need existsByReservationId, 
-            // Since we can't easily change the JPA repo without recompiling easily, let's just ignore duplicate check for anonymous for now, or just let DB constraint fail if there's a unique constraint on reservationId.
-            // Wait, we can use reservationId if we want, but let's just proceed.
+            throw new IllegalArgumentException("Debe proporcionar una reserva o un restaurante");
         }
 
         com.tingo.restaurants.infrastructure.persistence.entity.RatingEntity entity = com.tingo.restaurants.infrastructure.persistence.entity.RatingEntity.builder()
                 .id(UUID.randomUUID())
-                .restaurantId(reservation.getRestaurantId())
+                .restaurantId(finalRestaurantId)
                 .userId(userId)
                 .reservationId(request.getReservationId())
                 .score(request.getScore())
@@ -64,13 +79,13 @@ public class RatingService {
                 .foodScore(request.getFoodScore())
                 .serviceScore(request.getServiceScore())
                 .ambianceScore(request.getAmbianceScore())
-                .verified(userId != null) // Only verified if logged in
+                .verified(isVerified)
                 .build();
 
         com.tingo.restaurants.infrastructure.persistence.entity.RatingEntity saved = ratingJpaRepository.save(entity);
 
         // Update restaurant stats
-        com.tingo.restaurants.infrastructure.persistence.entity.RestaurantEntity restaurant = restaurantJpaRepository.findById(reservation.getRestaurantId())
+        com.tingo.restaurants.infrastructure.persistence.entity.RestaurantEntity restaurant = restaurantJpaRepository.findById(finalRestaurantId)
                 .orElseThrow(() -> new IllegalArgumentException("Restaurante no encontrado"));
         
         Double avg = ratingJpaRepository.getAvgScore(restaurant.getId());
@@ -79,13 +94,11 @@ public class RatingService {
         restaurant.setTotalRatings((int) total);
         restaurantJpaRepository.save(restaurant);
 
-        String userName = userId != null ? userJpaRepository.findById(userId)
-                .map(com.tingo.restaurants.infrastructure.persistence.entity.UserEntity::getFullName)
-                .orElse(reservation.getCustomerName()) : reservation.getCustomerName();
-
         return RatingResponse.builder()
                 .id(saved.getId())
-                .userName(userName)
+                .restaurantId(restaurant.getId())
+                .restaurantName(restaurant.getName())
+                .userName(finalCustomerName)
                 .score(saved.getScore())
                 .comment(saved.getComment())
                 .foodScore(saved.getFoodScore())
@@ -94,5 +107,43 @@ public class RatingService {
                 .isVerified(saved.isVerified())
                 .createdAt(java.time.LocalDateTime.now())
                 .build();
+    }
+
+    public PagedResponse<RatingResponse> getRatingsByUser(UUID userId, int page, int size) {
+        org.springframework.data.domain.Page<com.tingo.restaurants.infrastructure.persistence.entity.RatingEntity> entityPage = 
+            ratingJpaRepository.findByUserIdOrderByCreatedAtDesc(userId, org.springframework.data.domain.PageRequest.of(page, size));
+        
+        java.util.List<RatingResponse> content = entityPage.getContent().stream()
+            .map(entity -> {
+                String rName = restaurantJpaRepository.findById(entity.getRestaurantId())
+                    .map(com.tingo.restaurants.infrastructure.persistence.entity.RestaurantEntity::getName)
+                    .orElse("Restaurante Desconocido");
+                return RatingResponse.builder()
+                    .id(entity.getId())
+                    .restaurantId(entity.getRestaurantId())
+                    .restaurantName(rName)
+                    .userName("Tú")
+                    .score(entity.getScore())
+                    .comment(entity.getComment())
+                    .foodScore(entity.getFoodScore())
+                    .serviceScore(entity.getServiceScore())
+                    .ambianceScore(entity.getAmbianceScore())
+                    .isVerified(entity.isVerified())
+                    .createdAt(entity.getCreatedAt())
+                    .ownerReply(entity.getOwnerReply())
+                    .ownerReplyAt(entity.getOwnerReplyAt())
+                    .build();
+            })
+            .collect(java.util.stream.Collectors.toList());
+
+        return PagedResponse.<RatingResponse>builder()
+            .content(content)
+            .page(entityPage.getNumber())
+            .size(entityPage.getSize())
+            .totalElements(entityPage.getTotalElements())
+            .totalPages(entityPage.getTotalPages())
+            .last(entityPage.isLast())
+            .first(entityPage.isFirst())
+            .build();
     }
 }

@@ -162,6 +162,7 @@ export interface RestaurantTable {
   capacity: number;
   sectionId?: string;
   sectionName?: string;
+  currentStatus?: string;
   isActive: boolean;
 }
 

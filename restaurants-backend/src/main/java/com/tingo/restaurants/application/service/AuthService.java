@@ -237,6 +237,7 @@ public class AuthService {
                 .refreshToken(refreshToken)
                 .expiresIn(jwtTokenProvider.getExpirationMs())
                 .tokenType("Bearer")
+                .createdAt(user.getCreatedAt())
                 .build();
     }
 }

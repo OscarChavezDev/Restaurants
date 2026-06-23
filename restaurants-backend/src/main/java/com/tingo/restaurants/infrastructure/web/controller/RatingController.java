@@ -46,6 +46,19 @@ public class RatingController {
         return ResponseEntity.ok(ApiResponse.ok(ratingService.getStatsByRestaurant(restaurantId)));
     }
 
+    @GetMapping("/me")
+    @Operation(summary = "Obtener mis reseñas")
+    public ResponseEntity<ApiResponse<PagedResponse<RatingResponse>>> getMyRatings(
+            @org.springframework.security.core.annotation.AuthenticationPrincipal org.springframework.security.core.userdetails.UserDetails userDetails,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).body(ApiResponse.error("No autorizado", "UNAUTHORIZED"));
+        }
+        UUID userId = UUID.fromString(userDetails.getUsername());
+        return ResponseEntity.ok(ApiResponse.ok("Mis reseñas obtenidas", ratingService.getRatingsByUser(userId, page, size)));
+    }
+
     @PostMapping
     @Operation(summary = "Crear reseña para una reserva completada")
     public ResponseEntity<ApiResponse<RatingResponse>> create(

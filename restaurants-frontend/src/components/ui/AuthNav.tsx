@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { LogIn, LogOut, UserPlus, LayoutDashboard } from 'lucide-react';
+import { LogIn, LogOut, UserPlus, LayoutDashboard, User as UserIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '@/store/authStore';
 
@@ -39,10 +39,15 @@ export function AuthNav() {
         <span className="hidden sm:inline text-sm font-medium text-white/90">
           Hola, {user.fullName?.split(' ')[0] ?? 'cliente'}
         </span>
-        {isStaff && (
+        {isStaff ? (
           <Link href="/dashboard" className={ghost}>
             <LayoutDashboard className="h-4 w-4" />
             <span className="hidden sm:inline">Panel</span>
+          </Link>
+        ) : (
+          <Link href="/profile" className={ghost}>
+            <UserIcon className="h-4 w-4" />
+            <span className="hidden sm:inline">Mi Perfil</span>
           </Link>
         )}
         <button type="button" onClick={handleLogout} className={solid}>

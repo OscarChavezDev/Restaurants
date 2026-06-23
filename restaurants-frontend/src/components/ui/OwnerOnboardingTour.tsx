@@ -30,8 +30,14 @@ export function OwnerOnboardingTour() {
   const hasHydrated = useAuthStore((s) => s.hasHydrated);
   const user = useAuthStore((s) => s.user);
 
-  const active = !!hasHydrated && !!user && user.role === 'RESTAURANTE_OWNER' && pathname.startsWith('/dashboard');
   if (!user) return null;
+
+  // Consider "new account" if created within the last 24 hours.
+  const isNewAccount = user.createdAt 
+    ? (new Date().getTime() - new Date(user.createdAt).getTime()) < 24 * 60 * 60 * 1000 
+    : false;
+
+  const active = !!hasHydrated && user.role === 'RESTAURANTE_OWNER' && pathname.startsWith('/dashboard') && isNewAccount;
 
   return <SpotlightTour steps={STEPS} storageKey={`owner_onboarding_seen_${user.userId}`} active={active} />;
 }

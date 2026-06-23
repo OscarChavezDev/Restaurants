@@ -17,8 +17,9 @@ import java.util.UUID;
 @AllArgsConstructor
 public class CreateRatingRequest {
 
-    @NotNull(message = "La reserva es obligatoria")
     private UUID reservationId;
+
+    private UUID restaurantId;
 
     @NotNull(message = "La puntuación es obligatoria")
     @Min(value = 1, message = "La puntuación mínima es 1")

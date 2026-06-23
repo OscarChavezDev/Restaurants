@@ -3,12 +3,13 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { useState } from 'react';
-import { Toaster } from 'react-hot-toast';
+import dynamic from 'next/dynamic';
 import { ThemeProvider } from '@/components/ui/ThemeProvider';
 import { TopControls } from '@/components/ui/TopControls';
 import { OnboardingTour } from '@/components/ui/OnboardingTour';
 import { OwnerOnboardingTour } from '@/components/ui/OwnerOnboardingTour';
 import { ReservationAssistant } from '@/components/ui/ReservationAssistant';
+import { Toaster } from 'react-hot-toast';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(

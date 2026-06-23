@@ -150,6 +150,9 @@ export const restaurantService = {
   async addSection(restaurantId: string, data: { name: string; type: string; capacity: number }) {
     return extractData<Section>(await api.post(`/v1/restaurants/${restaurantId}/sections`, data));
   },
+  async updateSection(restaurantId: string, sectionId: string, data: { name: string; type?: string; capacity?: number }) {
+    return extractData<Section>(await api.put(`/v1/restaurants/${restaurantId}/sections/${sectionId}`, data));
+  },
   async deleteSection(restaurantId: string, sectionId: string) {
     return api.delete(`/v1/restaurants/${restaurantId}/sections/${sectionId}`);
   },
@@ -158,6 +161,9 @@ export const restaurantService = {
   },
   async addTable(restaurantId: string, data: { tableNumber: string; capacity: number; sectionId?: string }) {
     return extractData<RestaurantTable>(await api.post(`/v1/restaurants/${restaurantId}/tables`, data));
+  },
+  async updateTableStatus(restaurantId: string, tableId: string, status: string) {
+    return extractData<RestaurantTable>(await api.patch(`/v1/restaurants/${restaurantId}/tables/${tableId}/status`, null, { params: { status } }));
   },
   async deleteTable(restaurantId: string, tableId: string) {
     return api.delete(`/v1/restaurants/${restaurantId}/tables/${tableId}`);
