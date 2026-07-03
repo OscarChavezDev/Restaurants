@@ -7,6 +7,9 @@ services:
     name: restaurants-backend
     runtime: docker
     plan: free
+    # Misma región que la BD en Neon (us-east-1): las consultas SQL pasan de
+    # ~70ms (cross-country) a ~1ms; el listado de restaurantes baja de ~2.3s a <0.5s.
+    region: virginia
     rootDir: restaurants-backend
     dockerfilePath: ./Dockerfile
     healthCheckPath: /api/actuator/health
