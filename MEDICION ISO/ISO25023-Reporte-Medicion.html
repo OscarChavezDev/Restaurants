@@ -1,0 +1,592 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<title>Mediciones ISO/IEC 25023 — Restaurants Tingo María</title>
+<style>
+  :root{
+    --bg:#FAF8F5; --surface:#FFFFFF; --surface2:#F4F0EA;
+    --text:#1C1917; --text2:#78716C; --muted:#A09A90; --border:#E7E1D8;
+    --acc:#E8590C; --acc2:#157F5B; --serie:#E8590C;
+    --ok:#15A34A; --ok-bg:rgba(21,163,74,.13);
+    --err:#DC2626; --err-bg:rgba(220,38,38,.10);
+    --warn:#D97706; --warn-bg:rgba(217,119,6,.14);
+    --grid:#EDE7DE; --axis:#D8D1C6;
+    --shadow:0 1px 2px rgba(28,25,23,.05),0 4px 14px rgba(28,25,23,.05);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#15120E; --surface:#211C17; --surface2:#2C251E;
+      --text:#F5F1EA; --text2:#A8A29E; --muted:#8A837B; --border:#352D25;
+      --acc:#F97A3D; --acc2:#3FAE84; --serie:#EA5D17;
+      --ok:#4ADE80; --ok-bg:rgba(74,222,128,.14);
+      --err:#F87171; --err-bg:rgba(248,113,113,.12);
+      --warn:#FBBF24; --warn-bg:rgba(251,191,36,.14);
+      --grid:#2E2720; --axis:#3E362C;
+      --shadow:0 1px 2px rgba(0,0,0,.35),0 4px 14px rgba(0,0,0,.30);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#15120E; --surface:#211C17; --surface2:#2C251E;
+    --text:#F5F1EA; --text2:#A8A29E; --muted:#8A837B; --border:#352D25;
+    --acc:#F97A3D; --acc2:#3FAE84; --serie:#EA5D17;
+    --ok:#4ADE80; --ok-bg:rgba(74,222,128,.14);
+    --err:#F87171; --err-bg:rgba(248,113,113,.12);
+    --warn:#FBBF24; --warn-bg:rgba(251,191,36,.14);
+    --grid:#2E2720; --axis:#3E362C;
+    --shadow:0 1px 2px rgba(0,0,0,.35),0 4px 14px rgba(0,0,0,.30);
+  }
+  :root[data-theme="light"]{
+    --bg:#FAF8F5; --surface:#FFFFFF; --surface2:#F4F0EA;
+    --text:#1C1917; --text2:#78716C; --muted:#A09A90; --border:#E7E1D8;
+    --acc:#E8590C; --acc2:#157F5B; --serie:#E8590C;
+    --ok:#15A34A; --ok-bg:rgba(21,163,74,.13);
+    --err:#DC2626; --err-bg:rgba(220,38,38,.10);
+    --warn:#D97706; --warn-bg:rgba(217,119,6,.14);
+    --grid:#EDE7DE; --axis:#D8D1C6;
+    --shadow:0 1px 2px rgba(28,25,23,.05),0 4px 14px rgba(28,25,23,.05);
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--text);
+    font:15px/1.55 "Segoe UI", system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1060px;margin:0 auto;padding:40px 22px 64px}
+
+  /* ---------- header ---------- */
+  .eyebrow{
+    font-size:11.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--acc);margin:0 0 8px;
+  }
+  h1{font-size:29px;line-height:1.18;font-weight:700;margin:0 0 10px;text-wrap:balance;max-width:30ch}
+  .sub{color:var(--text2);margin:0 0 16px;max-width:72ch}
+  .byline{font-size:13px;color:var(--text2);margin:0 0 16px}
+  .byline b{color:var(--text);font-weight:600}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+  .chip{
+    display:inline-flex;align-items:center;gap:7px;
+    background:var(--surface);border:1px solid var(--border);border-radius:999px;
+    padding:4px 12px;font-size:12.5px;color:var(--text2);
+  }
+  .chip b{color:var(--text);font-weight:600}
+
+  .scope{
+    display:flex;gap:10px;background:var(--surface2);border:1px solid var(--border);
+    border-radius:10px;padding:12px 14px;font-size:13px;color:var(--text2);margin:0 0 30px;
+  }
+  .scope b{color:var(--text)}
+  .scope .bar{width:3px;border-radius:99px;background:var(--acc);flex:none}
+
+  /* ---------- KPI tiles ---------- */
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:12px;margin-bottom:44px}
+  .kpi{
+    background:var(--surface);border:1px solid var(--border);border-radius:10px;
+    padding:14px 16px 13px;box-shadow:var(--shadow);
+    display:flex;flex-direction:column;gap:2px;
+  }
+  .kpi .id{font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--text2)}
+  .kpi .val{font-size:27px;font-weight:700;line-height:1.15;letter-spacing:-.01em}
+  .kpi .val small{font-size:15px;font-weight:600;color:var(--text2)}
+  .kpi .cap{font-size:12px;color:var(--text2);line-height:1.35;margin-top:2px}
+  .meter{height:5px;border-radius:99px;background:var(--surface2);margin-top:8px;overflow:hidden}
+  .meter i{display:block;height:100%;border-radius:99px;background:var(--acc2)}
+  .meter.warn i{background:var(--warn)}
+
+  /* ---------- sections ---------- */
+  section{margin-bottom:48px}
+  .sec-head{display:flex;align-items:baseline;gap:12px;border-bottom:2px solid var(--border);padding-bottom:9px;margin-bottom:6px}
+  .sec-id{
+    font:600 12px/1 Consolas,"Cascadia Mono",monospace;color:var(--acc);
+    background:var(--surface2);border-radius:6px;padding:5px 8px;letter-spacing:.06em;flex:none;
+  }
+  .sec-head h2{font-size:20px;font-weight:700;margin:0}
+  .sec-head .tag{margin-left:auto;font-size:12px;color:var(--muted);white-space:nowrap}
+  .sec-intro{color:var(--text2);font-size:13.5px;margin:6px 0 18px;max-width:80ch}
+  .sec-intro b, .note b, li b{color:var(--text)}
+  code{
+    font:12px Consolas,"Cascadia Mono",monospace;background:var(--surface2);
+    border-radius:4px;padding:1px 5px;white-space:nowrap;
+  }
+  h3{font-size:14px;font-weight:650;margin:26px 0 10px}
+
+  /* ---------- cards / tables ---------- */
+  .card{
+    background:var(--surface);border:1px solid var(--border);border-radius:10px;
+    box-shadow:var(--shadow);overflow:hidden;
+  }
+  .tbl-scroll{overflow-x:auto}
+  table{border-collapse:collapse;width:100%;font-size:13px}
+  th{
+    text-align:left;font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--text2);padding:10px 14px;border-bottom:1px solid var(--border);
+    background:var(--surface2);white-space:nowrap;
+  }
+  td{padding:9px 14px;border-bottom:1px solid var(--border);vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+  td .why{display:block;font-size:12px;color:var(--text2);margin-top:1px;max-width:46ch}
+  .x-cell{display:flex;align-items:center;gap:10px;min-width:120px}
+  .x-cell b{font-variant-numeric:tabular-nums;min-width:42px;text-align:right}
+  .x-cell .meter{flex:1;margin-top:0}
+
+  .badge{
+    display:inline-flex;align-items:center;gap:5px;border-radius:999px;
+    padding:2px 9px;font-size:11px;font-weight:600;letter-spacing:.03em;white-space:nowrap;
+  }
+  .badge::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+  .b-ok{color:var(--ok);background:var(--ok-bg)}
+  .b-err{color:var(--err);background:var(--err-bg)}
+  .b-warn{color:var(--warn);background:var(--warn-bg)}
+  .http{
+    font:12px Consolas,"Cascadia Mono",monospace;background:var(--surface2);
+    border:1px solid var(--border);border-radius:5px;padding:1px 6px;white-space:nowrap;
+  }
+  .criterio{font-size:12px;color:var(--muted);margin:8px 2px 0}
+
+  /* ---------- charts ---------- */
+  .chart-card{padding:16px 16px 10px;position:relative}
+  .chart-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 12px;margin-bottom:4px}
+  .chart-head h4{font-size:13.5px;font-weight:650;margin:0}
+  .chart-head .u{font-size:11.5px;color:var(--muted)}
+  .chart-box{position:relative}
+  .chart-box svg{display:block;width:100%}
+  .tip{
+    position:absolute;pointer-events:none;z-index:5;display:none;
+    background:var(--text);color:var(--bg);border-radius:7px;padding:7px 10px;
+    font-size:12px;line-height:1.4;box-shadow:0 4px 14px rgba(0,0,0,.25);
+    max-width:260px;white-space:nowrap;
+  }
+  .tip b{font-weight:650}
+  .tip .t2{opacity:.75}
+
+  /* ---------- método ---------- */
+  .grid-2{display:grid;grid-template-columns:1fr;gap:14px}
+  @media(min-width:860px){.grid-2{grid-template-columns:1fr 1fr}}
+  .proc{background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);padding:16px 18px}
+  .proc h4{font-size:13.5px;font-weight:650;margin:0 0 8px}
+  .proc p{font-size:13px;color:var(--text2);margin:0 0 8px}
+  .proc p:last-child{margin-bottom:0}
+
+  /* ---------- hallazgo ---------- */
+  .hallazgo{
+    background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--acc);
+    border-radius:10px;box-shadow:var(--shadow);padding:18px 20px;
+  }
+  .hallazgo h4{font-size:15px;font-weight:700;margin:0 0 8px}
+  .hallazgo p{font-size:13.5px;color:var(--text2);margin:0 0 10px;max-width:80ch}
+  .runs{display:flex;flex-direction:column;gap:10px;margin:14px 0 4px;max-width:520px}
+  .run{display:grid;grid-template-columns:110px 1fr 52px;align-items:center;gap:12px;font-size:12.5px}
+  .run .lbl{color:var(--text2)}
+  .run .meter{margin-top:0;height:10px}
+  .run .v{font-weight:700;font-variant-numeric:tabular-nums;text-align:right}
+  .codes{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+
+  ul.tight{margin:6px 0 0;padding-left:20px;font-size:13.5px;color:var(--text2)}
+  ul.tight li{margin-bottom:7px;max-width:76ch}
+
+  .refs{font-size:12.5px;color:var(--text2)}
+  .refs p{margin:0 0 8px;padding-left:22px;text-indent:-22px;max-width:90ch}
+
+  footer{
+    margin-top:20px;padding-top:18px;border-top:1px solid var(--border);
+    font-size:12px;color:var(--muted);
+  }
+  footer code{font-size:11px}
+
+  @media (prefers-reduced-motion: no-preference){
+    .meter i{transition:width .5s ease}
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">ISO/IEC 25023 · Medición de calidad del producto software</p>
+    <h1>Interoperabilidad y tolerancia a fallos del Sistema de Restaurantes de Tingo María</h1>
+    <p class="byline"><b>Oscar Chávez Carión</b> · Integración de Sistemas de Software — IX Ciclo · Facultad de Ingeniería en Informática y Sistemas, UNAS · 6 de julio de 2026</p>
+    <div class="chips">
+      <span class="chip">Norma: <b>ISO/IEC 25023</b> (Tablas 8 y 17)</span>
+      <span class="chip">Medido el <b>4 jul 2026</b></span>
+      <span class="chip">Entorno: <b>local · Docker Compose</b></span>
+      <span class="chip">Instrumento: <b>scripts PowerShell</b></span>
+    </div>
+    <div class="scope"><span class="bar"></span><div>
+      <b>Alcance.</b> De las tres subcaracterísticas preparadas en el sistema se midieron las dos totalmente automatizadas — <b>interoperabilidad</b> (Compatibilidad) y <b>tolerancia a fallos</b> (Fiabilidad) —, que se completan en menos de dos minutos sin intervención manual. La disponibilidad (Tabla 16) quedó fuera del alcance porque exige diez minutos de monitoreo y una avería provocada manualmente. En todas las medidas <b>X&nbsp;=&nbsp;A&nbsp;/&nbsp;B</b>.
+    </div></div>
+  </header>
+
+  <div class="kpis">
+    <div class="kpi"><span class="id">CIn · Interoperabilidad</span><span class="val">1,00</span>
+      <div class="meter"><i style="width:100%"></i></div>
+      <span class="cap">3/3 medidas · cumple</span></div>
+    <div class="kpi"><span class="id">RFt-1 · Evitación de fallos</span><span class="val">1,00</span>
+      <div class="meter"><i style="width:100%"></i></div>
+      <span class="cap">12/12 patrones evitados · cumple</span></div>
+    <div class="kpi"><span class="id">RFt-3 · Notificación</span><span class="val">0,127<small>&nbsp;s</small></span>
+      <div class="meter"><i style="width:87%"></i></div>
+      <span class="cap">promedio de 12 fallos · cumple (≤ 1 s)</span></div>
+    <div class="kpi"><span class="id">RFt-2 · Redundancia local</span><span class="val">0,00</span>
+      <div class="meter warn"><i style="width:3%"></i></div>
+      <span class="cap">0/3 componentes · no cumple</span></div>
+    <div class="kpi"><span class="id">RFt-2 · Redundancia prod.</span><span class="val">0,67</span>
+      <div class="meter warn"><i style="width:67%"></i></div>
+      <span class="cap">2/3 componentes · no cumple</span></div>
+    <div class="kpi"><span class="id">Hallazgo del proceso</span><span class="val">6</span>
+      <span class="cap">respuestas 500 detectadas y corregidas por la propia medición</span></div>
+  </div>
+
+  <!-- ============ MÉTODO ============ -->
+  <section id="metodo">
+    <div class="sec-head">
+      <span class="sec-id">MET</span>
+      <h2>Método</h2>
+      <span class="tag">sin herramientas externas · reproducible</span>
+    </div>
+    <p class="sec-intro">El sistema bajo prueba es la aplicación web de gestión de restaurantes: backend <b>Java 21 / Spring Boot 3.2</b> (arquitectura hexagonal, API REST), frontend <b>Next.js 14</b> y <b>PostgreSQL 16 + PostGIS</b>, orquestados con Docker Compose. La medición corre solo con lo que trae Windows más Docker, de modo que cualquier integrante del equipo puede repetirla con <code>mediciones-iso25023/scripts/*.ps1</code> (aceptan <code>-BaseUrl</code> para otros entornos).</p>
+
+    <div class="grid-2">
+      <div class="proc">
+        <h4>Procedimiento · Interoperabilidad</h4>
+        <p><code>medir-interoperabilidad.ps1</code> actúa como un <b>cliente externo real</b>: hace login JWT, consume los tres endpoints de integración, descarga el contrato OpenAPI y ejecuta un preflight CORS.</p>
+        <p>Un ítem cuenta para <b>A</b> solo si cumple el criterio documentado: estado HTTP esperado, JSON válido y envelope presente. <b>B</b> = ítems especificados (3 por medida).</p>
+      </div>
+      <div class="proc">
+        <h4>Procedimiento · Tolerancia a fallos</h4>
+        <p><code>medir-tolerancia-fallos.ps1</code> inyecta <b>12 patrones de fallo</b> por HTTP. Un fallo cuenta como <b>evitado</b> si el sistema responde con un 4xx controlado — nunca 5xx ni desconexión — y sigue operativo (healthcheck final por Actuator).</p>
+        <p>Para RFt-3 se mide <b>Ai − Bi</b> con <code>Stopwatch</code> (.NET): del instante de inyección al instante en que la API devuelve el error con su código.</p>
+      </div>
+    </div>
+
+    <h3>Instrumentos</h3>
+    <div class="card tbl-scroll">
+      <table>
+        <thead><tr><th>Instrumento</th><th>Uso en la medición</th></tr></thead>
+        <tbody>
+          <tr><td>Windows PowerShell 5.1</td><td>Motor de los scripts de medición</td></tr>
+          <tr><td><code>Invoke-WebRequest</code></td><td>Cliente HTTP de todas las pruebas; captura estado, cuerpo y cabeceras incluso en respuestas 4xx</td></tr>
+          <tr><td><code>System.Diagnostics.Stopwatch</code> (.NET)</td><td>Latencias en milisegundos (Ai − Bi de RFt-3-S)</td></tr>
+          <tr><td>Docker Desktop / Compose</td><td>Levantar el sistema bajo prueba e inventariar componentes y réplicas (RFt-2-S)</td></tr>
+          <tr><td>Spring Boot Actuator <code>/actuator/health</code></td><td>Verificar que el sistema sigue operativo tras la batería de fallos (RFt-1-G)</td></tr>
+          <tr><td>OpenAPI / Swagger <code>/v3/api-docs</code></td><td>Verificación del contrato intercambiable (CIn-1-G)</td></tr>
+          <tr><td><code>Export-Csv</code> (UTF-8)</td><td>CSV de resultados que alimentan el libro Excel</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ INTEROPERABILIDAD ============ -->
+  <section id="cin">
+    <div class="sec-head">
+      <span class="sec-id">CIn</span>
+      <h2>Interoperabilidad</h2>
+      <span class="tag">Tabla 8 · Compatibilidad → Interoperabilidad</span>
+    </div>
+    <p class="sec-intro">Las tres medidas alcanzaron <b>X&nbsp;=&nbsp;1,0</b>: el 100&nbsp;% de los formatos, protocolos e interfaces que el sistema declara como intercambiables funcionan al ser consumidos por un cliente externo real (los sistemas hermanos de Turismo/Transporte, Hoteles y Eventos).</p>
+
+    <div class="card tbl-scroll">
+      <table>
+        <thead><tr><th>Medida</th><th>Pregunta que responde</th><th class="num">A</th><th class="num">B</th><th>X = A/B</th><th>Evaluación</th></tr></thead>
+        <tbody>
+          <tr><td><code>CIn-1-G</code><span class="why">Intercambiabilidad de formatos de datos</span></td>
+              <td>¿Qué proporción de los formatos especificados es intercambiable?<span class="why">A: JSON (envelope ApiResponse), OpenAPI 3, JWT RFC 7519</span></td>
+              <td class="num">3</td><td class="num">3</td>
+              <td><span class="x-cell"><b>1,00</b><span class="meter"><i style="width:100%"></i></span></span></td>
+              <td><span class="badge b-ok">Cumple</span></td></tr>
+          <tr><td><code>CIn-2-G</code><span class="why">Suficiencia del protocolo de intercambio</span></td>
+              <td>¿Qué proporción de los protocolos especificados está soportada?<span class="why">A: HTTP/1.1 REST, Bearer JWT RFC 6750, CORS</span></td>
+              <td class="num">3</td><td class="num">3</td>
+              <td><span class="x-cell"><b>1,00</b><span class="meter"><i style="width:100%"></i></span></span></td>
+              <td><span class="badge b-ok">Cumple</span></td></tr>
+          <tr><td><code>CIn-3-S</code><span class="why">Adecuación de interfaces externas</span></td>
+              <td>¿Qué proporción de las interfaces externas especificadas es funcional?<span class="why">A: los 3 endpoints de <code>/v1/integration/**</code></span></td>
+              <td class="num">3</td><td class="num">3</td>
+              <td><span class="x-cell"><b>1,00</b><span class="meter"><i style="width:100%"></i></span></span></td>
+              <td><span class="badge b-ok">Cumple</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="criterio">Criterio de evaluación: cumple si X ≥ 0,9 · parcial si X ≥ 0,7 · no cumple si X &lt; 0,7. Evidencia por ítem: <code>resultados/interoperabilidad_detalle.csv</code>.</p>
+
+    <h3>Detalle de las 9 pruebas</h3>
+    <div class="card tbl-scroll">
+      <table>
+        <thead><tr><th>Ítem</th><th>Petición</th><th>HTTP</th><th>Resultado</th><th>Evidencia</th></tr></thead>
+        <tbody id="interop-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ TOLERANCIA A FALLOS ============ -->
+  <section id="rft">
+    <div class="sec-head">
+      <span class="sec-id">RFt</span>
+      <h2>Tolerancia a fallos</h2>
+      <span class="tag">Tabla 17 · Fiabilidad → Tolerancia a fallos</span>
+    </div>
+    <p class="sec-intro">Los <b>12 patrones de fallo</b> inyectados fueron evitados con respuestas controladas 4xx y el servicio permaneció operativo tras la batería completa. La notificación del fallo al consumidor es síncrona vía HTTP y tarda <b>0,127&nbsp;s</b> en promedio, cercana al 0 ideal. La redundancia de componentes es la principal oportunidad de mejora: nula en local y parcial en producción.</p>
+
+    <div class="card tbl-scroll">
+      <table>
+        <thead><tr><th>Medida</th><th>Pregunta que responde</th><th class="num">A</th><th class="num">B</th><th>X</th><th>Evaluación</th></tr></thead>
+        <tbody>
+          <tr><td><code>RFt-1-G</code><span class="why">Evitación de fallos</span></td>
+              <td>¿Qué proporción de patrones de fallo se controló para evitar fallos críticos y graves?</td>
+              <td class="num">12</td><td class="num">12</td>
+              <td><span class="x-cell"><b>1,00</b><span class="meter"><i style="width:100%"></i></span></span></td>
+              <td><span class="badge b-ok">Cumple</span></td></tr>
+          <tr><td><code>RFt-2-S</code><span class="why">Redundancia de componentes — local</span></td>
+              <td>¿Qué proporción de componentes está instalada de forma redundante?</td>
+              <td class="num">0</td><td class="num">3</td>
+              <td><span class="x-cell"><b>0,00</b><span class="meter warn"><i style="width:3%"></i></span></span></td>
+              <td><span class="badge b-err">No cumple</span></td></tr>
+          <tr><td><code>RFt-2-S</code><span class="why">Redundancia de componentes — producción</span></td>
+              <td>¿Qué proporción de componentes está instalada de forma redundante?</td>
+              <td class="num">2</td><td class="num">3</td>
+              <td><span class="x-cell"><b>0,67</b><span class="meter warn"><i style="width:67%"></i></span></span></td>
+              <td><span class="badge b-err">No cumple</span></td></tr>
+          <tr><td><code>RFt-3-S</code><span class="why">Tiempo medio de notificación de fallo</span></td>
+              <td>¿Con qué rapidez informa el sistema sobre la aparición de fallos?<span class="why">X = Σ(Ai − Bi)/n · Σ = 1,524 s · n = 12</span></td>
+              <td class="num">1,524 s</td><td class="num">12</td>
+              <td><span class="x-cell"><b>0,127 s</b></span></td>
+              <td><span class="badge b-ok">Cumple</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="criterio">Criterio: cumple si X ≥ 0,9 (proporciones) · para RFt-3-S, cumple si X ≤ 1 s — cuanto más cerca de 0, mejor. <code>restart: unless-stopped</code> de Docker aporta recuperación automática pero <b>no</b> cuenta como redundancia.</p>
+
+    <div class="card chart-card" style="margin-top:22px">
+      <div class="chart-head"><h4>RFt-3 · Latencia de notificación por caso</h4><span class="u">segundos · barra = un patrón de fallo inyectado</span></div>
+      <div class="chart-box" id="chart-rft"></div>
+    </div>
+
+    <h3>Los 12 casos de patrón de fallo</h3>
+    <div class="card tbl-scroll">
+      <table>
+        <thead><tr><th>#</th><th>Patrón de fallo</th><th>Petición inyectada</th><th>HTTP</th><th>JSON</th><th>Veredicto</th><th class="num">Notif. (s)</th></tr></thead>
+        <tbody id="casos-body"></tbody>
+      </table>
+    </div>
+    <p class="criterio">* En los tres casos <code>403</code> la respuesta la emite el filtro de seguridad (Spring Security) antes de llegar al controlador, por eso no lleva cuerpo JSON; el fallo igualmente queda controlado.</p>
+
+    <h3>RFt-2 · Redundancia de componentes</h3>
+    <div class="card tbl-scroll">
+      <table>
+        <thead><tr><th>Componente</th><th class="num">Instancias (local)</th><th>Redundante (local)</th><th>Redundante (producción)</th><th>Observación</th></tr></thead>
+        <tbody>
+          <tr><td>PostgreSQL + PostGIS</td><td class="num">1</td><td><span class="badge b-warn">No</span></td><td><span class="badge b-ok">Sí</span></td><td>Neon — almacenamiento replicado gestionado</td></tr>
+          <tr><td>Backend (Spring Boot)</td><td class="num">1</td><td><span class="badge b-warn">No</span></td><td><span class="badge b-warn">No</span></td><td>Render free — 1 sola instancia (punto único de fallo)</td></tr>
+          <tr><td>Frontend (Next.js)</td><td class="num">1</td><td><span class="badge b-warn">No</span></td><td><span class="badge b-ok">Sí</span></td><td>Vercel — edge/CDN multi-nodo gestionado</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ DISCUSIÓN ============ -->
+  <section id="discusion">
+    <div class="sec-head">
+      <span class="sec-id">DIS</span>
+      <h2>Discusión</h2>
+      <span class="tag">utilidad del instrumento · limitaciones</span>
+    </div>
+
+    <div class="hallazgo">
+      <h4>La medición no fue un ejercicio formal: encontró y corrigió un defecto real</h4>
+      <p>La <b>primera corrida</b> de RFt-1-G arrojó <b>X&nbsp;=&nbsp;0,5</b>: seis patrones de fallo (JSON malformado, identificador inválido, método no soportado, Content-Type incorrecto, parámetro fuera de rango y cuerpo vacío) devolvían <b>respuestas 500 no controladas</b> porque caían en el manejador genérico de excepciones.</p>
+      <p>Se agregaron seis manejadores específicos al <code>GlobalExceptionHandler</code>, se reconstruyó la imagen del backend y la <b>medición final</b> dio <b>X&nbsp;=&nbsp;1,0</b>.</p>
+      <div class="runs">
+        <div class="run"><span class="lbl">Primera corrida</span><span class="meter warn"><i style="width:50%"></i></span><span class="v">0,50</span></div>
+        <div class="run"><span class="lbl">Medición final</span><span class="meter"><i style="width:100%"></i></span><span class="v">1,00</span></div>
+      </div>
+      <div class="codes">
+        <code>MALFORMED_BODY</code><code>INVALID_PARAMETER_TYPE</code><code>MISSING_PARAMETER</code><code>METHOD_NOT_ALLOWED</code><code>UNSUPPORTED_MEDIA_TYPE</code><code>INVALID_ARGUMENT</code>
+      </div>
+    </div>
+
+    <div class="proc" style="margin-top:22px">
+      <h4>Limitaciones</h4>
+      <ul class="tight">
+        <li><b>RFt-2-S local da 0 por diseño</b> del despliegue; en producción, Render free sigue siendo un punto único de fallo del backend.</li>
+        <li>Las latencias de RFt-3-S se midieron en <b>localhost</b>; sobre una red real serían mayores.</li>
+        <li><b>B = 3 ítems por medida</b> de interoperabilidad es un catálogo pequeño; ampliarlo (p. ej. HTTPS/TLS en producción) lo haría más robusto.</li>
+        <li>Una <b>sola corrida</b> por medida; repetir y promediar fortalecería la validez estadística de RFt-3-S.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ CONCLUSIONES ============ -->
+  <section id="conclusiones">
+    <div class="sec-head">
+      <span class="sec-id">CON</span>
+      <h2>Conclusiones</h2>
+    </div>
+    <p class="sec-intro" style="font-size:14px">El sistema demuestra <b>interoperabilidad plena</b> (X&nbsp;=&nbsp;1,0 en las tres medidas de la Tabla 8) y una <b>tolerancia a fallos sólida en el plano del software</b>: evitación total de los doce patrones inyectados (RFt-1-G&nbsp;=&nbsp;1,0) y notificación de fallos en 0,127&nbsp;s en promedio (RFt-3-S). La principal oportunidad de mejora es de <b>infraestructura</b>: la redundancia de componentes (RFt-2-S) es nula en local y parcial (0,67) en producción. Además, la medición cumplió un rol de aseguramiento de calidad activo al detectar y guiar la corrección de seis respuestas de error no controladas antes de la medición final.</p>
+
+    <h3>Referencias</h3>
+    <div class="refs">
+      <p>Docker Inc. (2024). <i>Docker Compose overview</i>. https://docs.docker.com/compose/</p>
+      <p>International Organization for Standardization. (2011). <i>Systems and software engineering — SQuaRE — System and software quality models</i> (ISO/IEC 25010:2011). https://www.iso.org/standard/35733.html</p>
+      <p>International Organization for Standardization. (2016). <i>Systems and software engineering — SQuaRE — Measurement of system and software product quality</i> (ISO/IEC 25023:2016). https://www.iso.org/standard/35747.html</p>
+      <p>VMware. (2024). <i>Spring Boot Actuator: Production-ready features</i>. https://docs.spring.io/spring-boot/docs/current/reference/html/actuator.html</p>
+    </div>
+  </section>
+
+  <footer>
+    Acompaña al informe APA <code>ISO25023-Informe-Medicion-APA.docx</code> y al libro <code>ISO25023-Mediciones-Interoperabilidad-ToleranciaFallos.xlsx</code> (A, B y X son fórmulas que se recalculan al editar los datos). Scripts y CSV: <code>mediciones-iso25023/</code>.
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var css = function(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); };
+  var fmt = function(v,d){ return v.toFixed(d===undefined?2:d).replace(".",","); };
+
+  /* ---------------- datos ---------------- */
+  var INTEROP = [
+    ["CIn-1-G","JSON envelope ApiResponse","GET /v1/restaurants","200","Intercambiable","JSON válido con campos success y data"],
+    ["CIn-1-G","OpenAPI 3 (contrato JSON)","GET /v3/api-docs","200","Intercambiable","JSON válido con campo openapi"],
+    ["CIn-1-G","JWT (RFC 7519)","POST /v1/auth/login","200","Intercambiable","token con estructura header.payload.signature"],
+    ["CIn-2-G","HTTP/1.1 (REST)","GET /v1/restaurants","200","Soportado","respuesta 200 sobre HTTP"],
+    ["CIn-2-G","Autenticación Bearer JWT (RFC 6750)","GET /v1/integration/restaurants","200/403","Soportado","200 con token; 401/403 sin token"],
+    ["CIn-2-G","CORS (preflight)","OPTIONS /v1/restaurants","200","Soportado","cabecera Access-Control-Allow-Origin presente"],
+    ["CIn-3-S","Catálogo de restaurantes (Turismo/Transporte)","GET /v1/integration/restaurants","200","Funcional","200 + envelope JSON"],
+    ["CIn-3-S","Disponibilidad de restaurante (Hoteles)","GET /v1/integration/restaurants/{id}/availability","200","Funcional","200 + envelope con datos del restaurante"],
+    ["CIn-3-S","Restaurantes cerca de evento (Eventos)","GET /v1/integration/restaurants/near-event/{id}","200","Funcional","200 + envelope JSON (lista, hoy vacía)"]
+  ];
+
+  var CASOS = [
+    [1,"JSON malformado","POST /v1/auth/login",400,true,0.310],
+    [2,"Violación de validación","POST /v1/auth/login",400,true,0.121],
+    [3,"Credenciales incorrectas","POST /v1/auth/login",401,true,0.751],
+    [4,"Recurso inexistente","GET /v1/restaurants/{uuid}",404,true,0.056],
+    [5,"Identificador con tipo inválido","GET /v1/restaurants/no-es-uuid",400,true,0.018],
+    [6,"Ruta inexistente","GET /v1/ruta-que-no-existe",403,false,0.015],
+    [7,"Acceso sin autenticación","GET /v1/integration/restaurants",403,false,0.011],
+    [8,"Token corrupto","GET /v1/integration/restaurants",403,false,0.183],
+    [9,"Método HTTP no soportado","DELETE /v1/auth/login",405,true,0.013],
+    [10,"Content-Type incorrecto","POST /v1/auth/login",415,true,0.010],
+    [11,"Parámetro fuera de rango","GET /v1/restaurants?page=-1",400,true,0.023],
+    [12,"Cuerpo vacío requerido","POST /v1/auth/login",400,true,0.013]
+  ];
+
+  /* ---------------- tablas ---------------- */
+  function el(tag, html){ var e=document.createElement(tag); e.innerHTML=html; return e; }
+
+  var interopBody = document.getElementById("interop-body");
+  INTEROP.forEach(function(r){
+    interopBody.appendChild(el("tr",
+      "<td>"+r[1]+"<span class='why'>"+r[0]+"</span></td>"+
+      "<td><code>"+r[2]+"</code></td>"+
+      "<td><span class='http'>"+r[3]+"</span></td>"+
+      "<td><span class='badge b-ok'>"+r[4]+"</span></td>"+
+      "<td>"+r[5]+"</td>"));
+  });
+
+  var casosBody = document.getElementById("casos-body");
+  CASOS.forEach(function(c){
+    casosBody.appendChild(el("tr",
+      "<td class='num'>"+c[0]+"</td>"+
+      "<td>"+c[1]+"</td>"+
+      "<td><code>"+c[2]+"</code></td>"+
+      "<td><span class='http'>"+c[3]+"</span></td>"+
+      "<td>"+(c[4]?"Sí":"No*")+"</td>"+
+      "<td><span class='badge b-ok'>Evitado</span></td>"+
+      "<td class='num'>"+fmt(c[5],3)+"</td>"));
+  });
+
+  /* ---------------- SVG helpers ---------------- */
+  var NS = "http://www.w3.org/2000/svg";
+  function svgEl(tag, attrs){
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    return e;
+  }
+  function makeTip(box){
+    var t = document.createElement("div"); t.className="tip"; box.appendChild(t); return t;
+  }
+  function showTip(tip, box, x, y, html){
+    tip.innerHTML = html; tip.style.display = "block";
+    var bw = box.clientWidth, tw = tip.offsetWidth, th = tip.offsetHeight;
+    var lx = x + 12; if (lx + tw > bw - 4) lx = x - tw - 12; if (lx < 4) lx = 4;
+    var ly = y - th - 10; if (ly < 2) ly = y + 14;
+    tip.style.left = lx+"px"; tip.style.top = ly+"px";
+  }
+
+  /* ---------------- gráfico de barras RFt-3 ---------------- */
+  function drawBars(){
+    var box = document.getElementById("chart-rft");
+    box.innerHTML = "";
+    var W = Math.max(box.clientWidth, 320), H = 230;
+    var m = {l:46, r:14, t:18, b:26};
+    var iw = W - m.l - m.r, ih = H - m.t - m.b;
+    var yMax = 0.8, media = 0.127;
+    var svg = svgEl("svg",{viewBox:"0 0 "+W+" "+H, height:H, role:"img",
+      "aria-label":"Latencia de notificación de fallo por caso, en segundos"});
+    box.appendChild(svg);
+    var tip = makeTip(box);
+
+    var y = function(v){ return m.t + ih - (v/yMax)*ih; };
+    [0,0.2,0.4,0.6,0.8].forEach(function(v){
+      svg.appendChild(svgEl("line",{x1:m.l,x2:W-m.r,y1:y(v),y2:y(v),
+        stroke:v===0?css("--axis"):css("--grid"),"stroke-width":1}));
+      var lb = svgEl("text",{x:m.l-8,y:y(v)+4,"text-anchor":"end",fill:css("--muted"),
+        "font-size":"11","font-family":"Segoe UI, sans-serif"});
+      lb.textContent = fmt(v,1)+" s";
+      svg.appendChild(lb);
+    });
+
+    var step = iw / CASOS.length, bw = Math.min(34, step*0.6);
+    var barColor = css("--serie");
+    CASOS.forEach(function(c, i){
+      var cx = m.l + step*i + step/2;
+      var by = y(c[5]), bh = Math.max(2, m.t+ih-by);
+      by = m.t + ih - bh;
+      var r = Math.min(4, bh);
+      var d = "M"+(cx-bw/2)+" "+(m.t+ih)+
+              " V"+(by+r)+" Q"+(cx-bw/2)+" "+by+" "+(cx-bw/2+r)+" "+by+
+              " H"+(cx+bw/2-r)+" Q"+(cx+bw/2)+" "+by+" "+(cx+bw/2)+" "+(by+r)+
+              " V"+(m.t+ih)+" Z";
+      svg.appendChild(svgEl("path",{d:d, fill:barColor}));
+      var xl = svgEl("text",{x:cx,y:m.t+ih+16,"text-anchor":"middle",fill:css("--muted"),
+        "font-size":"11","font-family":"Segoe UI, sans-serif"});
+      xl.textContent = c[0];
+      svg.appendChild(xl);
+      if (c[5] === 0.751){
+        var dl = svgEl("text",{x:cx,y:by-6,"text-anchor":"middle",fill:css("--text"),
+          "font-size":"11","font-weight":"650","font-family":"Segoe UI, sans-serif"});
+        dl.textContent = fmt(c[5],3)+" s";
+        svg.appendChild(dl);
+      }
+      var hit = svgEl("rect",{x:m.l+step*i,y:m.t,width:step,height:ih,fill:"transparent"});
+      hit.addEventListener("mousemove", function(ev){
+        var rc = box.getBoundingClientRect();
+        showTip(tip, box, ev.clientX-rc.left, ev.clientY-rc.top,
+          "<b>Caso "+c[0]+" · "+c[1]+"</b><br><span class='t2'>"+c[2]+" → HTTP "+c[3]+"</span><br>Notificación: <b>"+fmt(c[5],3)+" s</b>");
+      });
+      hit.addEventListener("mouseleave", function(){ tip.style.display="none"; });
+      svg.appendChild(hit);
+    });
+
+    svg.appendChild(svgEl("line",{x1:m.l,x2:W-m.r,y1:y(media),y2:y(media),
+      stroke:css("--text2"),"stroke-width":1,"stroke-dasharray":"4 4"}));
+    var ml = svgEl("text",{x:W-m.r,y:y(media)-5,"text-anchor":"end",fill:css("--text2"),
+      "font-size":"11","font-family":"Segoe UI, sans-serif"});
+    ml.textContent = "media 0,127 s";
+    svg.appendChild(ml);
+  }
+
+  drawBars();
+  var rt;
+  window.addEventListener("resize", function(){ clearTimeout(rt); rt = setTimeout(drawBars, 150); });
+  new MutationObserver(drawBars).observe(document.documentElement, {attributes:true, attributeFilter:["data-theme"]});
+  if (window.matchMedia) window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", drawBars);
+})();
+</script>
+
+</body>
+</html>
