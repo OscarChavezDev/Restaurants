@@ -1,4 +1,4 @@
-# Despliegue gratuito — Neon + Render + Vercel
+00# Despliegue gratuito — Neon + Render + Vercel
 
 Guía paso a paso para desplegar el sistema completo **sin pagar nada**:
 
