@@ -1,0 +1,3 @@
+﻿"id","nombre","A_seg","B_seg","X","interpretacion","fecha","entorno","muestras","intervalo_s"
+"RAv-1-G","Disponibilidad del sistema","570","570","1","Proporcion del tiempo programado realmente disponible (1.0 = mejor)","2026-07-04 15:57:12","https://restaurants-backend-ni6d.onrender.com/api","114","5"
+"RAv-2-G","Tiempo medio de inactividad","0","0","N/A","Segundos promedio de inactividad por fallo (0 = mejor). B = numero de fallos observados","2026-07-04 15:57:12","https://restaurants-backend-ni6d.onrender.com/api","114","5"

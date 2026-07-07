@@ -1,0 +1,13 @@
+﻿"caso","patron_de_fallo","peticion","estado_http","respuesta_json","veredicto","Bi_inyeccion","latencia_notificacion_s","error_conexion"
+"1","JSON malformado","POST http://localhost:8080/api/v1/auth/login","400","SI","EVITADO","15:49:28.899","0,31",
+"2","Violacion de validacion","POST http://localhost:8080/api/v1/auth/login","400","SI","EVITADO","15:49:29.315","0,121",
+"3","Credenciales incorrectas","POST http://localhost:8080/api/v1/auth/login","401","SI","EVITADO","15:49:29.441","0,751",
+"4","Recurso inexistente","GET http://localhost:8080/api/v1/restaurants/b39fb314-c7ba-41cb-8137-2840eba974d1","404","SI","EVITADO","15:49:30.197","0,056",
+"5","Identificador con tipo invalido","GET http://localhost:8080/api/v1/restaurants/no-es-uuid","400","SI","EVITADO","15:49:30.258","0,018",
+"6","Ruta inexistente","GET http://localhost:8080/api/v1/ruta-que-no-existe","403","NO","EVITADO","15:49:30.279","0,015",
+"7","Acceso sin autenticacion","GET http://localhost:8080/api/v1/integration/restaurants","403","NO","EVITADO","15:49:30.298","0,011",
+"8","Token corrupto","GET http://localhost:8080/api/v1/integration/restaurants","403","NO","EVITADO","15:49:30.317","0,183",
+"9","Metodo HTTP no soportado","DELETE http://localhost:8080/api/v1/auth/login","405","SI","EVITADO","15:49:30.502","0,013",
+"10","Content-Type incorrecto","POST http://localhost:8080/api/v1/auth/login","415","SI","EVITADO","15:49:30.518","0,01",
+"11","Parametro fuera de rango","GET http://localhost:8080/api/v1/restaurants?page=-1&size=10","400","SI","EVITADO","15:49:30.531","0,023",
+"12","Cuerpo vacio requerido","POST http://localhost:8080/api/v1/auth/login","400","SI","EVITADO","15:49:30.558","0,013",

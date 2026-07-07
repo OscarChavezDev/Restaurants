@@ -1,0 +1,4 @@
+﻿"id","nombre","A","B","X","interpretacion","fecha","entorno"
+"CIn-1-G","Intercambiabilidad de formatos de datos","3","3","1","1.0 = todos los formatos especificados son intercambiables","2026-07-04 15:46:46","http://localhost:8080/api"
+"CIn-2-G","Suficiencia del protocolo de intercambio de datos","3","3","1","1.0 = todos los protocolos especificados estan soportados","2026-07-04 15:46:46","http://localhost:8080/api"
+"CIn-3-S","Adecuacion de interfaces externas","3","3","1","1.0 = todas las interfaces externas son funcionales","2026-07-04 15:46:46","http://localhost:8080/api"

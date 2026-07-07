@@ -1,0 +1,4 @@
+﻿"id","nombre","A","B","X","interpretacion","fecha","entorno"
+"RFt-1-G","Evitacion de fallos","12","12","1","Proporcion de patrones de fallo controlados (1.0 = mejor). Sistema siguio UP tras la bateria: SI","2026-07-04 15:49:28","http://localhost:8080/api"
+"RFt-2-S","Redundancia de componentes","0","3","0","Proporcion de componentes instalados de forma redundante (entorno local; ver _componentes.csv para produccion)","2026-07-04 15:49:28","http://localhost:8080/api"
+"RFt-3-S","Tiempo medio de notificacion de fallo","suma=1.524 s","n=12","0,127","Segundos promedio entre inyeccion del fallo (Bi) y su reporte al consumidor (Ai). Cerca de 0 = mejor","2026-07-04 15:49:28","http://localhost:8080/api"

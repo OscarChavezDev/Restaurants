@@ -8,6 +8,15 @@ Guía paso a paso para desplegar el sistema completo **sin pagar nada**:
 | Backend Spring Boot | [Render](https://render.com) | Free (sin tarjeta) |
 | Frontend Next.js | [Vercel](https://vercel.com) | Hobby (sin tarjeta) |
 
+## URLs del despliegue actual
+
+| Pieza | URL |
+|-------|-----|
+| API (Render) | <https://restaurants-backend-ni6d.onrender.com/api> |
+| Swagger | <https://restaurants-backend-ni6d.onrender.com/api/swagger-ui/index.html> |
+| Health | <https://restaurants-backend-ni6d.onrender.com/api/actuator/health> |
+| Frontend (Vercel) | <https://restaurants-seven-tan.vercel.app> |
+
 > Requisito: el repo debe estar en GitHub y la rama a desplegar pusheada
 > (Render y Vercel se conectan a una rama del repo).
 
