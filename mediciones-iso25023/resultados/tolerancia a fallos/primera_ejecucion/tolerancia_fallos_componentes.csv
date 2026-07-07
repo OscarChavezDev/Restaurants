@@ -1,0 +1,5 @@
+﻿"componente","instancias","redundante","observacion"
+"postgres","1","NO","Entorno local Docker Compose. En produccion: Neon (BD replicada gestionada), Vercel (frontend multi-nodo), Render free (1 instancia backend)."
+"backend","1","NO","Entorno local Docker Compose. En produccion: Neon (BD replicada gestionada), Vercel (frontend multi-nodo), Render free (1 instancia backend)."
+"frontend","1","NO","Entorno local Docker Compose. En produccion: Neon (BD replicada gestionada), Vercel (frontend multi-nodo), Render free (1 instancia backend)."
+"adminer","1","NO","Entorno local Docker Compose. En produccion: Neon (BD replicada gestionada), Vercel (frontend multi-nodo), Render free (1 instancia backend)."
