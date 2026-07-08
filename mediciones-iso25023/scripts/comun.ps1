@@ -1,5 +1,4 @@
 # Funciones compartidas por los scripts de medición ISO/IEC 25023.
-# Compatible con Windows PowerShell 5.1 (sin operadores ternarios ni &&).
 
 $ErrorActionPreference = 'Stop'
 try { [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12 } catch {}
