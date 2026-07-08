@@ -4,10 +4,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mediciones ISO/IEC 25023 — Restaurants Tingo María</title>
 </head>
 
 <body>
-  <title>Mediciones ISO/IEC 25023 — Restaurants Tingo María</title>
   <style>
     :root {
       --bg: #FAF8F5;
@@ -377,6 +377,16 @@
       border-bottom: none
     }
 
+    .tr-group td {
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--acc);
+      background: var(--surface2);
+      padding: 7px 14px;
+    }
+
     td.num,
     th.num {
       text-align: right;
@@ -692,23 +702,29 @@
     <header>
       <p class="eyebrow">ISO/IEC 25023 · Medición de calidad del producto software</p>
       <h1>Interoperabilidad y tolerancia a fallos del Sistema de Restaurantes de Tingo María</h1>
+      <p class="sub">Se aplican las funciones de medición de la norma ISO/IEC 25023 para cuantificar dos
+        subcaracterísticas de calidad del producto software definidas en ISO/IEC 25010 — <b>interoperabilidad</b>
+        (Tabla 8) y <b>tolerancia a fallos</b> (Tabla 17) — sobre el sistema que expone la API REST consumida por los
+        demás sistemas del ecosistema turístico (Eventos, Hoteles, Turismo y Transporte). Cada medida responde a una
+        pregunta concreta mediante una función de medición, en general de la forma X&nbsp;=&nbsp;A/B, donde A y B son
+        conteos o tiempos observables.</p>
       <p class="byline"><b>Alarcón Gómez Bily Alexis · Benítez Tello Carlos Aldair · Chávez Carrión Oscar
           Jesús</b><br>Integración de Sistemas de Software · Docente: José Orlando Castillo Cornelio<br>Facultad de
         Ingeniería en Informática y Sistemas, UNAS · Tingo María, Perú — 2026</p>
       <div class="chips">
         <span class="chip">Norma: <b>ISO/IEC 25023</b> (Tablas 8 y 17)</span>
-        <span class="chip">Interoperabilidad: <b>4 jul 2026</b></span>
-        <span class="chip">Tolerancia a fallos: <b>7 jul 2026</b></span>
+        <span class="chip">Medición: <b>julio 2026</b></span>
         <span class="chip">Entorno: <b>local · Docker Compose</b></span>
         <span class="chip">Instrumento: <b>scripts PowerShell</b></span>
       </div>
       <div class="scope"><span class="bar"></span>
         <div>
+          <b>Objetivo.</b> Cuantificar, con las funciones de medición de ISO/IEC 25023, el nivel de interoperabilidad
+          y de tolerancia a fallos del sistema, dejando evidencia reproducible (scripts, archivos CSV y criterios
+          documentados) que permita repetir la medición en cualquier momento.<br>
           <b>Alcance.</b> De las tres subcaracterísticas preparadas en el sistema se midieron las dos totalmente
           automatizadas — <b>interoperabilidad</b> (Compatibilidad) y <b>tolerancia a fallos</b> (Fiabilidad) —, que se
-          completan en menos de dos minutos sin intervención manual. La disponibilidad (Tabla 16) quedó fuera del
-          alcance porque exige diez minutos de monitoreo y una avería provocada manualmente. En todas las medidas
-          <b>X&nbsp;=&nbsp;A&nbsp;/&nbsp;B</b>.
+          completan en menos de dos minutos sin intervención manual.
         </div>
       </div>
     </header>
@@ -718,13 +734,9 @@
         <div class="meter"><i style="width:100%"></i></div>
         <span class="cap">3/3 medidas · cumple</span>
       </div>
-      <div class="kpi"><span class="id">RFt-1 · 1.ª ejecución</span><span class="val">0,50</span>
+      <div class="kpi"><span class="id">RFt-1 · Evitación de fallos</span><span class="val">0,50</span>
         <div class="meter warn"><i style="width:50%"></i></div>
         <span class="cap">6/12 patrones evitados · no cumple</span>
-      </div>
-      <div class="kpi"><span class="id">RFt-1 · 2.ª ejecución</span><span class="val">1,00</span>
-        <div class="meter"><i style="width:100%"></i></div>
-        <span class="cap">12/12 tras corregir el manejador · cumple</span>
       </div>
       <div class="kpi"><span class="id">RFt-3 · Notificación</span><span class="val">0,079<small>&nbsp;s</small></span>
         <span class="cap">promedio de 12 fallos · cumple (≤ 1 s)</span>
@@ -750,13 +762,78 @@
           Spring Boot 3.2</b> (arquitectura hexagonal, API REST), frontend <b>Next.js 14</b> y <b>PostgreSQL 16 +
           PostGIS</b>, orquestados con Docker Compose. La medición corre solo con lo que trae Windows más Docker, de
         modo que cualquier integrante del equipo puede repetirla con <code>mediciones-iso25023/scripts/*.ps1</code>
-        (aceptan <code>-BaseUrl</code> para otros entornos).</p>
+        (aceptan <code>-BaseUrl</code> para otros entornos). La base técnica que habilita la medición es doble:
+        <b>(a)</b> para interoperabilidad, los endpoints de integración <code>/v1/integration/**</code>, el contrato
+        OpenAPI 3 publicado en <code>/v3/api-docs</code>, el envelope JSON <code>ApiResponse</code>, la autenticación
+        JWT Bearer y CORS; <b>(b)</b> para tolerancia a fallos, el <code>GlobalExceptionHandler</code>, que traduce
+        toda condición de error conocida en una respuesta HTTP controlada con código de error, y la validación Jakarta
+        en los DTO de entrada.</p>
 
+      <h3>Medidas aplicadas y funciones de medición (Tabla 1)</h3>
+      <div class="card tbl-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>Función de medición</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="tr-group">
+              <td colspan="3">Interoperabilidad</td>
+            </tr>
+            <tr>
+              <td><code>CIn-1-G</code></td>
+              <td>Intercambiabilidad de formatos de datos</td>
+              <td>X = A/B · A = formatos de datos intercambiables con otro software o sistemas · B = formatos de datos
+                especificados como intercambiables</td>
+            </tr>
+            <tr>
+              <td><code>CIn-2-G</code></td>
+              <td>Suficiencia del protocolo de intercambio de datos</td>
+              <td>X = A/B · A = protocolos de intercambio de datos soportados · B = protocolos especificados para ser
+                soportados</td>
+            </tr>
+            <tr>
+              <td><code>CIn-3-S</code></td>
+              <td>Adecuación de interfaces externas</td>
+              <td>X = A/B · A = interfaces externas que son funcionales · B = interfaces externas especificadas</td>
+            </tr>
+            <tr class="tr-group">
+              <td colspan="3">Tolerancia a fallos</td>
+            </tr>
+            <tr>
+              <td><code>RFt-1-G</code></td>
+              <td>Evitación de fallos</td>
+              <td>X = A/B · A = fallos críticos y graves evitados (basado en casos de prueba) · B = casos de prueba
+                ejecutados de patrón de fallo (casi provocando fallos)</td>
+            </tr>
+            <tr>
+              <td><code>RFt-2-S</code></td>
+              <td>Redundancia de componentes</td>
+              <td>X = A/B · A = componentes del sistema instalados de forma redundante · B = componentes del sistema
+              </td>
+            </tr>
+            <tr>
+              <td><code>RFt-3-S</code></td>
+              <td>Tiempo medio de notificación de fallo</td>
+              <td>X = Σ(Ai − Bi)/n · Ai = tiempo en que el sistema reporta el fallo i · Bi = tiempo en que se detecta
+                la falla i · n = fallos detectados</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="criterio">Adaptado de las Tablas 8 y 17 de ISO/IEC 25023 (ISO/IEC, 2016). Para RFt-3-S el valor varía
+        de 0 a infinito; cuanto más cerca de 0, mejor.</p>
+
+      <h3>Procedimiento</h3>
       <div class="grid-2">
         <div class="proc">
           <h4>Procedimiento · Interoperabilidad</h4>
-          <p><code>medir-interoperabilidad.ps1</code> actúa como un <b>cliente externo real</b>: hace login JWT, consume
-            los tres endpoints de integración, descarga el contrato OpenAPI y ejecuta un preflight CORS.</p>
+          <p><code>medir-interoperabilidad.ps1</code> actúa como un <b>cliente externo real</b>: hace login JWT con la
+            cuenta administradora del seed, consume los tres endpoints de integración, descarga el contrato OpenAPI y
+            ejecuta un preflight CORS.</p>
           <p>Un ítem cuenta para <b>A</b> solo si cumple el criterio documentado: estado HTTP esperado, JSON válido y
             envelope presente. <b>B</b> = ítems especificados (3 por medida).</p>
         </div>
@@ -766,7 +843,8 @@
             <b>evitado</b> si el sistema responde con un 4xx controlado — nunca 5xx ni desconexión — y sigue operativo
             (healthcheck final por Actuator).</p>
           <p>Para RFt-3 se mide <b>Ai − Bi</b> con <code>Stopwatch</code> (.NET): del instante de inyección al instante
-            en que la API devuelve el error con su código.</p>
+            en que la API devuelve el error con su código. Para RFt-2 se inventariaron los servicios y réplicas reales
+            vía Docker Compose.</p>
         </div>
       </div>
 
@@ -894,11 +972,12 @@
         <h2>Tolerancia a fallos</h2>
         <span class="tag">Tabla 17 · Fiabilidad → Tolerancia a fallos</span>
       </div>
-      <p class="sec-intro">En la <b>primera ejecución</b> de la batería (7 de julio) solo <b>6 de los 12 patrones de
-          fallo</b> inyectados fueron evitados con respuestas controladas 4xx: los otros seis produjeron <b>respuestas
-          500 no controladas</b>. Aun así, el servicio permaneció operativo tras la batería completa (healthcheck UP) y
-        la notificación del fallo al consumidor es síncrona vía HTTP: <b>0,079&nbsp;s</b> en promedio. Tras corregir el
-        manejador global de excepciones, la <b>segunda ejecución</b> alcanzó X&nbsp;=&nbsp;1,0 (ver Discusión).</p>
+      <p class="sec-intro">En la <b>primera ejecución</b> de la batería solo <b>6 de los 12 patrones de
+          fallo</b> inyectados fueron evitados con respuestas controladas 4xx: los otros seis (JSON malformado,
+        identificador con tipo inválido, método HTTP no soportado, Content-Type incorrecto, parámetro fuera de rango y
+        cuerpo vacío) produjeron <b>respuestas 500 no controladas</b>. Aun así, el servicio permaneció operativo tras
+        la batería completa (healthcheck UP) y la notificación del fallo al consumidor es síncrona vía HTTP:
+        <b>0,079&nbsp;s</b> en promedio.</p>
 
       <div class="card tbl-scroll">
         <table>
@@ -914,7 +993,7 @@
           </thead>
           <tbody>
             <tr>
-              <td><code>RFt-1-G</code><span class="why">Evitación de fallos — 1.ª ejecución</span></td>
+              <td><code>RFt-1-G</code><span class="why">Evitación de fallos</span></td>
               <td>¿Qué proporción de patrones de fallo se controló para evitar fallos críticos y graves?</td>
               <td class="num">6</td>
               <td class="num">12</td>
@@ -1033,23 +1112,17 @@
       </div>
 
       <div class="hallazgo">
-        <h4>La medición no fue un ejercicio formal: encontró y corrigió un defecto real</h4>
-        <p>La <b>primera ejecución</b> de RFt-1-G (7 de julio) arrojó <b>X&nbsp;=&nbsp;0,5</b>: seis patrones de fallo
-          (JSON malformado, identificador inválido, método no soportado, Content-Type incorrecto, parámetro fuera de
-          rango y cuerpo vacío) devolvían <b>respuestas 500 no controladas</b> porque caían en el manejador genérico de
-          excepciones.</p>
-        <p>Se agregaron seis manejadores específicos al <code>GlobalExceptionHandler</code>, se reconstruyó la imagen
-          del backend y la <b>segunda ejecución</b> de la batería dio <b>X&nbsp;=&nbsp;1,0</b> (datos en
-          <code>resultados/tolerancia a fallos/segunda ejecución/</code>).</p>
-        <div class="runs">
-          <div class="run"><span class="lbl">1.ª ejecución</span><span class="meter warn"><i
-                style="width:50%"></i></span><span class="v">0,50</span></div>
-          <div class="run"><span class="lbl">2.ª ejecución</span><span class="meter"><i
-                style="width:100%"></i></span><span class="v">1,00</span></div>
-        </div>
-        <div class="codes">
-          <code>MALFORMED_BODY</code><code>INVALID_PARAMETER_TYPE</code><code>MISSING_PARAMETER</code><code>METHOD_NOT_ALLOWED</code><code>UNSUPPORTED_MEDIA_TYPE</code><code>INVALID_ARGUMENT</code>
-        </div>
+        <h4>El instrumento no se limitó a un ejercicio formal: detectó una deficiencia concreta del producto</h4>
+        <p>La ejecución de RFt-1-G arrojó <b>X&nbsp;=&nbsp;0,5</b> (Tabla 5): seis de los doce patrones de fallo
+          inyectados (JSON malformado, identificador inválido, método no soportado, Content-Type incorrecto, parámetro
+          fuera de rango y cuerpo vacío) devolvieron <b>respuestas 500 no controladas</b>, en lugar del 4xx esperado.
+          Los seis casos evitados (violación de validación, credenciales incorrectas, recurso inexistente, ruta
+          inexistente, acceso sin autenticación y token corrupto) sí respondieron con estados 4xx controlados.</p>
+        <p>Este hallazgo confirma la utilidad del instrumento: permite <b>identificar con precisión qué patrones de
+            fallo no están siendo controlados</b> actualmente, información que de otro modo no sería visible sin una
+          medición sistemática. El detalle exacto del manejo interno de excepciones que provoca estas seis respuestas
+          500 queda fuera del alcance de esta medición — que se basa en el comportamiento observable de la API desde un
+          cliente externo, no en inspección de código — y se propone como línea de trabajo futuro.</p>
       </div>
 
       <div class="proc" style="margin-top:22px">
@@ -1062,6 +1135,23 @@
             producción) lo haría más robusto.</li>
           <li>Una <b>sola corrida</b> por medida; repetir y promediar fortalecería la validez estadística de RFt-3-S.
           </li>
+          <li>Y más importante: los <b>seis casos con respuesta 500</b> (Tabla 5) representan una deficiencia real del
+            sistema <b>aún no corregida</b> al momento de esta medición, y esta medición no permite determinar su causa
+            exacta a nivel de código.</li>
+        </ul>
+      </div>
+
+      <div class="proc" style="margin-top:14px">
+        <h4>Trabajo futuro</h4>
+        <ul class="tight">
+          <li><b>Investigar a nivel de código</b> la causa de las seis respuestas 500 no controladas y corregir el
+            manejo de excepciones correspondiente; luego volver a ejecutar la batería para verificar si RFt-1-G alcanza
+            X&nbsp;=&nbsp;1,0.</li>
+          <li>Replicar las pruebas de interoperabilidad como <b>colección de Postman ejecutada con Newman</b>,
+            herramienta ampliamente reconocida, manteniendo los scripts de PowerShell como verificación cruzada.</li>
+          <li>Ejecutar <b>tres corridas de RFt-3-S</b> y reportar media y desviación estándar.</li>
+          <li>Medir la subcaracterística de <b>disponibilidad</b> (Tabla 16) con la infraestructura ya preparada en el
+            repositorio.</li>
         </ul>
       </div>
     </section>
@@ -1073,13 +1163,18 @@
         <h2>Conclusiones</h2>
       </div>
       <p class="sec-intro" style="font-size:14px">El sistema demuestra <b>interoperabilidad plena</b> (X&nbsp;=&nbsp;1,0
-        en las tres medidas de la Tabla 8). En tolerancia a fallos, la <b>primera ejecución de la batería reveló una
-          deficiencia real</b>: solo seis de los doce patrones de fallo fueron evitados (RFt-1-G&nbsp;=&nbsp;0,5), con
-        seis respuestas 500 no controladas, aunque con una notificación de fallos rápida (0,079&nbsp;s en promedio,
-        RFt-3-S) y el servicio siempre operativo. La <b>corrección del manejador global de excepciones, guiada por la
-          medición</b>, llevó la segunda ejecución a X&nbsp;=&nbsp;1,0. La principal oportunidad de mejora de
-        infraestructura es la <b>redundancia de componentes</b> (RFt-2-S), nula en el entorno local y parcial (0,67) en
-        producción.</p>
+        en las tres medidas de la Tabla 8). En tolerancia a fallos, la <b>medición reveló una deficiencia real</b>:
+        solo seis de los doce patrones de fallo fueron evitados (RFt-1-G&nbsp;=&nbsp;0,5), con seis respuestas 500 no
+        controladas correspondientes a JSON malformado, identificador con tipo inválido, método HTTP no soportado,
+        Content-Type incorrecto, parámetro fuera de rango y cuerpo vacío. Aun así, el sistema notifica sus fallos con
+        rapidez (0,079&nbsp;s en promedio, RFt-3-S) y el servicio permaneció operativo tras toda la batería. La
+        principal oportunidad de mejora es <b>doble</b>: por un lado, investigar y corregir el manejo de excepciones
+        responsable de los seis patrones no evitados; por otro, atender la <b>redundancia de componentes</b>
+        (RFt-2-S), nula en el entorno local y parcial (0,67) en producción. Los scripts de PowerShell, los archivos CSV
+        de resultados y los criterios de evaluación documentados hacen posible <b>repetir la medición sin intervención
+          manual</b> y verificar en una futura entrega si las correcciones propuestas elevan RFt-1-G a un nivel
+        aceptable; los resultados completos, con fórmulas que se recalculan al editar los datos, están disponibles en
+        el libro Excel que acompaña a este informe.</p>
 
       <h3>Referencias</h3>
       <div class="refs">
@@ -1120,7 +1215,7 @@
         ["CIn-3-S", "Restaurantes cerca de evento (Eventos)", "GET /v1/integration/restaurants/near-event/{id}", "200", "Funcional", "200 + envelope JSON (lista, hoy vacía)"]
       ];
 
-      /* [caso, patrón, petición, HTTP, evitado?, latencia s] — primera ejecución (7 jul 2026) */
+      /* [caso, patrón, petición, HTTP, evitado?, latencia s] — primera ejecución */
       var CASOS = [
         [1, "JSON malformado", "POST /v1/auth/login", 500, false, 0.242],
         [2, "Violación de validación", "POST /v1/auth/login", 400, true, 0.094],
