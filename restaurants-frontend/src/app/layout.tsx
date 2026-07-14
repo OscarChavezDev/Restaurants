@@ -4,10 +4,10 @@ import { Providers } from './providers';
 
 export const metadata: Metadata = {
   title: {
-    default: 'Restaurants Tingo María',
-    template: '%s | Restaurants Tingo María',
+    default: 'Fogón Selva',
+    template: '%s | Fogón Selva',
   },
-  description: 'Sistema de gestión de restaurantes para la plataforma turística de Tingo María, Huánuco, Perú.',
+  description: 'Fogón Selva — reservas y gestión de restaurantes para la plataforma turística de Tingo María, Huánuco, Perú.',
   keywords: ['restaurantes', 'tingo maría', 'reservas', 'gastronomía', 'huánuco'],
   authors: [{ name: 'Tingo María Platform' }],
 };

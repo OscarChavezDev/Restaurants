@@ -6,6 +6,7 @@ import { AnimateOnScroll } from '@/components/ui/AnimateOnScroll';
 import { ThemeLangSwitch } from '@/components/ui/ThemeLangSwitch';
 import { AuthNav } from '@/components/ui/AuthNav';
 import { Footer } from '@/components/ui/Footer';
+import { BrandMark } from '@/components/ui/BrandMark';
 import { useTranslation } from '@/hooks/useTranslation';
 
 export default function HomePage() {
@@ -35,8 +36,8 @@ export default function HomePage() {
         {/* ── Navbar ── */}
         <nav className="relative w-full px-6 pt-5 sm:px-10 lg:px-12 flex items-center justify-between gap-3 flex-wrap">
           <span className="flex items-center gap-2 text-white font-bold text-lg tracking-tight">
-            <UtensilsCrossed className="h-5 w-5 text-orange-200" />
-            Tingo Restaurants
+            <BrandMark className="h-6 w-6" />
+            Fogón Selva
           </span>
           <div className="flex items-center gap-2">
             <ThemeLangSwitch />

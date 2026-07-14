@@ -7,6 +7,7 @@ import { useAuthStore } from '@/store/authStore';
 import { useUiStore } from '@/store/uiStore';
 import { useTranslation } from '@/hooks/useTranslation';
 import { cn } from '@/utils/cn';
+import { BrandMark } from '@/components/ui/BrandMark';
 
 const navItems = [
   { href: '/profile',              icon: User,            label: 'Mi Perfil' },
@@ -50,11 +51,8 @@ export function ClientSidebar({ open = false, onClose }: { open?: boolean; onClo
           'flex items-center gap-3 p-4 border-b',
           isDark ? 'border-[#352D25]' : 'border-[#E7E1D8]'
         )}>
-          <div className={cn(
-            'flex h-12 w-12 items-center justify-center rounded-2xl shadow-lg flex-shrink-0',
-            isDark ? 'bg-[#F97A3D]' : 'bg-orange-500'
-          )}>
-            <UtensilsCrossed className="h-6 w-6 text-white" />
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl shadow-lg flex-shrink-0 bg-[#1C1917]">
+            <BrandMark className="h-7 w-7" />
           </div>
           <div className="flex-1 min-w-0">
             <p className="font-display font-semibold text-sm leading-tight">Panel Cliente</p>

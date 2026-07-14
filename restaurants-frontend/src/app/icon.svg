@@ -1,24 +1,18 @@
-<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Tingo Restaurants">
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Fogón Selva">
   <defs>
-    <linearGradient id="brasa" x1="32" y1="24" x2="224" y2="232" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#F4914E"/>
-      <stop offset="0.5" stop-color="#E8590C"/>
-      <stop offset="1" stop-color="#C2410C"/>
+    <linearGradient id="fogonSelva" x1="128" y1="216" x2="128" y2="52" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#E8590C"/>
+      <stop offset="1" stop-color="#157F5B"/>
     </linearGradient>
     <radialGradient id="glow" cx="0.3" cy="0.22" r="0.9">
-      <stop offset="0" stop-color="#FFC48C" stop-opacity="0.45"/>
+      <stop offset="0" stop-color="#FFC48C" stop-opacity="0.35"/>
       <stop offset="0.6" stop-color="#FFC48C" stop-opacity="0"/>
     </radialGradient>
   </defs>
 
-  <rect x="16" y="16" width="224" height="224" rx="56" fill="url(#brasa)"/>
+  <rect x="16" y="16" width="224" height="224" rx="56" fill="#1C1917"/>
   <rect x="16" y="16" width="224" height="224" rx="56" fill="url(#glow)"/>
 
-  <g transform="translate(64,64) scale(5.3333)" stroke="#FFFFFF" stroke-width="2"
-     stroke-linecap="round" stroke-linejoin="round" fill="none">
-    <path d="m16 2-2.3 2.3a3 3 0 0 0 0 4.2l1.8 1.8a3 3 0 0 0 4.2 0L22 8"/>
-    <path d="M15 15 3.3 3.3a4.2 4.2 0 0 0 0 6l7.3 7.3c.7.7 2 .7 2.8 0L15 15Zm0 0 7 7"/>
-    <path d="m2.1 21.8 6.4-6.3"/>
-    <path d="m19 5-7 7"/>
-  </g>
+  <path d="M128 46 C148 64 164 92 166 120 C168 150 150 180 128 206 C106 180 88 150 90 120 C92 92 108 64 128 46 Z" fill="url(#fogonSelva)"/>
+  <path d="M128 68 Q121 136 128 192" fill="none" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="4" stroke-linecap="round"/>
 </svg>

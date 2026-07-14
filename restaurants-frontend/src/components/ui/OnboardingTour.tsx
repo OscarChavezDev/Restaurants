@@ -10,7 +10,7 @@ import { SpotlightTour, type TourStep } from './SpotlightTour';
  */
 const STEPS: TourStep[] = [
   {
-    title: '¡Bienvenido/a a Tingo Restaurants!',
+    title: '¡Bienvenido/a a Fogón Selva!',
     text: 'Ya tienes tu cuenta lista. Te muestro paso a paso cómo encontrar, guardar y reservar tu restaurante ideal. Puedes saltar la guía cuando quieras.',
   },
   { selector: '[data-tour="search"]', title: 'Busca por nombre', text: 'Escribe aquí el nombre de un restaurante para encontrarlo al instante.' },

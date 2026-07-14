@@ -11,6 +11,7 @@ import { useAuthStore } from '@/store/authStore';
 import { useUiStore } from '@/store/uiStore';
 import { useTranslation } from '@/hooks/useTranslation';
 import { cn } from '@/utils/cn';
+import { BrandMark } from '@/components/ui/BrandMark';
 
 const navItems = [
   { href: '/dashboard',              icon: Home,           labelKey: 'home',         roles: ['ADMIN', 'RESTAURANTE_OWNER', 'CLIENTE'] },
@@ -66,14 +67,11 @@ export function Sidebar({ open = false, onClose }: { open?: boolean; onClose?: (
         'flex items-center gap-3 p-4 border-b',
         isDark ? 'border-[#352D25]' : 'border-[#E7E1D8]'
       )}>
-        <div className={cn(
-          'flex h-12 w-12 items-center justify-center rounded-2xl shadow-lg flex-shrink-0',
-          isDark ? 'bg-[#F97A3D]' : 'bg-orange-500'
-        )}>
-          <UtensilsCrossed className="h-6 w-6 text-white" />
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl shadow-lg flex-shrink-0 bg-[#1C1917]">
+          <BrandMark className="h-7 w-7" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-display font-semibold text-sm leading-tight">Restaurants</p>
+          <p className="font-display font-semibold text-sm leading-tight">Fogón Selva</p>
           <p className={cn(
             'text-xs',
             isDark ? 'text-[#8A827A]' : 'text-[#78716C]'
