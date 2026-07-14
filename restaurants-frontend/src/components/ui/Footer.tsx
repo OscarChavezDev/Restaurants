@@ -10,7 +10,7 @@ export function Footer() {
           {/* Col 1: About */}
           <div className="md:col-span-1">
             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 tracking-tight">
-              Fogón <span className="text-orange-600">Selva</span>
+              Resto<span className="text-orange-600">Point</span>
             </h3>
             <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed mb-6">
               La plataforma turística oficial para descubrir, reservar y disfrutar de la mejor gastronomía en la Ciudad de la Bella Durmiente.
@@ -58,7 +58,7 @@ export function Footer() {
               </li>
               <li className="flex items-center gap-3">
                 <Mail className="h-5 w-5 text-orange-600 shrink-0" />
-                <span>soporte@fogonselva.pe</span>
+                <span>soporte@restopoint.pe</span>
               </li>
             </ul>
           </div>
@@ -66,7 +66,7 @@ export function Footer() {
 
         <div className="border-t border-gray-200 dark:border-gray-800 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            © {new Date().getFullYear()} Fogón Selva. Todos los derechos reservados.
+            © {new Date().getFullYear()} RestoPoint. Todos los derechos reservados.
           </p>
           <div className="flex items-center gap-2 text-sm text-gray-500">
             <span>Hecho con CORAZÖN para Tingo María</span>

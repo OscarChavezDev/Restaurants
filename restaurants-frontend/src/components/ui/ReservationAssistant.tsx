@@ -41,7 +41,7 @@ export function ReservationAssistant() {
   // Saludo inicial al abrir por primera vez
   useEffect(() => {
     if (open && messages.length === 0) {
-      bot('¡Hola! Soy el asistente de Fogón Selva. Te ayudo con tu reserva: estado, pago, comprobante y preferencias.');
+      bot('¡Hola! Soy el asistente de RestoPoint. Te ayudo con tu reserva: estado, pago, comprobante y preferencias.');
       bot('Para empezar, escribe el código de tu reserva (ej. RES-XXXXXXXX).');
       setMode('code');
     }
@@ -243,7 +243,7 @@ export function ReservationAssistant() {
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/20"><Bot className="h-4 w-4" /></div>
               <div>
                 <p className="text-sm font-bold leading-tight">Asistente de reservas</p>
-                <p className="text-[11px] opacity-90 leading-tight">Fogón Selva</p>
+                <p className="text-[11px] opacity-90 leading-tight">RestoPoint</p>
               </div>
             </div>
             <button onClick={() => setOpen(false)} className="p-1.5 rounded-lg text-white/90 hover:bg-white/20 transition-colors" aria-label="Cerrar"><X className="h-5 w-5" /></button>

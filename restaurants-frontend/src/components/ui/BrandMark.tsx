@@ -1,35 +1,33 @@
-'use client';
-
 import { useId } from 'react';
-import { useUiStore } from '@/store/uiStore';
 
-/** Isotipo de marca "Fogón Selva": la brasa se funde en hoja en un solo trazo. */
+/** Isotipo de marca "RestoPoint": pin de ubicación con cubiertos. */
 export function BrandMark({ className = 'h-6 w-6' }: { className?: string }) {
-  const isDark = useUiStore((s) => s.theme === 'dark');
   const gradId = useId();
-  const brasa = isDark ? '#F97A3D' : '#E8590C';
-  const selva = isDark ? '#3FAE84' : '#157F5B';
 
   return (
-    <svg viewBox="0 0 256 256" className={className} role="img" aria-label="Fogón Selva">
+    <svg viewBox="0 0 512 512" className={className} role="img" aria-label="RestoPoint">
       <defs>
-        <linearGradient id={gradId} x1="128" y1="222" x2="128" y2="36" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor={brasa} />
-          <stop offset="1" stopColor={selva} />
+        <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#FFA600" />
+          <stop offset="100%" stopColor="#FF6A00" />
         </linearGradient>
       </defs>
+
       <path
-        d="M128 38 C150 58 168 90 170 122 C172 156 152 190 128 220 C104 190 84 156 86 122 C88 90 106 58 128 38 Z"
+        d="M256 32 C161 32 84 109 84 204 C84 326 256 480 256 480 C256 480 428 326 428 204 C428 109 351 32 256 32 Z"
         fill={`url(#${gradId})`}
       />
-      <path
-        d="M128 64 Q120 140 128 200"
-        fill="none"
-        stroke="#FFFFFF"
-        strokeOpacity={0.55}
-        strokeWidth={4}
-        strokeLinecap="round"
-      />
+
+      {/* Tenedor */}
+      <rect x="214" y="140" width="6" height="52" rx="3" fill="#FFFFFF" />
+      <rect x="223" y="140" width="6" height="52" rx="3" fill="#FFFFFF" />
+      <rect x="232" y="140" width="6" height="52" rx="3" fill="#FFFFFF" />
+      <path d="M212 192 L241 192 L226.5 206 Z" fill="#FFFFFF" />
+      <rect x="219" y="204" width="14" height="66" rx="7" fill="#FFFFFF" />
+
+      {/* Cuchara */}
+      <ellipse cx="286" cy="164" rx="19" ry="27" fill="#FFFFFF" />
+      <rect x="279" y="188" width="14" height="82" rx="7" fill="#FFFFFF" />
     </svg>
   );
 }

@@ -37,7 +37,7 @@ export default function HomePage() {
         <nav className="relative w-full px-6 pt-5 sm:px-10 lg:px-12 flex items-center justify-between gap-3 flex-wrap">
           <span className="flex items-center gap-2 text-white font-bold text-lg tracking-tight">
             <BrandMark className="h-6 w-6" />
-            Fogón Selva
+            RestoPoint
           </span>
           <div className="flex items-center gap-2">
             <ThemeLangSwitch />

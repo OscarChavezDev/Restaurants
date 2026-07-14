@@ -1,20 +1,25 @@
-<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Fogón Selva">
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="RestoPoint">
   <defs>
-    <linearGradient id="fogonSelva" x1="128" y1="216" x2="128" y2="52" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#E8590C"/>
-      <stop offset="1" stop-color="#157F5B"/>
+    <linearGradient id="rpGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFA600"/>
+      <stop offset="100%" stop-color="#FF6A00"/>
     </linearGradient>
-    <radialGradient id="glow" cx="0.3" cy="0.22" r="0.9">
-      <stop offset="0" stop-color="#FFC48C" stop-opacity="0.35"/>
-      <stop offset="0.6" stop-color="#FFC48C" stop-opacity="0"/>
-    </radialGradient>
   </defs>
 
-  <!-- Cuadro de marca con esquinas redondeadas -->
-  <rect x="16" y="16" width="224" height="224" rx="56" fill="#1C1917"/>
-  <rect x="16" y="16" width="224" height="224" rx="56" fill="url(#glow)"/>
+  <!-- Cuadro de marca -->
+  <rect x="32" y="32" width="448" height="448" rx="112" fill="#FFFFFF"/>
 
-  <!-- Isotipo: la brasa se funde en hoja en un solo trazo -->
-  <path d="M128 46 C148 64 164 92 166 120 C168 150 150 180 128 206 C106 180 88 150 90 120 C92 92 108 64 128 46 Z" fill="url(#fogonSelva)"/>
-  <path d="M128 68 Q121 136 128 192" fill="none" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="4" stroke-linecap="round"/>
+  <!-- Pin de ubicación -->
+  <path d="M256 72 C182 72 122 132 122 206 C122 302 256 424 256 424 C256 424 390 302 390 206 C390 132 330 72 256 72 Z" fill="url(#rpGrad)"/>
+
+  <!-- Tenedor -->
+  <rect x="228" y="176" width="8" height="54" rx="4" fill="#FFFFFF"/>
+  <rect x="240" y="176" width="8" height="54" rx="4" fill="#FFFFFF"/>
+  <rect x="252" y="176" width="8" height="54" rx="4" fill="#FFFFFF"/>
+  <path d="M225 230 L255 230 L240 248 Z" fill="#FFFFFF"/>
+  <rect x="233" y="246" width="14" height="66" rx="7" fill="#FFFFFF"/>
+
+  <!-- Cuchara -->
+  <ellipse cx="292" cy="202" rx="20" ry="28" fill="#FFFFFF"/>
+  <rect x="285" y="228" width="14" height="84" rx="7" fill="#FFFFFF"/>
 </svg>
