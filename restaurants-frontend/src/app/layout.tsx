@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Providers } from './providers';
 
@@ -10,6 +10,10 @@ export const metadata: Metadata = {
   description: 'RestoPoint — reservas y gestión de restaurantes para la plataforma turística de Tingo María, Huánuco, Perú.',
   keywords: ['restaurantes', 'tingo maría', 'reservas', 'gastronomía', 'huánuco'],
   authors: [{ name: 'Tingo María Platform' }],
+};
+
+export const viewport: Viewport = {
+  themeColor: '#FF6A00',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

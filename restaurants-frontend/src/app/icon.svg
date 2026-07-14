@@ -1,21 +1,35 @@
 <svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="RestoPoint">
   <defs>
-    <linearGradient id="rpGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#FFA600"/>
-      <stop offset="100%" stop-color="#FF6A00"/>
+    <linearGradient id="rpGrad" x1="15%" y1="0%" x2="85%" y2="100%">
+      <stop offset="0%" stop-color="#FFA928"/>
+      <stop offset="45%" stop-color="#FF8F00"/>
+      <stop offset="100%" stop-color="#E64A00"/>
     </linearGradient>
+    <radialGradient id="rpGlow" cx="32%" cy="18%" r="45%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.30"/>
+      <stop offset="60%" stop-color="#FFFFFF" stop-opacity="0.05"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="rpShadow" x="-40%" y="-20%" width="180%" height="150%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#8A2E00" flood-opacity="0.38"/>
+    </filter>
   </defs>
 
   <rect x="32" y="32" width="448" height="448" rx="112" fill="#FFFFFF"/>
 
-  <path d="M256 72 C182 72 122 132 122 206 C122 302 256 424 256 424 C256 424 390 302 390 206 C390 132 330 72 256 72 Z" fill="url(#rpGrad)"/>
+  <g filter="url(#rpShadow)">
+    <path d="M256 72 C182 72 122 132 122 206 C122 302 256 424 256 424 C256 424 390 302 390 206 C390 132 330 72 256 72 Z" fill="url(#rpGrad)" stroke="#3D1400" stroke-width="22" stroke-linejoin="round"/>
+    <path d="M256 72 C182 72 122 132 122 206 C122 302 256 424 256 424 C256 424 390 302 390 206 C390 132 330 72 256 72 Z" fill="url(#rpGlow)"/>
+  </g>
 
-  <rect x="228" y="176" width="8" height="54" rx="4" fill="#FFFFFF"/>
-  <rect x="240" y="176" width="8" height="54" rx="4" fill="#FFFFFF"/>
-  <rect x="252" y="176" width="8" height="54" rx="4" fill="#FFFFFF"/>
-  <path d="M225 230 L255 230 L240 248 Z" fill="#FFFFFF"/>
-  <rect x="233" y="246" width="14" height="66" rx="7" fill="#FFFFFF"/>
+  <!-- Tenedor -->
+  <rect x="222" y="170" width="12" height="64" rx="6" fill="#FFFFFF"/>
+  <rect x="240" y="170" width="12" height="64" rx="6" fill="#FFFFFF"/>
+  <rect x="258" y="170" width="12" height="64" rx="6" fill="#FFFFFF"/>
+  <path d="M219 234 C219 246 228 255 240 260 C252 255 261 246 261 234 Z" fill="#FFFFFF"/>
+  <rect x="226" y="256" width="28" height="84" rx="14" fill="#FFFFFF"/>
 
-  <ellipse cx="292" cy="202" rx="20" ry="28" fill="#FFFFFF"/>
-  <rect x="285" y="228" width="14" height="84" rx="7" fill="#FFFFFF"/>
+  <!-- Cuchara -->
+  <ellipse cx="294" cy="196" rx="28" ry="38" fill="#FFFFFF"/>
+  <rect x="280" y="228" width="28" height="112" rx="14" fill="#FFFFFF"/>
 </svg>

@@ -71,7 +71,7 @@ export function Sidebar({ open = false, onClose }: { open?: boolean; onClose?: (
           <BrandMark className="h-7 w-7" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-display font-semibold text-sm leading-tight">RestoPoint</p>
+          <p className="font-display font-bold text-sm leading-tight">Resto<span className="text-orange-500">Point</span></p>
           <p className={cn(
             'text-xs',
             isDark ? 'text-[#8A827A]' : 'text-[#78716C]'

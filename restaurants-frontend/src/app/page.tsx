@@ -35,9 +35,9 @@ export default function HomePage() {
 
         {/* ── Navbar ── */}
         <nav className="relative w-full px-6 pt-5 sm:px-10 lg:px-12 flex items-center justify-between gap-3 flex-wrap">
-          <span className="flex items-center gap-2 text-white font-bold text-lg tracking-tight">
-            <BrandMark className="h-6 w-6" />
-            RestoPoint
+          <span className="flex items-center gap-4 font-extrabold text-4xl tracking-tight">
+            <BrandMark className="h-16 w-16 drop-shadow-lg" />
+            <span className="text-white">Resto<span className="text-orange-300">Point</span></span>
           </span>
           <div className="flex items-center gap-2">
             <ThemeLangSwitch />
