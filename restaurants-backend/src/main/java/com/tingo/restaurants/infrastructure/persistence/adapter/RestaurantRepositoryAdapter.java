@@ -71,11 +71,6 @@ public class RestaurantRepositoryAdapter implements RestaurantRepository {
     }
 
     @Override
-    public List<Restaurant> findNearbyEvent(UUID eventId, double radiusKm) {
-        return List.of();
-    }
-
-    @Override
     public Page<Restaurant> findByOwnerId(UUID ownerId, Pageable pageable) {
         return jpaRepository.findByOwnerIdAndDeletedAtIsNull(ownerId, pageable).map(this::toDomain);
     }

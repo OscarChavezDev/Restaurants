@@ -27,8 +27,6 @@ public interface RestaurantRepository {
 
     List<Restaurant> findNearby(BigDecimal latitude, BigDecimal longitude, double radiusKm);
 
-    List<Restaurant> findNearbyEvent(UUID eventId, double radiusKm);
-
     Page<Restaurant> findByOwnerId(UUID ownerId, Pageable pageable);
 
     void deleteById(UUID id);

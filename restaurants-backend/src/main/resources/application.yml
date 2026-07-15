@@ -116,6 +116,18 @@ gemini:
   api-key: ${GEMINI_API_KEY:}
   model: ${GEMINI_MODEL:gemini-2.5-flash-lite}
 
+actify:
+  # Sistema de Eventos del ecosistema (https://actify.qd.je/developers/portal).
+  # Si está vacía, /restaurants/near-event/{eventId} devuelve lista vacía.
+  api-key: ${ACTIFY_API_KEY:}
+  base-url: ${ACTIFY_BASE_URL:https://actify.qd.je/api/v1}
+
+hospy:
+  # Sistema de Hospedaje del ecosistema (https://hospy.pages.dev/).
+  # Si está vacía, /restaurants/{id}/nearby-lodging devuelve lista vacía.
+  api-key: ${HOSPY_API_KEY:}
+  base-url: ${HOSPY_BASE_URL:https://hospy-api-wm7v5futiq-rj.a.run.app/api/v1}
+
 google:
   oauth:
     # Client ID del OAuth Client (tipo "Aplicación web") de Google Cloud.

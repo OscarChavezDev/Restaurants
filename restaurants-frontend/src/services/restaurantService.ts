@@ -1,5 +1,5 @@
 import { api, extractData } from './api';
-import type { Restaurant, CreateRestaurantDto, Menu, Dish, Promotion, RestaurantImage, RatingResponse, RatingStatsResponse, Schedule, ScheduleInput, ImageReorderItem, Section, RestaurantTable } from '@/types/restaurant';
+import type { Restaurant, CreateRestaurantDto, Menu, Dish, Promotion, RestaurantImage, RatingResponse, RatingStatsResponse, Schedule, ScheduleInput, ImageReorderItem, Section, RestaurantTable, NearbyEvent, NearbyLodging } from '@/types/restaurant';
 import type { PagedResponse } from '@/types/auth';
 
 export const restaurantService = {
@@ -49,6 +49,20 @@ export const restaurantService = {
   async getNearEvent(eventId: string, radiusKm = 3) {
     return extractData<Restaurant[]>(
       await api.get(`/v1/restaurants/near-event/${eventId}`, { params: { radiusKm } })
+    );
+  },
+
+  /** Eventos cercanos a este restaurante (Sistema de Eventos). Vacío si la integración no está configurada. */
+  async getNearbyEvents(restaurantId: string, radiusKm = 10) {
+    return extractData<NearbyEvent[]>(
+      await api.get(`/v1/restaurants/${restaurantId}/nearby-events`, { params: { radiusKm } })
+    );
+  },
+
+  /** Hospedajes cercanos a este restaurante (Sistema de Hospedaje). Vacío si la integración no está configurada. */
+  async getNearbyLodging(restaurantId: string, radiusKm = 5) {
+    return extractData<NearbyLodging[]>(
+      await api.get(`/v1/restaurants/${restaurantId}/nearby-lodging`, { params: { radiusKm } })
     );
   },
 

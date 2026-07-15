@@ -19,6 +19,8 @@ import { PromotionsSection } from '@/features/restaurants/PromotionsSection';
 import { RestaurantLogo } from '@/components/ui/RestaurantLogo';
 import { RatingsSection } from '@/features/restaurants/RatingsSection';
 import { FavoriteButton } from '@/components/ui/FavoriteButton';
+import { NearbyEventsSection } from '@/features/restaurants/NearbyEventsSection';
+import { NearbyLodgingSection } from '@/features/restaurants/NearbyLodgingSection';
 
 const LocationMap = dynamic(() => import('@/components/ui/LocationMap'), {
   ssr: false,
@@ -292,6 +294,10 @@ export default function RestaurantDetailPage() {
                 <span>Capacidad: <strong>{restaurant.totalCapacity}</strong> personas</span>
               </div>
             </div>
+
+            {/* Ecosistema: eventos y hospedaje cercanos (se ocultan solas si no hay datos) */}
+            <NearbyEventsSection restaurantId={restaurant.id} />
+            <NearbyLodgingSection restaurantId={restaurant.id} />
           </div>
         </div>
       </div>

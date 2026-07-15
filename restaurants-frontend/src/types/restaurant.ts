@@ -166,6 +166,29 @@ export interface RestaurantTable {
   isActive: boolean;
 }
 
+/** Sistema de Eventos (Actify) — evento cerca de un restaurante. */
+export interface NearbyEvent {
+  id: number;
+  name: string;
+  startDate: string;
+  endDate: string;
+  city?: string;
+  category?: string;
+  availableSpots?: number;
+  soldOut: boolean;
+}
+
+/** Sistema de Hospedaje (Hospy) — hospedaje cerca de un restaurante. */
+export interface NearbyLodging {
+  id: number;
+  name: string;
+  type?: string;
+  city?: string;
+  priceFrom?: number;
+  photoUrl?: string;
+  distanceKm?: number;
+}
+
 export interface CreateRestaurantDto {
   name: string;
   description?: string;

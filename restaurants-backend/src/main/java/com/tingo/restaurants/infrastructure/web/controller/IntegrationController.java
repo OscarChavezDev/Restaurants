@@ -1,6 +1,7 @@
 package com.tingo.restaurants.infrastructure.web.controller;
 
 import com.tingo.restaurants.application.dto.response.ApiResponse;
+import com.tingo.restaurants.application.dto.response.DailyStatusResponse;
 import com.tingo.restaurants.application.dto.response.RestaurantResponse;
 import com.tingo.restaurants.application.service.RestaurantService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -36,7 +37,7 @@ public class IntegrationController {
                       "cercanos a la ubicación de un evento específico"
     )
     public ResponseEntity<ApiResponse<List<RestaurantResponse>>> restaurantsNearEvent(
-            @PathVariable UUID eventId,
+            @PathVariable String eventId,
             @RequestParam(defaultValue = "3.0") double radiusKm) {
         return ResponseEntity.ok(
                 ApiResponse.ok(restaurantService.findNearbyEvent(eventId, radiusKm)));
@@ -70,5 +71,17 @@ public class IntegrationController {
         return ResponseEntity.ok(
                 ApiResponse.ok(restaurantService.search(null, city, null, null,
                         org.springframework.data.domain.PageRequest.of(page, size))));
+    }
+
+    @GetMapping("/restaurants/{id}/daily-status")
+    @PreAuthorize("hasAnyRole('SYSTEM_INTEGRATION', 'ADMIN')")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(
+        summary = "Estado operativo de hoy: horario, si está abierto, mesas libres y menú",
+        description = "Pensado para sistemas de itinerarios turísticos: si conviene programar " +
+                      "este restaurante como parada de almuerzo/cena ahora mismo."
+    )
+    public ResponseEntity<ApiResponse<DailyStatusResponse>> getDailyStatus(@PathVariable UUID id) {
+        return ResponseEntity.ok(ApiResponse.ok(restaurantService.getDailyStatus(id)));
     }
 }

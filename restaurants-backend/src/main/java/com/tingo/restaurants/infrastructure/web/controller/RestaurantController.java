@@ -2,6 +2,8 @@ package com.tingo.restaurants.infrastructure.web.controller;
 
 import com.tingo.restaurants.application.dto.request.CreateRestaurantRequest;
 import com.tingo.restaurants.application.dto.response.ApiResponse;
+import com.tingo.restaurants.application.dto.response.NearbyEventResponse;
+import com.tingo.restaurants.application.dto.response.NearbyLodgingResponse;
 import com.tingo.restaurants.application.dto.response.PagedResponse;
 import com.tingo.restaurants.application.dto.response.RestaurantResponse;
 import com.tingo.restaurants.application.dto.response.RestaurantStatsResponse;
@@ -55,6 +57,22 @@ public class RestaurantController {
         RestaurantResponse response = restaurantService.create(request, ownerId);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.ok("Restaurante creado exitosamente", response));
+    }
+
+    @GetMapping("/{id}/nearby-events")
+    @Operation(summary = "Eventos cercanos a este restaurante (Sistema de Eventos)")
+    public ResponseEntity<ApiResponse<List<NearbyEventResponse>>> getNearbyEvents(
+            @PathVariable UUID id,
+            @RequestParam(defaultValue = "10.0") double radiusKm) {
+        return ResponseEntity.ok(ApiResponse.ok(restaurantService.getNearbyEvents(id, radiusKm)));
+    }
+
+    @GetMapping("/{id}/nearby-lodging")
+    @Operation(summary = "Hospedajes cercanos a este restaurante (Sistema de Hospedaje)")
+    public ResponseEntity<ApiResponse<List<NearbyLodgingResponse>>> getNearbyLodging(
+            @PathVariable UUID id,
+            @RequestParam(defaultValue = "5.0") double radiusKm) {
+        return ResponseEntity.ok(ApiResponse.ok(restaurantService.getNearbyLodging(id, radiusKm)));
     }
 
     @GetMapping("/{id}/availability")
@@ -162,7 +180,7 @@ public class RestaurantController {
     @GetMapping("/near-event/{eventId}")
     @Operation(summary = "Buscar restaurantes cercanos a un evento")
     public ResponseEntity<ApiResponse<List<RestaurantResponse>>> findNearbyEvent(
-            @PathVariable UUID eventId,
+            @PathVariable String eventId,
             @RequestParam(defaultValue = "3.0") double radiusKm) {
         return ResponseEntity.ok(ApiResponse.ok(restaurantService.findNearbyEvent(eventId, radiusKm)));
     }

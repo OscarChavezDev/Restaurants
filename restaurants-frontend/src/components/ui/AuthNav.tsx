@@ -28,7 +28,7 @@ export function AuthNav() {
     'inline-flex items-center gap-1.5 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-orange-600 shadow-sm hover:bg-orange-50 transition-all duration-200';
 
   if (isAuthenticated && user) {
-    const isStaff = user.role === 'ADMIN' || user.role === 'RESTAURANTE_OWNER';
+    const isStaff = user.role === 'ADMIN' || user.role === 'RESTAURANTE_OWNER' || user.role === 'DEVELOPER';
     const handleLogout = () => {
       logout();
       toast.success('Sesión cerrada');
