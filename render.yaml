@@ -63,3 +63,11 @@ services:
         value: tingo-restaurants
       - key: GEMINI_API_KEY
         sync: false
+      - key: ACTIFY_API_KEY
+        sync: false
+      - key: ACTIFY_BASE_URL
+        sync: false
+      - key: HOSPY_API_KEY
+        sync: false
+      - key: HOSPY_BASE_URL
+        sync: false
