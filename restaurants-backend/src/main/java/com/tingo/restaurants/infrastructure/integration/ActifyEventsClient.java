@@ -3,10 +3,13 @@ package com.tingo.restaurants.infrastructure.integration;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.ClientHttpRequestFactories;
+import org.springframework.boot.web.client.ClientHttpRequestFactorySettings;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,19 +22,33 @@ import java.util.List;
  *    página de un restaurante "eventos cerca de acá" (GET /restaurants/{id}/nearby-events).
  * Si no hay API key configurada, {@link #isConfigured()} es false y ambos caen
  * a vacío (mismo patrón de degradación que GeminiTextClient).
+ *
+ * Timeout corto (4s conectar / 5s leer) para que un Actify lento no haga lenta
+ * nuestra propia respuesta, y una caché de 5 minutos en memoria — la ubicación
+ * de un evento y los eventos cercanos a un restaurante no cambian minuto a
+ * minuto, así que no hace falta pedirlos de nuevo en cada carga de página.
  */
 @Slf4j
 @Component
 public class ActifyEventsClient {
 
+    private static final long CACHE_TTL_MS = 5 * 60_000;
+
     private final String apiKey;
     private final String baseUrl;
-    private final RestClient http = RestClient.create();
+    private final RestClient http;
+    private final TtlCache<String, EventLocation> eventCache = new TtlCache<>(CACHE_TTL_MS);
+    private final TtlCache<String, List<EventSummary>> nearbyCache = new TtlCache<>(CACHE_TTL_MS);
 
     public ActifyEventsClient(@Value("${actify.api-key:}") String apiKey,
                                @Value("${actify.base-url:https://actify.qd.je/api/v1}") String baseUrl) {
         this.apiKey = apiKey;
         this.baseUrl = baseUrl;
+        this.http = RestClient.builder()
+                .requestFactory(ClientHttpRequestFactories.get(ClientHttpRequestFactorySettings.DEFAULTS
+                        .withConnectTimeout(Duration.ofSeconds(4))
+                        .withReadTimeout(Duration.ofSeconds(5))))
+                .build();
     }
 
     public boolean isConfigured() {
@@ -41,6 +58,8 @@ public class ActifyEventsClient {
     /** Ubicación de un evento (lat/lng + nombre/ciudad), o null si no existe / falla / no está configurado. */
     public EventLocation getEventLocation(String eventId) {
         if (!isConfigured()) return null;
+        EventLocation cached = eventCache.get(eventId);
+        if (cached != null) return cached;
         try {
             JsonNode resp = http.get()
                     .uri(baseUrl + "/events/{id}", eventId)
@@ -58,7 +77,9 @@ public class ActifyEventsClient {
             String name = resp.path("name").asText(null);
             String city = location.path("city").asText(null);
 
-            return new EventLocation(latitude, longitude, name, city);
+            EventLocation result = new EventLocation(latitude, longitude, name, city);
+            eventCache.put(eventId, result);
+            return result;
         } catch (Exception e) {
             log.warn("No se pudo obtener el evento {} de Actify: {}", eventId, e.getMessage());
             return null;
@@ -68,6 +89,9 @@ public class ActifyEventsClient {
     /** Eventos cerca de una coordenada, o lista vacía si falla / no hay resultados / no configurado. */
     public List<EventSummary> listNearby(BigDecimal latitude, BigDecimal longitude, double radiusKm) {
         if (!isConfigured()) return List.of();
+        String key = latitude + "," + longitude + "," + radiusKm;
+        List<EventSummary> cached = nearbyCache.get(key);
+        if (cached != null) return cached;
         try {
             JsonNode resp = http.get()
                     .uri(baseUrl + "/events?location={lat},{lng}&radius={r}", latitude, longitude, radiusKm)
@@ -91,6 +115,7 @@ public class ActifyEventsClient {
                         capacity.path("is_sold_out").asBoolean(false)
                 ));
             }
+            nearbyCache.put(key, result);
             return result;
         } catch (Exception e) {
             log.warn("No se pudo listar eventos cercanos en Actify: {}", e.getMessage());
