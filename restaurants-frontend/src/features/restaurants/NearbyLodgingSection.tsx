@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { BedDouble, MapPin } from 'lucide-react';
+import { BedDouble, MapPin, ExternalLink } from 'lucide-react';
 import { restaurantService } from '@/services/restaurantService';
 import { formatCurrency } from '@/utils/formatters';
 import type { NearbyLodging } from '@/types/restaurant';
@@ -45,6 +45,14 @@ export function NearbyLodgingSection({ restaurantId }: { restaurantId: string })
           </div>
         ))}
       </div>
+      <a
+        href="https://hospy.pages.dev"
+        target="_blank"
+        rel="noreferrer"
+        className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-orange-600 dark:text-orange-400 hover:text-orange-700 transition-colors"
+      >
+        Ver todos los hospedajes en Hospy <ExternalLink className="h-3 w-3" />
+      </a>
     </div>
   );
 }

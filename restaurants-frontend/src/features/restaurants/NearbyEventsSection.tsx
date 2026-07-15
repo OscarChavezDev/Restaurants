@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { PartyPopper, Ticket } from 'lucide-react';
+import { PartyPopper, Ticket, ExternalLink } from 'lucide-react';
 import { restaurantService } from '@/services/restaurantService';
 import type { NearbyEvent } from '@/types/restaurant';
 
@@ -48,6 +48,14 @@ export function NearbyEventsSection({ restaurantId }: { restaurantId: string }) 
           </div>
         ))}
       </div>
+      <a
+        href="https://actify.qd.je"
+        target="_blank"
+        rel="noreferrer"
+        className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-orange-600 dark:text-orange-400 hover:text-orange-700 transition-colors"
+      >
+        Ver todos los eventos en Actify <ExternalLink className="h-3 w-3" />
+      </a>
     </div>
   );
 }
