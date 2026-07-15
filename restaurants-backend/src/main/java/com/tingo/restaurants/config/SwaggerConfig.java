@@ -38,7 +38,9 @@ public class SwaggerConfig {
                             - `ADMIN` — Control total del sistema
                             - `RESTAURANTE_OWNER` — Gestión de su restaurante
                             - `CLIENTE` — Reservas y consultas
-                            - `SYSTEM_INTEGRATION` — Integración entre microservicios
+                            - `SYSTEM_INTEGRATION` — Integración entre microservicios (creada por un admin)
+                            - `DEVELOPER` — Portal de desarrollador autoservicio; genera una API key
+                              (`X-API-Key`) para consumir el catálogo de restaurantes de solo lectura
                             """)
                         .version("1.0.0")
                         .contact(new Contact()
@@ -53,7 +55,13 @@ public class SwaggerConfig {
                                 .type(SecurityScheme.Type.HTTP)
                                 .scheme("bearer")
                                 .bearerFormat("JWT")
-                                .description("Token JWT obtenido del endpoint /v1/auth/login")))
+                                .description("Token JWT obtenido del endpoint /v1/auth/login"))
+                        .addSecuritySchemes("apiKeyAuth", new SecurityScheme()
+                                .type(SecurityScheme.Type.APIKEY)
+                                .in(SecurityScheme.In.HEADER)
+                                .name("X-API-Key")
+                                .description("API key de desarrollador, generada en el panel " +
+                                        "/dashboard/api-keys. Solo para los endpoints de /v1/developer-api/**")))
                 .addSecurityItem(new SecurityRequirement().addList("bearerAuth"));
     }
 }

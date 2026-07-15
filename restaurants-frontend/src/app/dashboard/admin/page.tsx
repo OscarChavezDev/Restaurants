@@ -25,7 +25,7 @@ const currency = new Intl.NumberFormat('es-PE', { style: 'currency', currency: '
 
 const STATUS_LABELS_ES: Record<string, string> = {
   ACTIVE: 'Activo', INACTIVE: 'Inactivo', TEMPORARILY_CLOSED: 'Cerrado temporalmente', PENDING_APPROVAL: 'Pendiente',
-  ADMIN: 'Administradores', RESTAURANTE_OWNER: 'Dueños', CLIENTE: 'Clientes', SYSTEM_INTEGRATION: 'Integraciones',
+  ADMIN: 'Administradores', RESTAURANTE_OWNER: 'Dueños', CLIENTE: 'Clientes', SYSTEM_INTEGRATION: 'Integraciones', DEVELOPER: 'Desarrolladores',
   PENDING: 'Pendiente', CONFIRMED: 'Confirmada', ARRIVED: 'Llegó', CANCELLED: 'Cancelada', COMPLETED: 'Completada', NO_SHOW: 'No-show',
 };
 

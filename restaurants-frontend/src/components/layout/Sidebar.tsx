@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import {
   UtensilsCrossed, Calendar, BarChart3, Tag,
   LogOut, Home, Users, X, SlidersHorizontal, ClipboardCheck, Wallet, QrCode,
-  LayoutDashboard, ShieldCheck
+  LayoutDashboard, ShieldCheck, KeyRound
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useUiStore } from '@/store/uiStore';
@@ -15,6 +15,7 @@ import { BrandMark } from '@/components/ui/BrandMark';
 
 const navItems = [
   { href: '/dashboard',              icon: Home,           labelKey: 'home',         roles: ['ADMIN', 'RESTAURANTE_OWNER', 'CLIENTE'] },
+  { href: '/dashboard/api-keys',     icon: KeyRound,       labelKey: 'apiKeys',      roles: ['DEVELOPER'] },
   { href: '/dashboard/restaurants',  icon: UtensilsCrossed, labelKey: 'restaurants', roles: ['ADMIN', 'RESTAURANTE_OWNER'] },
   { href: '/dashboard/reservations', icon: Calendar,        labelKey: 'reservations', roles: ['ADMIN', 'RESTAURANTE_OWNER', 'CLIENTE'] },
   { href: '/dashboard/llegadas',     icon: QrCode,          labelKey: 'arrivals',     roles: ['ADMIN', 'RESTAURANTE_OWNER'] },

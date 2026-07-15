@@ -2,6 +2,7 @@ package com.tingo.restaurants.infrastructure.web.controller;
 
 import com.tingo.restaurants.application.dto.request.GoogleLoginRequest;
 import com.tingo.restaurants.application.dto.request.LoginRequest;
+import com.tingo.restaurants.application.dto.request.RegisterDeveloperRequest;
 import com.tingo.restaurants.application.dto.request.RegisterOwnerRequest;
 import com.tingo.restaurants.application.dto.request.RegisterRequest;
 import com.tingo.restaurants.application.dto.response.ApiResponse;
@@ -40,6 +41,15 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok(
                 "Solicitud recibida. Revisaremos tu restaurante y te avisaremos por correo cuando tu cuenta sea aprobada.",
                 null));
+    }
+
+    @PostMapping("/register-developer")
+    @Operation(summary = "Registrar cuenta de desarrollador (autoservicio, activación inmediata)")
+    public ResponseEntity<ApiResponse<AuthResponse>> registerDeveloper(
+            @Valid @RequestBody RegisterDeveloperRequest request) {
+        AuthResponse response = authService.registerDeveloper(request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.ok("Cuenta de desarrollador creada", response));
     }
 
     @PostMapping("/login")

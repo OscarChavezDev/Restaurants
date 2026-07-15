@@ -3,6 +3,7 @@ package com.tingo.restaurants.application.service;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.tingo.restaurants.application.dto.request.GoogleLoginRequest;
 import com.tingo.restaurants.application.dto.request.LoginRequest;
+import com.tingo.restaurants.application.dto.request.RegisterDeveloperRequest;
 import com.tingo.restaurants.application.dto.request.RegisterOwnerRequest;
 import com.tingo.restaurants.application.dto.request.RegisterRequest;
 import com.tingo.restaurants.application.dto.response.AuthResponse;
@@ -103,6 +104,40 @@ public class AuthService {
 
         log.info("Solicitud de cuenta de restaurante recibida: {} ({})",
                 saved.getEmail(), request.getRestaurant().getName());
+    }
+
+    /**
+     * Registro autoservicio de una cuenta de desarrollador (rol DEVELOPER).
+     * El rol se fija acá, en el servidor — el request no trae ese campo — y la
+     * cuenta queda ACTIVE de inmediato: sin cola de revisión de un admin, a
+     * diferencia del flujo de dueño de restaurante. Devuelve un JWT normal, igual
+     * que register(), para que el desarrollador entre directo a su panel y genere
+     * su primera API key sin pasos adicionales.
+     */
+    @Transactional
+    public AuthResponse registerDeveloper(RegisterDeveloperRequest request) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new UserAlreadyExistsException(request.getEmail());
+        }
+
+        User user = User.builder()
+                .id(UUID.randomUUID())
+                .email(request.getEmail())
+                .passwordHash(passwordEncoder.encode(request.getPassword()))
+                .fullName(request.getFullName())
+                .phone(request.getPhone())
+                .role(UserRole.DEVELOPER)
+                .provider(AuthProvider.LOCAL)
+                .isActive(true)
+                .accountStatus(AccountStatus.ACTIVE)
+                .emailVerified(false)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+
+        User saved = userRepository.save(user);
+        log.info("Desarrollador registrado (autoservicio): {}", saved.getEmail());
+        return buildAuthResponse(saved);
     }
 
     @Transactional

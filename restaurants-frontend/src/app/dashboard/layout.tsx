@@ -15,8 +15,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // El dashboard es solo para staff (dueño/admin). El cliente no debe entrar.
-  const isStaff = user?.role === 'ADMIN' || user?.role === 'RESTAURANTE_OWNER';
+  // El dashboard es solo para staff (dueño/admin/desarrollador). El cliente no debe entrar.
+  const isStaff =
+    user?.role === 'ADMIN' || user?.role === 'RESTAURANTE_OWNER' || user?.role === 'DEVELOPER';
 
   // S14-04: notifica al dueño/admin cuando un cliente confirma su llegada (polling).
   useArrivalNotifications();
@@ -33,8 +34,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     } else if (!isStaff) {
       // Cliente autenticado intentando entrar al panel → fuera.
       router.replace('/restaurants');
+    } else if (user?.role === 'DEVELOPER' && pathname === '/dashboard') {
+      // El dashboard general asume datos de dueño/admin; el desarrollador va directo a sus keys.
+      router.replace('/dashboard/api-keys');
     }
-  }, [hasHydrated, isAuthenticated, isStaff, router]);
+  }, [hasHydrated, isAuthenticated, isStaff, user?.role, pathname, router]);
 
   if (!hasHydrated) {
     return (
