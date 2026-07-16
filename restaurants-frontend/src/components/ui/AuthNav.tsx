@@ -60,17 +60,32 @@ export function AuthNav() {
 
   return (
     <div className="flex items-center gap-2">
-      <Link href="/login" className={ghost} title="Los clientes ingresan con su cuenta de Google">
-        <LogIn className="h-4 w-4" />
-        Iniciar Sesión
+      {/* Botón de clientes */}
+      <Link
+        href="/login"
+        className="group inline-flex flex-col items-center gap-0 rounded-xl border border-white/30 bg-white/10 backdrop-blur-sm px-4 py-1.5 hover:bg-white/20 transition-all duration-200"
+      >
+        <span className="flex items-center gap-1.5 text-sm font-bold text-white">
+          <LogIn className="h-4 w-4" />
+          Iniciar Sesión
+        </span>
+        <span className="text-[10px] text-white/60 font-medium -mt-0.5 hidden sm:block">
+          Para clientes
+        </span>
       </Link>
+
+      {/* Botón de restaurantes */}
       <Link
         href="/register"
-        className={solid}
-        title="El registro es solo para restaurantes. Si eres cliente, ingresa con Google."
+        className="group inline-flex flex-col items-center gap-0 rounded-xl bg-white dark:bg-orange-500 px-4 py-1.5 shadow-sm hover:bg-orange-50 dark:hover:bg-orange-400 transition-all duration-200"
       >
-        <UserPlus className="h-4 w-4" />
-        Registrar <span className="hidden sm:inline">restaurante</span>
+        <span className="flex items-center gap-1.5 text-sm font-bold text-orange-600 dark:text-white">
+          <UserPlus className="h-4 w-4" />
+          Registrar restaurante
+        </span>
+        <span className="text-[10px] text-orange-400 dark:text-orange-100 font-medium -mt-0.5 hidden sm:block">
+          Para propietarios
+        </span>
       </Link>
     </div>
   );

@@ -1,54 +1,83 @@
 import { useId } from 'react';
 
-/** Isotipo de marca "RestoPoint": pin de ubicación con cubiertos. */
+/** Isotipo de marca "RestoPoint": pin de ubicación con cubiertos — versión mejorada. */
 export function BrandMark({ className = 'h-6 w-6' }: { className?: string }) {
   const uid = useId();
-  const gradId = `rpGrad-${uid}`;
-  const glowId = `rpGlow-${uid}`;
-  const shadowId = `rpShadow-${uid}`;
+  const grad   = `rpG-${uid}`;
+  const glow   = `rpGl-${uid}`;
+  const shadow = `rpSh-${uid}`;
+  const inner  = `rpIn-${uid}`;
 
   return (
     <svg viewBox="0 0 512 512" className={className} role="img" aria-label="RestoPoint">
       <defs>
-        <linearGradient id={gradId} x1="15%" y1="0%" x2="85%" y2="100%">
-          <stop offset="0%" stopColor="#FFA928" />
-          <stop offset="45%" stopColor="#FF8F00" />
-          <stop offset="100%" stopColor="#E64A00" />
+        {/* Degradado principal del pin: naranja cálido → rojo oscuro */}
+        <linearGradient id={grad} x1="20%" y1="0%" x2="80%" y2="100%">
+          <stop offset="0%"   stopColor="#FFB347" />
+          <stop offset="40%"  stopColor="#F97316" />
+          <stop offset="100%" stopColor="#C2410C" />
         </linearGradient>
-        <radialGradient id={glowId} cx="32%" cy="18%" r="45%">
-          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.30" />
-          <stop offset="60%" stopColor="#FFFFFF" stopOpacity="0.05" />
+        {/* Brillo interior (reflejo superior-izquierdo) */}
+        <radialGradient id={glow} cx="30%" cy="20%" r="50%">
+          <stop offset="0%"   stopColor="#FFFFFF" stopOpacity="0.40" />
+          <stop offset="70%"  stopColor="#FFFFFF" stopOpacity="0.05" />
           <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
         </radialGradient>
-        <filter id={shadowId} x="-40%" y="-20%" width="180%" height="150%">
-          <feDropShadow dx="0" dy="10" stdDeviation="12" floodColor="#8A2E00" floodOpacity="0.38" />
+        {/* Sombra suave */}
+        <filter id={shadow} x="-30%" y="-15%" width="160%" height="145%">
+          <feDropShadow dx="0" dy="12" stdDeviation="16" floodColor="#7C2D12" floodOpacity="0.45" />
         </filter>
+        {/* Círculo interior blanco (reflejo) */}
+        <radialGradient id={inner} cx="40%" cy="35%" r="55%">
+          <stop offset="0%"   stopColor="#FFFFFF" stopOpacity="0.18" />
+          <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
+        </radialGradient>
       </defs>
 
-      <g filter={`url(#${shadowId})`}>
+      {/* Cuerpo del pin */}
+      <g filter={`url(#${shadow})`}>
         <path
-          d="M256 32 C161 32 84 109 84 204 C84 326 256 480 256 480 C256 480 428 326 428 204 C428 109 351 32 256 32 Z"
-          fill={`url(#${gradId})`}
-          stroke="#3D1400"
-          strokeWidth="22"
-          strokeLinejoin="round"
+          d="M256 28
+             C152 28 72 108 72 208
+             C72 290 150 368 212 432
+             C232 454 248 470 256 480
+             C264 470 280 454 300 432
+             C362 368 440 290 440 208
+             C440 108 360 28 256 28 Z"
+          fill={`url(#${grad})`}
         />
+        {/* Glow overlay */}
         <path
-          d="M256 32 C161 32 84 109 84 204 C84 326 256 480 256 480 C256 480 428 326 428 204 C428 109 351 32 256 32 Z"
-          fill={`url(#${glowId})`}
+          d="M256 28
+             C152 28 72 108 72 208
+             C72 290 150 368 212 432
+             C232 454 248 470 256 480
+             C264 470 280 454 300 432
+             C362 368 440 290 440 208
+             C440 108 360 28 256 28 Z"
+          fill={`url(#${glow})`}
         />
       </g>
 
-      {/* Tenedor */}
-      <rect x="203" y="126" width="12" height="64" rx="6" fill="#FFFFFF" />
-      <rect x="221" y="126" width="12" height="64" rx="6" fill="#FFFFFF" />
-      <rect x="239" y="126" width="12" height="64" rx="6" fill="#FFFFFF" />
-      <path d="M201 188 C201 201 210 210 226.5 215 C243 210 251 201 251 188 Z" fill="#FFFFFF" />
-      <rect x="213" y="206" width="27" height="78" rx="13.5" fill="#FFFFFF" />
+      {/* Círculo de fondo blanco/semitransparente dentro del pin */}
+      <circle cx="256" cy="200" r="102" fill="white" fillOpacity="0.15" />
+      <circle cx="256" cy="200" r="102" fill={`url(#${inner})`} />
 
-      {/* Cuchara */}
-      <ellipse cx="292" cy="158" rx="28" ry="38" fill="#FFFFFF" />
-      <rect x="278" y="188" width="27" height="96" rx="13.5" fill="#FFFFFF" />
+      {/* ── Tenedor (izquierda) ── */}
+      {/* Dientes */}
+      <rect x="206" y="122" width="9"  height="52" rx="4.5" fill="white" />
+      <rect x="221" y="122" width="9"  height="52" rx="4.5" fill="white" />
+      <rect x="236" y="122" width="9"  height="52" rx="4.5" fill="white" />
+      {/* Unión curva */}
+      <path d="M204 172 Q204 194 220.5 200 Q237 194 237 172 Z" fill="white" />
+      {/* Mango */}
+      <rect x="213" y="196" width="15" height="82" rx="7.5" fill="white" />
+
+      {/* ── Cuchillo (derecha) ── */}
+      {/* Hoja con curva */}
+      <path d="M278 122 L278 175 Q278 195 292 200 L292 122 Z" fill="white" />
+      {/* Mango */}
+      <rect x="282" y="196" width="14" height="82" rx="7" fill="white" />
     </svg>
   );
 }
