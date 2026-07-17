@@ -14,7 +14,7 @@ const navItems = [
   { href: '/profile/reservations', icon: Calendar,        label: 'Mis Reservas' },
   { href: '/profile/search',       icon: Search,          label: 'Buscar Reserva' },
   { href: '/profile/history',      icon: Clock,           label: 'Mi Historial' },
-  { href: '/profile/restaurants',  icon: UtensilsCrossed, label: 'Explorar Restaurantes' },
+  { href: '/restaurants',  icon: UtensilsCrossed, label: 'Explorar Restaurantes' },
 ] as const;
 
 export function ClientSidebar({ open = false, onClose }: { open?: boolean; onClose?: () => void }) {

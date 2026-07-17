@@ -152,7 +152,7 @@ export default function LoginPage() {
               onSuccess={(res) => {
                 const user = useAuthStore.getState().user;
                 if (!user) return;
-                router.push(user.role === 'CLIENTE' ? '/profile/restaurants' : '/dashboard')
+                router.push(user.role === 'CLIENTE' ? '/restaurants' : '/dashboard')
               }}
             />
           </div>
