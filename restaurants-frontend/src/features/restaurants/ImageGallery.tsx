@@ -85,11 +85,11 @@ export function ImageGallery({ restaurantId }: { restaurantId: string }) {
   if (rest.length === 0) return null;
 
   return (
-    <>
+    <div className="pt-8 border-t border-gray-200 dark:border-gray-800">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="font-display text-2xl font-bold text-gray-900 dark:text-gray-50">Ambiente y Platos</h2>
+      </div>
       <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-6">
-        <h2 className="font-display text-lg font-semibold text-gray-900 dark:text-gray-50 mb-4 flex items-center gap-2">
-          <Images className="h-5 w-5 text-orange-500" /> Fotos del lugar
-        </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {rest.slice(0, 6).map((img, i) => (
             <button
@@ -120,6 +120,6 @@ export function ImageGallery({ restaurantId }: { restaurantId: string }) {
           onClose={() => setLightboxIndex(null)}
         />
       )}
-    </>
+    </div>
   );
 }

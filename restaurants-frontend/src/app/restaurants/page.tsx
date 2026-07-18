@@ -4,8 +4,10 @@ import { useState } from 'react';
 import { Search, MapPin, UtensilsCrossed, Navigation, X, ArrowLeft, Star, Clock, List, Map as MapIcon, Sparkles, Heart, CheckCircle } from 'lucide-react';
 import { useFavorites } from '@/hooks/useFavorites';
 import { AuthNav } from '@/components/ui/AuthNav';
+import { BrandMark } from '@/components/ui/BrandMark';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
+import { ThemeLangSwitch } from '@/components/ui/ThemeLangSwitch';
 
 const RestaurantsMap = dynamic(() => import('@/components/ui/RestaurantsMap'), {
   ssr: false,
@@ -17,7 +19,9 @@ import { restaurantService } from '@/services/restaurantService';
 import { RestaurantCard, RestaurantCardSkeleton } from '@/features/restaurants/RestaurantCard';
 import { OffersCarousel } from '@/components/ui/OffersCarousel';
 import { CategoryModal } from '@/components/ui/CategoryModal';
+import { SelectMenu } from '@/components/ui/SelectMenu';
 import { AnimateOnScroll } from '@/components/ui/AnimateOnScroll';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { useTranslation } from '@/hooks/useTranslation';
 import { cn } from '@/utils/cn';
 
@@ -153,133 +157,159 @@ export default function RestaurantsPublicPage() {
   const clearNearby = () => setGeo({ status: 'idle' });
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-orange-600 to-orange-500 dark:from-[#3E1408] dark:to-[#7C2D12] py-14">
+    <div className="min-h-screen bg-gray-50 dark:bg-[#0A0908] relative">
+      {/* Subtle Premium Background Glow */}
+      <div className="absolute top-0 left-0 right-0 h-[30rem] bg-gradient-to-b from-orange-500/10 dark:from-orange-500/5 via-transparent to-transparent pointer-events-none" />
+      
+      {/* Top Navbar & Title - Static (No sticky) */}
+      <div className="pt-6 pb-2 relative z-10">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between gap-3 mb-5">
-            <Link href="/" className="inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-sm font-medium shadow-sm animate-slide-up bg-white text-orange-600 hover:bg-orange-50 border border-white/50 dark:bg-white/10 dark:text-white dark:border-white/20 dark:backdrop-blur-md dark:hover:bg-white/20">
-              <ArrowLeft className="h-4 w-4" />
-              Inicio
-            </Link>
-            <AuthNav />
-          </div>
-          <div className="flex items-center gap-2 text-orange-200 mb-3 animate-slide-up">
-            <MapPin className="h-4 w-4" />
-            <span className="text-sm">Tingo María, Huánuco</span>
-          </div>
-          <h1 className="font-display text-3xl font-bold text-white mb-6 animate-slide-up [animation-delay:100ms]">
-            {t('restaurantsTitle')}
-          </h1>
-
-          <div className="flex flex-col gap-3 animate-slide-up [animation-delay:200ms]">
-            <form onSubmit={handleSearch} className="flex gap-2 flex-col sm:flex-row">
-              <div className="relative flex-1" data-tour="search">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <input
-                  value={search}
-                  onChange={(e) => { setSearch(e.target.value); setGeo({ status: 'idle' }); }}
-                  placeholder={t('searchPlaceholder')}
-                  className="w-full pl-10 pr-4 py-3 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-300"
-                />
+          <div className="flex items-center justify-between gap-4 mb-6">
+            <div className="flex items-center gap-4">
+              <Link href="/" className="inline-flex items-center justify-center h-10 w-10 rounded-full bg-white/60 dark:bg-white/5 backdrop-blur-md border border-gray-200/50 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-white/10 transition-colors mr-2 shadow-sm">
+                <ArrowLeft className="h-5 w-5" />
+              </Link>
+              <Link href="/" className="flex items-center gap-2 group">
+                <div className="p-2 bg-white dark:bg-white/5 backdrop-blur-md shadow-sm border border-orange-100 dark:border-white/10 rounded-xl group-hover:scale-105 transition-transform">
+                  <BrandMark className="h-6 w-6" />
+                </div>
+                <span className="font-display font-bold text-xl tracking-tight text-gray-900 dark:text-white">
+                  Resto<span className="text-orange-600 dark:text-orange-500">Point</span>
+                </span>
+              </Link>
+              <div className="hidden md:flex items-center gap-2 text-gray-500 dark:text-gray-400 font-medium text-sm ml-4 border-l border-gray-200 dark:border-gray-800 pl-4">
+                <MapPin className="h-4 w-4" />
+                Tingo María, Huánuco
               </div>
-              <div className="relative">
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <input
-                  value={city}
-                  onChange={(e) => { setCity(e.target.value); setGeo({ status: 'idle' }); }}
-                  placeholder={t('cityPlaceholder')}
-                  className="w-full sm:w-44 pl-10 pr-4 py-3 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-300"
-                />
+            </div>
+            <div className="flex items-center gap-3">
+              <ThemeLangSwitch />
+              <AuthNav />
+            </div>
+          </div>
+
+          <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-8 py-2">
+            {/* Left side: Title, Integrated Search Console, Sleek Filter Ribbon */}
+            <div className="flex-1 flex flex-col gap-5 lg:max-w-[56%]">
+              <div>
+                <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight drop-shadow-sm">
+                  {t('restaurantsTitle')}
+                </h1>
+                <p className="mt-1.5 text-sm text-gray-600 dark:text-gray-400 font-medium">
+                  Explora la mejor gastronomía en Tingo María, aprovecha ofertas exclusivas y reserva tu mesa al instante.
+                </p>
               </div>
-              <button type="submit" className="px-6 py-3 bg-[#ffffff] text-[#C2410C] dark:bg-orange-500 dark:text-white font-semibold rounded-xl hover:bg-orange-50 dark:hover:bg-orange-600 hover:scale-105 transition-all duration-200 shadow-sm">
-                {t('search')}
-              </button>
-            </form>
+              
+              {/* Integrated Hero Search Console */}
+              <form onSubmit={handleSearch} className="flex items-center gap-2 p-1.5 bg-white dark:bg-gray-900/80 backdrop-blur-md rounded-2xl border border-gray-200/80 dark:border-gray-800 shadow-md transition-all focus-within:ring-2 focus-within:ring-orange-500/30 focus-within:border-orange-500/50 w-full">
+                <div className="relative flex-1 flex items-center pl-3" data-tour="search">
+                  <Search className="h-5 w-5 text-orange-500 flex-shrink-0 mr-2.5" />
+                  <input
+                    value={search}
+                    onChange={(e) => { setSearch(e.target.value); setGeo({ status: 'idle' }); }}
+                    placeholder={t('searchPlaceholder')}
+                    className="w-full bg-transparent border-none py-1.5 text-sm font-medium text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-0"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="px-6 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold text-sm rounded-xl hover:from-orange-600 hover:to-orange-700 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-md shadow-orange-500/20 flex-shrink-0"
+                >
+                  {t('search')}
+                </button>
+              </form>
 
-            {/* Filtros — organizados en dos grupos: Descubrir y Filtrar */}
-            <div className="flex flex-col gap-3 mt-2">
+              {/* Compact Filter Ribbon */}
+              <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                <SelectMenu
+                  value={priceRange}
+                  onChange={(val) => { setPriceRange(val); setGeo({ status: 'idle' }); setPage(0); }}
+                  placeholder="Precio: Todos"
+                  options={[
+                    { value: '', label: 'Precio: Todos' },
+                    { value: 'LOW', label: 'Económico ($)' },
+                    { value: 'MEDIUM', label: 'Moderado ($$)' },
+                    { value: 'HIGH', label: 'Exclusivo ($$$)' }
+                  ]}
+                  className={cn(
+                    'w-auto rounded-full py-1.5 px-3 text-xs font-semibold border transition-all focus:ring-0 min-w-[125px]',
+                    priceRange 
+                      ? 'bg-orange-50 border-orange-200 text-orange-700 dark:bg-orange-500/10 dark:border-orange-500/30 dark:text-orange-400'
+                      : 'bg-white dark:bg-gray-800/80 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600 shadow-sm'
+                  )}
+                />
 
-              {/* Grupo 1 · Descubrir: tipo de comida + cerca de mí */}
-              <div className="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
                   data-tour="filter-categories"
                   onClick={() => setCategoryModalOpen(true)}
                   className={cn(
-                    'flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm border hover:scale-105 active:scale-95',
+                    'flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all border shadow-sm',
                     selectedCategories.length > 0
-                      ? 'bg-white text-orange-600 border-transparent shadow-sm'
-                      : 'bg-white/10 text-white border-white/20 hover:bg-white/20 backdrop-blur-sm'
+                      ? 'bg-orange-50 border-orange-200 text-orange-700 dark:bg-orange-500/10 dark:border-orange-500/30 dark:text-orange-400'
+                      : 'bg-white dark:bg-gray-800/80 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
                   )}
                 >
-                  <Sparkles className={cn('h-4 w-4 transition-transform group-hover:rotate-12', selectedCategories.length > 0 ? 'text-orange-500' : 'text-white')} />
+                  <Sparkles className={cn('h-3.5 w-3.5', selectedCategories.length > 0 ? 'text-orange-500' : 'text-gray-400')} />
                   ¿Qué te apetece?
                   {selectedCategories.length > 0 && (
-                    <span key={selectedCategories.length} className="ml-0.5 inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-orange-500 text-white text-xs font-bold animate-pop">
+                    <span className="ml-1 inline-flex items-center justify-center min-w-4 h-4 px-1 rounded-full bg-orange-500 text-white text-[10px] font-bold">
                       {selectedCategories.length}
                     </span>
                   )}
                 </button>
 
-                {/* Botón Cerca de mí */}
                 {!isNearbyMode ? (
                   <button
                     type="button"
                     data-tour="filter-nearby"
                     onClick={handleNearby}
                     disabled={geo.status === 'loading'}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/15 border border-white/30 text-white text-sm font-medium hover:bg-white/25 disabled:opacity-60 transition-all duration-200"
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-xs font-semibold hover:border-gray-300 dark:hover:border-gray-600 disabled:opacity-60 transition-all shadow-sm"
                   >
                     {geo.status === 'loading' ? (
-                      <span className="h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                      <span className="h-3.5 w-3.5 rounded-full border-2 border-gray-400 border-t-transparent animate-spin" />
                     ) : (
-                      <Navigation className="h-4 w-4" />
+                      <Navigation className="h-3.5 w-3.5 text-blue-500" />
                     )}
-                    {geo.status === 'loading' ? 'Obteniendo ubicación...' : t('nearby')}
+                    {geo.status === 'loading' ? 'Ubicando...' : t('nearby')}
                   </button>
                 ) : (
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-orange-600 text-sm font-semibold shadow-sm">
-                      <Navigation className="h-4 w-4 fill-orange-500" />
-                      {t('showingNearby')}
-                      <button onClick={clearNearby} className="ml-1 hover:text-orange-800 transition-colors">
-                        <X className="h-3.5 w-3.5" />
+                  <div className="flex items-center gap-1 bg-gray-50 dark:bg-gray-800/80 p-1 rounded-full border border-gray-200 dark:border-gray-700 shadow-sm">
+                    <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 text-xs font-bold shadow-2xs">
+                      <Navigation className="h-3 w-3 fill-blue-500 text-blue-500" />
+                      Cerca
+                      <button onClick={clearNearby} className="ml-1 hover:text-blue-800 dark:hover:text-blue-300 transition-colors">
+                        <X className="h-3 w-3" />
                       </button>
                     </div>
-                    {/* Selector de radio */}
-                    <div className="inline-flex items-center rounded-xl bg-white/10 border border-white/25 backdrop-blur-sm overflow-hidden text-sm font-medium">
-                      {[5, 10].map((km) => (
-                        <button
-                          key={km}
-                          type="button"
-                          onClick={() => setRadiusKm(km)}
-                          className={cn(
-                            'px-3.5 py-2.5 transition-colors',
-                            radiusKm === km ? 'bg-white text-orange-600' : 'text-white hover:bg-white/20'
-                          )}
-                        >
-                          {km} km
-                        </button>
-                      ))}
-                    </div>
+                    {[5, 10].map((km) => (
+                      <button
+                        key={km}
+                        type="button"
+                        onClick={() => setRadiusKm(km)}
+                        className={cn(
+                          'px-2.5 py-0.5 rounded-full text-xs font-semibold transition-colors',
+                          radiusKm === km ? 'bg-blue-500 text-white shadow-2xs' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                        )}
+                      >
+                        {km}km
+                      </button>
+                    ))}
                   </div>
                 )}
-              </div>
 
-              {/* Grupo 2 · Filtrar: estado/calidad + precio + favoritos (solo registrados) */}
-              <div className="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setTopRatedFilter(!topRatedFilter)}
                   className={cn(
-                    "flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm border hover:scale-105 active:scale-95",
+                    "flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all border shadow-sm",
                     topRatedFilter
-                      ? "bg-white text-orange-600 border-transparent shadow-sm"
-                      : "bg-white/10 text-white border-white/20 hover:bg-white/20 backdrop-blur-sm"
+                      ? "bg-orange-50 border-orange-200 text-orange-700 dark:bg-orange-500/10 dark:border-orange-500/30 dark:text-orange-400"
+                      : "bg-white dark:bg-gray-800/80 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600"
                   )}
                 >
-                  <Star className={cn("h-4 w-4", topRatedFilter ? "fill-orange-500 text-orange-500" : "text-white")} />
+                  <Star className={cn("h-3.5 w-3.5", topRatedFilter ? "fill-orange-500 text-orange-500" : "text-gray-400")} />
                   Mejores reseñas
                 </button>
 
@@ -287,13 +317,13 @@ export default function RestaurantsPublicPage() {
                   type="button"
                   onClick={() => setOpenNowFilter(!openNowFilter)}
                   className={cn(
-                    "flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm border hover:scale-105 active:scale-95",
+                    "flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all border shadow-sm",
                     openNowFilter
-                      ? "bg-white text-orange-600 border-transparent shadow-sm"
-                      : "bg-white/10 text-white border-white/20 hover:bg-white/20 backdrop-blur-sm"
+                      ? "bg-orange-50 border-orange-200 text-orange-700 dark:bg-orange-500/10 dark:border-orange-500/30 dark:text-orange-400"
+                      : "bg-white dark:bg-gray-800/80 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600"
                   )}
                 >
-                  <Clock className="h-4 w-4" />
+                  <Clock className={cn("h-3.5 w-3.5", openNowFilter ? "text-orange-500" : "text-gray-400")} />
                   Abierto ahora
                 </button>
 
@@ -301,100 +331,76 @@ export default function RestaurantsPublicPage() {
                   type="button"
                   onClick={() => { setAvailableNowFilter(!availableNowFilter); setGeo({ status: 'idle' }); }}
                   className={cn(
-                    "flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm border hover:scale-105 active:scale-95",
+                    "flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all border shadow-sm",
                     availableNowFilter
-                      ? "bg-white text-orange-600 border-transparent shadow-sm"
-                      : "bg-white/10 text-white border-white/20 hover:bg-white/20 backdrop-blur-sm"
+                      ? "bg-green-50 border-green-200 text-green-700 dark:bg-green-500/10 dark:border-green-500/30 dark:text-green-400"
+                      : "bg-white dark:bg-gray-800/80 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600"
                   )}
                 >
-                  <CheckCircle className={cn("h-4 w-4", availableNowFilter ? "text-green-500" : "text-white")} />
-                  Con mesas libres
+                  <CheckCircle className={cn("h-3.5 w-3.5", availableNowFilter ? "text-green-500" : "text-gray-400")} />
+                  Mesas libres
                 </button>
 
-                {/* Favoritos — solo visible para clientes registrados (login con Google) */}
                 {isAuthenticated && (
                   <button
                     type="button"
                     data-tour="filter-favorites"
                     onClick={() => setFavoritesOnly(!favoritesOnly)}
                     className={cn(
-                      "flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm border hover:scale-105 active:scale-95",
+                      "flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all border shadow-sm",
                       favoritesOnly
-                        ? "bg-white text-orange-600 border-transparent shadow-sm"
-                        : "bg-white/10 text-white border-white/20 hover:bg-white/20 backdrop-blur-sm"
+                        ? "bg-red-50 border-red-200 text-red-700 dark:bg-red-500/10 dark:border-red-500/30 dark:text-red-400"
+                        : "bg-white dark:bg-gray-800/80 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600"
                     )}
                   >
-                    <Heart className={cn("h-4 w-4", favoritesOnly ? "fill-red-500 text-red-500" : "text-white")} />
+                    <Heart className={cn("h-3.5 w-3.5", favoritesOnly ? "fill-red-500 text-red-500" : "text-gray-400")} />
                     Favoritos
                   </button>
                 )}
-
-                {/* Separador visual entre filtros y precio */}
-                <span className="hidden sm:block h-7 w-px bg-white/25 mx-1" />
-
-                {/* Filtro por precio */}
-                <div className="flex flex-wrap items-center gap-2" data-tour="filter-price">
-                  {([['LOW', '$', 'Económico', 'Menos de S/ 15'], ['MEDIUM', '$$', 'Medio', 'S/ 15 – 35'], ['HIGH', '$$$', 'Alto', 'Más de S/ 35']] as const).map(([val, sym, label, hint]) => (
-                    <button
-                      key={val}
-                      type="button"
-                      title={hint}
-                      onClick={() => { setPriceRange(priceRange === val ? '' : val); setGeo({ status: 'idle' }); setPage(0); }}
-                      className={cn(
-                        'flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm border hover:scale-105 active:scale-95',
-                        priceRange === val
-                          ? 'bg-white text-orange-600 border-transparent shadow-sm'
-                          : 'bg-white/10 text-white border-white/20 hover:bg-white/20 backdrop-blur-sm'
-                      )}
-                    >
-                      <span className={cn('font-bold tabular-nums', priceRange === val ? 'text-orange-500' : 'text-white/80')}>{sym}</span>
-                      {label}
-                    </button>
-                  ))}
-                </div>
               </div>
 
               {geo.status === 'error' && (
-                <p className="text-orange-100 text-xs bg-white/10 px-3 py-1.5 rounded-lg w-fit">
+                <p className="text-red-500 text-sm bg-red-50 dark:bg-red-900/20 px-4 py-2 rounded-xl border border-red-100 dark:border-red-900/50 w-fit mt-1">
                   {(geo as any).message}
                 </p>
               )}
+            </div>
+            
+            {/* Right side: Offers Carousel */}
+            <div className="w-full lg:w-[42%] xl:w-[440px] flex-shrink-0">
+              <OffersCarousel />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Contenido */}
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        {/* Carrusel de ofertas (flyers con IA) de todos los restaurantes */}
-        <OffersCarousel />
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
 
-        <div className="flex items-center justify-between mb-6">
+        {/* Encabezado de la lista */}
+        <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-200 dark:border-gray-800">
           <div className="flex items-center gap-3">
-            <Link href="/" className="text-sm text-gray-500 hover:text-orange-600 transition-colors">{t('home')}</Link>
-            <span className="text-gray-300">/</span>
-            <span className="text-sm text-gray-900 font-medium">
-              {isNearbyMode ? t('nearbyRestaurants') : t('restaurants')}
+            <span className="font-display text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+              {isNearbyMode ? 'Cerca de ti' : 'Explorar'}
+            </span>
+            <span className="px-2.5 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-lg text-sm font-medium">
+              {restaurants.length} {t('restaurantsFound')}
             </span>
           </div>
 
           <div className="flex items-center gap-3">
-            <p className="text-sm text-gray-500">
-              {restaurants.length} {t('restaurantsFound')}
-            </p>
             {/* Toggle Lista / Mapa */}
-            <div className="inline-flex items-center rounded-xl border border-gray-200 overflow-hidden text-sm font-medium" data-tour="view-toggle">
+            <div className="inline-flex items-center p-1 bg-gray-100 dark:bg-gray-800 rounded-xl" data-tour="view-toggle">
               <button
                 type="button"
                 onClick={() => setViewMode('list')}
-                className={cn('flex items-center gap-1.5 px-3 py-1.5 transition-colors', viewMode === 'list' ? 'bg-orange-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50')}
+                className={cn('flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all', viewMode === 'list' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200')}
               >
                 <List className="h-4 w-4" /> Lista
               </button>
               <button
                 type="button"
                 onClick={() => setViewMode('map')}
-                className={cn('flex items-center gap-1.5 px-3 py-1.5 transition-colors', viewMode === 'map' ? 'bg-orange-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50')}
+                className={cn('flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all', viewMode === 'map' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200')}
               >
                 <MapIcon className="h-4 w-4" /> Mapa
               </button>
@@ -407,39 +413,41 @@ export default function RestaurantsPublicPage() {
             {Array.from({ length: 8 }).map((_, i) => <RestaurantCardSkeleton key={i} />)}
           </div>
         ) : restaurants.length === 0 ? (
-          <div className="text-center py-24">
-            <UtensilsCrossed className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="font-display text-lg font-semibold text-gray-900 mb-2">
-              {t('noResults')}
-            </h3>
-            <p className="text-gray-500 mb-6">
-              {isNearbyMode
+          <EmptyState
+            icon={UtensilsCrossed}
+            title={t('noResults')}
+            description={
+              isNearbyMode
                 ? 'No hay restaurantes activos en un radio de 5 km de tu ubicación actual.'
-                : 'No se encontraron restaurantes con los filtros aplicados'}
-            </p>
-            
-            {isNearbyMode && (process.env.NODE_ENV === 'development' || typeof window !== 'undefined' && window.location.hostname === 'localhost') && (
-              <div className="mb-6">
-                <button
-                  onClick={() => {
-                    setGeo({ status: 'ready', lat: -9.297, lon: -75.998 });
-                  }}
-                  className="px-6 py-2.5 bg-orange-100 text-orange-700 rounded-xl font-medium hover:bg-orange-200 transition-colors"
-                >
-                  Simular ubicación en Tingo María (Dev Mode)
-                </button>
-              </div>
-            )}
-            
-            {(search || city || isNearbyMode || topRatedFilter || openNowFilter || selectedCategories.length > 0 || priceRange || favoritesOnly) && (
-              <button
-                onClick={() => { setSearch(''); setCity(''); setPage(0); clearNearby(); setTopRatedFilter(false); setOpenNowFilter(false); setSelectedCategories([]); setPriceRange(''); setFavoritesOnly(false); }}
-                className="px-6 py-2.5 bg-orange-500 text-white rounded-xl font-medium hover:bg-orange-600 transition-colors"
-              >
-                {t('clearFilters')}
-              </button>
-            )}
-          </div>
+                : 'No se encontraron restaurantes con los filtros aplicados.'
+            }
+            glowColor="orange"
+            action={
+              <>
+                {isNearbyMode && (process.env.NODE_ENV === 'development' || typeof window !== 'undefined' && window.location.hostname === 'localhost') && (
+                  <div className="mb-4">
+                    <button
+                      onClick={() => {
+                        setGeo({ status: 'ready', lat: -9.297, lon: -75.998 });
+                      }}
+                      className="px-6 py-2.5 bg-orange-100 text-orange-700 rounded-xl font-medium hover:bg-orange-200 transition-colors"
+                    >
+                      Simular ubicación en Tingo María (Dev Mode)
+                    </button>
+                  </div>
+                )}
+                
+                {(search || city || isNearbyMode || topRatedFilter || openNowFilter || selectedCategories.length > 0 || priceRange || favoritesOnly) && (
+                  <button
+                    onClick={() => { setSearch(''); setCity(''); setPage(0); clearNearby(); setTopRatedFilter(false); setOpenNowFilter(false); setSelectedCategories([]); setPriceRange(''); setFavoritesOnly(false); }}
+                    className="px-6 py-2.5 bg-orange-500 text-white rounded-xl font-medium hover:bg-orange-600 shadow-lg shadow-orange-500/30 transition-all hover:scale-105 active:scale-95"
+                  >
+                    {t('clearFilters')}
+                  </button>
+                )}
+              </>
+            }
+          />
         ) : viewMode === 'map' ? (
           <RestaurantsMap restaurants={restaurants} />
         ) : (
@@ -461,7 +469,7 @@ export default function RestaurantsPublicPage() {
                 >
                   ← {t('back')}
                 </button>
-                <span className="text-sm text-gray-600 px-4">
+                <span className="text-sm text-gray-600 px-4 font-medium">
                   {searchData.page + 1} / {searchData.totalPages}
                 </span>
                 <button

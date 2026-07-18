@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { MapPin, Star, Users, Wifi, Car, UtensilsCrossed, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { MapPin, Star, Users, Wifi, Car, UtensilsCrossed, CheckCircle, XCircle, Clock, ArrowLeft } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { RestaurantLogo } from '@/components/ui/RestaurantLogo';
 import { FavoriteButton } from '@/components/ui/FavoriteButton';
@@ -56,13 +56,13 @@ export function RestaurantCard({ restaurant, showDistance, onReview }: Props) {
         'hover:-translate-y-1'
       )}>
         {/* Cover image / gradient placeholder */}
-        <div className="relative h-48 overflow-hidden flex-shrink-0">
+        <div className="relative aspect-[4/3] w-full overflow-hidden flex-shrink-0">
           {restaurant.coverImageUrl ? (
             <Image
               src={restaurant.coverImageUrl}
               alt={restaurant.name}
               fill
-              className="object-cover group-hover:scale-105 transition-transform duration-500"
+              className="object-cover group-hover:scale-105 transition-transform duration-700"
             />
           ) : (
             <div
@@ -106,16 +106,16 @@ export function RestaurantCard({ restaurant, showDistance, onReview }: Props) {
         </div>
 
         {/* Card body */}
-        <div className="p-5 flex-1 flex flex-col">
+        <div className="p-6 flex-1 flex flex-col">
           {/* Logo + Name */}
-          <div className="flex items-start gap-3 mb-3">
-            <RestaurantLogo name={restaurant.name} logoUrl={restaurant.logoUrl} className="h-10 w-10 rounded-xl text-base" />
-            <div className="min-w-0">
-              <h3 className="font-display font-semibold text-gray-900 dark:text-gray-50 group-hover:text-orange-500 transition-colors leading-tight line-clamp-1">
+          <div className="flex items-start gap-4 mb-4">
+            <RestaurantLogo name={restaurant.name} logoUrl={restaurant.logoUrl} className="h-12 w-12 rounded-xl text-lg shadow-sm border border-gray-100 dark:border-gray-700" />
+            <div className="min-w-0 pt-0.5">
+              <h3 className="font-display font-bold text-lg text-gray-900 dark:text-gray-50 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors leading-tight line-clamp-1">
                 {restaurant.name}
               </h3>
-              <div className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                <MapPin className="h-3 w-3 flex-shrink-0" />
+              <div className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 mt-1">
+                <MapPin className="h-3.5 w-3.5 flex-shrink-0" />
                 <span className="truncate">{restaurant.district || restaurant.city}</span>
               </div>
             </div>
@@ -123,11 +123,11 @@ export function RestaurantCard({ restaurant, showDistance, onReview }: Props) {
 
           {/* Categories */}
           {restaurant.categories?.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mb-3">
+            <div className="flex flex-wrap gap-2 mb-4">
               {restaurant.categories.slice(0, 3).map((cat) => (
                 <span
                   key={cat}
-                  className="px-2 py-0.5 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 text-xs rounded-full font-medium border border-orange-100 dark:border-orange-500/20"
+                  className="px-2.5 py-1 bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-xs rounded-lg font-medium border border-gray-100 dark:border-gray-700"
                 >
                   {cat}
                 </span>
@@ -137,20 +137,20 @@ export function RestaurantCard({ restaurant, showDistance, onReview }: Props) {
 
           {/* Description */}
           {restaurant.description && (
-            <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mb-3 flex-1 leading-relaxed">
+            <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-4 flex-1 leading-relaxed">
               {restaurant.description}
             </p>
           )}
 
           {/* Footer */}
-          <div className="flex items-center gap-3 text-xs text-gray-400 dark:text-gray-500 mt-auto pt-3 border-t border-gray-100 dark:border-gray-700">
-            <div className="flex items-center gap-1">
-              <Star className="h-3.5 w-3.5 text-yellow-400 fill-yellow-400" />
-              <span className="font-semibold text-gray-700 dark:text-gray-300">{formatRating(restaurant.avgRating)}</span>
-              <span>({restaurant.totalRatings})</span>
+          <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mt-auto pt-4 border-t border-gray-100 dark:border-gray-800">
+            <div className="flex items-center gap-1.5">
+              <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
+              <span className="font-bold text-gray-900 dark:text-gray-200">{formatRating(restaurant.avgRating)}</span>
+              <span className="text-xs">({restaurant.totalRatings})</span>
             </div>
-            <div className="flex items-center gap-1">
-              <Users className="h-3.5 w-3.5" />
+            <div className="flex items-center gap-1.5 text-xs">
+              <Users className="h-4 w-4" />
               <span>{restaurant.totalCapacity}</span>
             </div>
             
@@ -158,13 +158,15 @@ export function RestaurantCard({ restaurant, showDistance, onReview }: Props) {
               {onReview && (
                 <button 
                   onClick={(e) => { e.preventDefault(); onReview(restaurant.id); }}
-                  className="font-semibold text-gray-500 hover:text-orange-500 transition-colors"
+                  className="font-semibold text-gray-500 hover:text-orange-600 transition-colors"
                 >
                   Opinar
                 </button>
               )}
               {restaurant.acceptsReservations && (
-                <span className="font-semibold text-orange-500">Reservar →</span>
+                <span className="font-bold text-orange-600 dark:text-orange-500 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                  Reservar <ArrowLeft className="h-3.5 w-3.5 rotate-180" />
+                </span>
               )}
             </div>
           </div>
@@ -177,10 +179,10 @@ export function RestaurantCard({ restaurant, showDistance, onReview }: Props) {
 export function RestaurantCardSkeleton() {
   return (
     <div className="rounded-2xl overflow-hidden bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-sm">
-      <div className="h-48 bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 animate-pulse" />
-      <div className="p-5 space-y-3">
-        <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded-lg w-3/4 animate-pulse" />
-        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-lg w-1/2 animate-pulse" />
+      <div className="aspect-[4/3] w-full bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 animate-pulse" />
+      <div className="p-6 space-y-4">
+        <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded-lg w-3/4 animate-pulse" />
+        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded-lg w-1/2 animate-pulse" />
         <div className="flex gap-2">
           <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded-full w-20 animate-pulse" />
           <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded-full w-16 animate-pulse" />

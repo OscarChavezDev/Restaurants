@@ -1,9 +1,31 @@
 'use client';
 
 import { useState } from 'react';
-import { KeyRound, Plus, Trash2, Copy, Check, X, Loader2, AlertTriangle, Terminal, RefreshCw } from 'lucide-react';
+import { KeyRound, Plus, Trash2, Copy, Check, X, Loader2, AlertTriangle, Terminal, RefreshCw, Sparkles } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useApiKeys, useGenerateApiKey, useRevokeApiKey, useRegenerateApiKey } from '@/hooks/useApiKeys';
+
+const CodeSnippet = ({ title, code }: { title: string; code: string }) => {
+  const [copiedLocal, setCopiedLocal] = useState(false);
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(code);
+    setCopiedLocal(true);
+    setTimeout(() => setCopiedLocal(false), 2000);
+  };
+  return (
+    <div className="rounded-xl border border-gray-100 dark:border-gray-700 overflow-hidden relative group">
+      <div className="bg-gray-50 dark:bg-gray-900/50 px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+        {title}
+        <button onClick={handleCopy} className="p-1 hover:bg-gray-200 dark:hover:bg-gray-800 rounded transition-colors text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" title="Copiar código">
+          {copiedLocal ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
+        </button>
+      </div>
+      <pre className="p-3 text-[11px] font-mono bg-white dark:bg-gray-800 overflow-hidden whitespace-pre-wrap break-all text-gray-800 dark:text-gray-200">
+        {code}
+      </pre>
+    </div>
+  );
+};
 
 export default function ApiKeysPage() {
   const { data: keys, isLoading } = useApiKeys();
@@ -66,7 +88,14 @@ export default function ApiKeysPage() {
   };
 
   return (
-    <div>
+    <div className="relative min-h-[85vh] -m-4 sm:-m-6 lg:-m-8 p-4 sm:p-6 lg:p-8 overflow-hidden">
+      {/* Ambient glows (Premium Theme) */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 right-1/4 h-[500px] w-[500px] rounded-full bg-orange-500/10 dark:bg-orange-600/15 blur-[130px]" />
+        <div className="absolute -bottom-40 left-1/4 h-[500px] w-[500px] rounded-full bg-rose-400/10 dark:bg-rose-500/10 blur-[130px]" />
+      </div>
+
+      <div className="relative z-10 max-w-5xl mx-auto">
       <div className="mb-8 flex items-start justify-between flex-wrap gap-4">
         <div>
           <h1 className="font-display text-2xl font-bold text-gray-900 dark:text-gray-50">API Keys</h1>
@@ -76,20 +105,36 @@ export default function ApiKeysPage() {
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold rounded-xl transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 shadow-lg shadow-orange-500/20 hover:shadow-orange-500/30 text-white text-sm font-semibold rounded-xl transition-all"
         >
           <Plus className="h-4 w-4" /> Generar nueva clave
         </button>
       </div>
 
       {/* Lista de keys */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden mb-8">
+      <div className="bg-white/80 dark:bg-gray-800/90 backdrop-blur-xl rounded-3xl border border-gray-200 dark:border-gray-700/60 shadow-xl overflow-hidden mb-8">
         {isLoading ? (
           <div className="p-8 flex justify-center"><Loader2 className="h-6 w-6 animate-spin text-gray-400" /></div>
         ) : !keys?.length ? (
-          <div className="p-8 text-center text-gray-500 dark:text-gray-400">
-            <KeyRound className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-            Todavía no generaste ninguna API key.
+          <div className="p-12 text-center flex flex-col items-center justify-center min-h-[300px] relative overflow-hidden">
+            {/* Ambient glow behind icon */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-orange-500/10 dark:bg-orange-500/20 rounded-full blur-[60px] pointer-events-none" />
+            
+            <div className="relative z-10 flex h-20 w-20 items-center justify-center rounded-3xl bg-orange-50 dark:bg-orange-500/10 border border-orange-100 dark:border-orange-500/20 mb-6 shadow-xl shadow-orange-900/5">
+              <KeyRound className="h-10 w-10 text-orange-600 dark:text-orange-400" />
+            </div>
+            
+            <h3 className="relative z-10 text-xl font-bold text-gray-900 dark:text-white mb-2">No tienes claves activas</h3>
+            <p className="relative z-10 text-gray-500 dark:text-gray-400 max-w-md mx-auto text-sm leading-relaxed mb-6">
+              Genera tu primera API key para comenzar a integrar el catálogo de restaurantes de RestoPoint en tu propia plataforma o aplicación.
+            </p>
+            
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="relative z-10 inline-flex items-center gap-2 px-6 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-bold rounded-xl shadow-sm transition-all hover:-translate-y-0.5"
+            >
+              <Plus className="h-4 w-4" /> Crear mi primera clave
+            </button>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -149,108 +194,84 @@ export default function ApiKeysPage() {
         )}
       </div>
 
-      {/* Documentación breve */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <Terminal className="h-5 w-5 text-orange-500" />
-          <h2 className="font-display text-lg font-bold text-gray-900 dark:text-gray-50">Cómo usar tu API key</h2>
+      {/* Documentación Compacta (Bento Grid) */}
+      <div className="flex flex-col gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Intro y Autenticación */}
+          <div className="bg-white/80 dark:bg-gray-800/90 backdrop-blur-xl rounded-3xl border border-gray-200 dark:border-gray-700/60 shadow-xl p-6 lg:p-8">
+            <div className="flex items-center gap-2 mb-4">
+              <Terminal className="h-6 w-6 text-orange-500" />
+              <h2 className="font-display text-xl font-bold text-gray-900 dark:text-gray-50">Uso de la API</h2>
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+              Envía tu clave en el header <code className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-900 font-mono text-xs text-orange-600 dark:text-orange-400">X-API-Key</code> en cada solicitud. Límite: 60 req/min.
+            </p>
+            <div className="space-y-4">
+              <CodeSnippet
+                title="Listar restaurantes (GET)"
+                code={`curl "${apiBaseUrl}/v1/developer-api/restaurants" \\\n  -H "X-API-Key: rp_live_..."`}
+              />
+              <CodeSnippet
+                title="Detalle restaurante (GET)"
+                code={`curl "${apiBaseUrl}/v1/developer-api/restaurants/{id}" \\\n  -H "X-API-Key: rp_live_..."`}
+              />
+            </div>
+          </div>
+
+          {/* Datos y Ubicación */}
+          <div className="bg-white/80 dark:bg-gray-800/90 backdrop-blur-xl rounded-3xl border border-gray-200 dark:border-gray-700/60 shadow-xl p-6 lg:p-8 flex flex-col">
+            <div className="flex items-start gap-4 p-4 rounded-2xl bg-gradient-to-br from-orange-50 to-rose-50 dark:from-orange-900/10 dark:to-rose-900/10 border border-orange-100 dark:border-orange-900/30 mb-6">
+              <KeyRound className="h-6 w-6 text-orange-600 dark:text-orange-400 shrink-0" />
+              <div>
+                <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-1.5">Ubicación Precisa</h4>
+                <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+                  Ambos endpoints incluyen <code className="font-mono bg-white/60 dark:bg-black/20 px-1.5 py-0.5 rounded text-xs">latitude</code> y <code className="font-mono bg-white/60 dark:bg-black/20 px-1.5 py-0.5 rounded text-xs">longitude</code> reales. No hace falta geocodificar, úsalas directo.
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex-1">
+              <CodeSnippet
+                title="Ejemplo de respuesta (JSON)"
+                code={`{\n  "success": true,\n  "data": {\n    "content": [\n      {\n        "id": "a1b2c3d4...",\n        "name": "El Fogón de la Selva",\n        "latitude": -9.2953,\n        "longitude": -75.9975,\n        "avgRating": 4.6\n      }\n    ]\n  }\n}`}
+              />
+            </div>
+          </div>
         </div>
 
-        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-          Envía tu clave en el header{' '}
-          <code className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-900 font-mono text-xs">X-API-Key</code>{' '}
-          en cada solicitud. Límite: 60 solicitudes por minuto por clave.
-        </p>
-
-        <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-selva-50 dark:bg-selva-900/20 border border-selva-200 dark:border-selva-800 mb-5">
-          <KeyRound className="h-4 w-4 text-selva-600 dark:text-selva-400 shrink-0 mt-0.5" />
-          <p className="text-sm text-selva-800 dark:text-selva-300">
-            <strong>Sí, la ubicación viene incluida.</strong> Cada restaurante trae{' '}
-            <code className="px-1 py-0.5 rounded bg-white/60 dark:bg-black/20 font-mono text-xs">latitude</code> y{' '}
-            <code className="px-1 py-0.5 rounded bg-white/60 dark:bg-black/20 font-mono text-xs">longitude</code>{' '}
-            reales (no aproximadas) en ambos endpoints — no hace falta pedirla aparte.
-          </p>
-        </div>
-
-        <div className="space-y-4">
-          <div>
-            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1.5">
-              Listar restaurantes
-            </p>
-            <pre className="bg-gray-900 text-gray-100 rounded-xl p-4 text-xs overflow-x-auto">
-              <code>{`curl "${apiBaseUrl}/v1/developer-api/restaurants?page=0&size=50" \\
-  -H "X-API-Key: rp_live_TU_CLAVE_AQUI"`}</code>
-            </pre>
-          </div>
-
-          <div>
-            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1.5">
-              Detalle de un restaurante
-            </p>
-            <pre className="bg-gray-900 text-gray-100 rounded-xl p-4 text-xs overflow-x-auto">
-              <code>{`curl "${apiBaseUrl}/v1/developer-api/restaurants/{id}" \\
-  -H "X-API-Key: rp_live_TU_CLAVE_AQUI"`}</code>
-            </pre>
-          </div>
-
-          <div>
-            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1.5">
-              Ejemplo de respuesta — fijate en <code className="normal-case">latitude</code> / <code className="normal-case">longitude</code>
-            </p>
-            <pre className="bg-gray-900 text-gray-100 rounded-xl p-4 text-xs overflow-x-auto">
-              <code>{`{
-  "success": true,
-  "data": {
-    "content": [
-      {
-        "id": "a1b2c3d4-...",
-        "name": "El Fogón de la Selva",
-        "address": "Jr. Raymondi 123",
-        "district": "Rupa Rupa",
-        "city": "Tingo María",
-        "region": "Huánuco",
-        "latitude": -9.2953,    // ← coordenada real, no aproximada
-        "longitude": -75.9975,  // ← úsala directo, no hace falta geocodificar
-        "avgRating": 4.6,
-        "totalCapacity": 40
-      }
-    ],
-    "totalElements": 1
-  }
-}`}</code>
-            </pre>
-          </div>
-
-          <div>
-            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1.5">
-              Qué puedes hacer con la ubicación
-            </p>
-            <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1.5 list-disc pl-5">
-              <li>
-                <strong className="text-gray-800 dark:text-gray-200">Ponerlo en un mapa</strong> directo con Google Maps,
-                Leaflet o Mapbox: <code className="px-1 py-0.5 rounded bg-gray-100 dark:bg-gray-900 font-mono text-xs">latitude</code> es tu{' '}
-                <code className="px-1 py-0.5 rounded bg-gray-100 dark:bg-gray-900 font-mono text-xs">lat</code>,{' '}
-                <code className="px-1 py-0.5 rounded bg-gray-100 dark:bg-gray-900 font-mono text-xs">longitude</code> es tu{' '}
-                <code className="px-1 py-0.5 rounded bg-gray-100 dark:bg-gray-900 font-mono text-xs">lng</code>.
-              </li>
-              <li>
-                <strong className="text-gray-800 dark:text-gray-200">Generar un link "Cómo llegar"</strong> sin librerías,
-                solo armando la URL:
-                <pre className="mt-1.5 bg-gray-900 text-gray-100 rounded-xl p-3 text-xs overflow-x-auto">
-                  <code>{`https://www.google.com/maps?q=\${latitude},\${longitude}`}</code>
-                </pre>
-              </li>
-              <li>
-                <strong className="text-gray-800 dark:text-gray-200">Calcular distancia o cercanía</strong> desde la
-                ubicación de tu usuario: traé la lista completa (paginada) y calculá la distancia vos mismo con la
-                fórmula de Haversine sobre <code className="px-1 py-0.5 rounded bg-gray-100 dark:bg-gray-900 font-mono text-xs">latitude</code>/
-                <code className="px-1 py-0.5 rounded bg-gray-100 dark:bg-gray-900 font-mono text-xs">longitude</code> — este
-                endpoint no filtra por cercanía, así que el orden/filtro por distancia lo hacés en tu propio sistema.
-              </li>
-            </ul>
+        {/* Lo que puedes hacer */}
+        <div className="bg-white/80 dark:bg-gray-800/90 backdrop-blur-xl rounded-3xl border border-gray-200 dark:border-gray-700/60 shadow-xl p-6 lg:p-8">
+          <h4 className="text-base font-bold text-gray-900 dark:text-white mb-6 uppercase tracking-wider flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-orange-500" />
+            ¿Qué puedes hacer con esto?
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <strong className="text-gray-900 dark:text-white text-sm block">1. Ponerlo en un mapa</strong>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Pinta los restaurantes en Google Maps, Leaflet o Mapbox usando las coordenadas exactas que enviamos en la respuesta.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <strong className="text-gray-900 dark:text-white text-sm block">2. Calcular distancias</strong>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Trae la lista completa y usa la fórmula de Haversine en tu app para ordenarlos por cercanía al usuario.
+              </p>
+            </div>
+            <div className="space-y-3 md:col-span-2">
+              <strong className="text-gray-900 dark:text-white text-sm block">3. Generar rutas</strong>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Crea botones de "Cómo llegar" armando la URL nativa:
+              </p>
+              <CodeSnippet
+                title="Link"
+                code="https://www.google.com/maps?q=${latitude},${longitude}"
+              />
+            </div>
           </div>
         </div>
       </div>
+    </div>
 
       {/* Modal: generar / mostrar clave */}
       {showCreateModal && (

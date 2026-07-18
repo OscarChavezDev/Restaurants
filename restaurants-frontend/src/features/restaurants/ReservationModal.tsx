@@ -241,7 +241,7 @@ export function ReservationModal({
           </button>
         </div>
 
-        {/* ── Caso: no autenticado → puerta de Google ── */}
+        {/* ── Gate de acceso: no autenticado / rol incorrecto / éxito / formulario ── */}
         {hasHydrated && !isAuthenticated ? (
           <div className="px-6 py-8 text-center">
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-100 dark:bg-orange-500/15 text-orange-600">
@@ -253,6 +253,36 @@ export function ReservationModal({
             </p>
             <div className="flex justify-center">
               <GoogleLoginButton text="continue_with" />
+            </div>
+          </div>
+        ) : hasHydrated && isAuthenticated && (user?.role === 'DEVELOPER' || user?.role === 'RESTAURANTE_OWNER') ? (
+          <div className="px-6 py-8 text-center">
+            <div className={`mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl ${user.role === 'DEVELOPER' ? 'bg-blue-100 dark:bg-blue-500/15 text-blue-600 dark:text-blue-400' : 'bg-orange-100 dark:bg-orange-500/15 text-orange-600 dark:text-orange-400'}`}>
+              {user.role === 'DEVELOPER' ? (
+                <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M16 18L22 12L16 6"/><path d="M8 6L2 12L8 18"/></svg>
+              ) : (
+                <UtensilsCrossed className="h-7 w-7" />
+              )}
+            </div>
+            <h3 className="font-display text-base font-bold text-gray-900 dark:text-gray-50 mb-1">
+              {user.role === 'DEVELOPER' ? 'No disponible para cuentas de desarrollador' : 'No disponible para propietarios de restaurante'}
+            </h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-5 leading-relaxed">
+              {user.role === 'DEVELOPER'
+                ? 'Tu cuenta tiene acceso a la API de RestoPoint. Las reservas son exclusivas para clientes. Usa una cuenta Google para reservar.'
+                : 'Como propietario, gestiona tu establecimiento desde el dashboard. Para reservar como cliente usa una cuenta Google distinta.'}
+            </p>
+            <div className="flex flex-col gap-2">
+              <Link
+                href={user.role === 'DEVELOPER' ? '/dashboard/api-keys' : '/dashboard'}
+                onClick={onClose}
+                className={`w-full py-2.5 font-bold rounded-xl text-sm transition-all text-white ${user.role === 'DEVELOPER' ? 'bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-700 hover:to-violet-700' : 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700'}`}>
+                {user.role === 'DEVELOPER' ? 'Ver mis API Keys' : 'Ir al Dashboard'}
+              </Link>
+              <button onClick={onClose}
+                className="w-full py-2.5 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium rounded-xl text-sm transition-colors">
+                Cerrar
+              </button>
             </div>
           </div>
         ) : success ? (

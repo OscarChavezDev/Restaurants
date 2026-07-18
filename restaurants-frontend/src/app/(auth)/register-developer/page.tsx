@@ -16,6 +16,7 @@ export default function RegisterDeveloperPage() {
   const router = useRouter();
   const setUser = useAuthStore((s) => s.setUser);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const {
     register,
@@ -27,12 +28,12 @@ export default function RegisterDeveloperPage() {
     mutationFn: authService.registerDeveloper,
     onSuccess: (data) => {
       setUser(data);
-      toast.success(`¡Cuenta de desarrollador lista, ${data.fullName}!`);
+      toast.success(`¡Cuenta lista, ${data.fullName}!`);
       router.push('/dashboard/api-keys');
     },
     onError: (error: any) => {
       if (!error?.response) {
-        toast.error('No se puede conectar al servidor. Espera unos segundos y vuelve a intentarlo.');
+        toast.error('No se puede conectar al servidor. Intenta de nuevo.');
       } else if (error.response.status === 409) {
         toast.error('Ya existe una cuenta con ese correo.');
       } else {
@@ -41,134 +42,112 @@ export default function RegisterDeveloperPage() {
     },
   });
 
+  const field = 'w-full border border-gray-200 dark:border-gray-600/60 bg-gray-50 dark:bg-gray-700/50 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white dark:focus:bg-gray-700 transition';
+  const label = 'block text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1.5';
+  const errCls = 'text-[11px] text-red-500 dark:text-red-400 mt-1 font-medium';
+
   return (
-    <div className="relative min-h-screen bg-gray-50 flex items-center justify-center p-4 overflow-hidden">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4 sm:p-6 relative overflow-hidden transition-colors duration-300">
+      {/* Ambient glows */}
       <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-32 left-1/2 -translate-x-1/2 h-[460px] w-[460px] rounded-full bg-orange-400/20 blur-[120px]" />
-        <div className="absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-selva-400/15 blur-3xl" />
-        <div className="absolute -bottom-32 -left-20 h-72 w-72 rounded-full bg-orange-300/10 blur-3xl" />
+        <div className="absolute -top-40 right-1/4 h-96 w-96 rounded-full bg-orange-500/10 dark:bg-orange-600/15 blur-[130px]" />
+        <div className="absolute -bottom-40 left-1/4 h-96 w-96 rounded-full bg-rose-400/10 dark:bg-rose-500/15 blur-[130px]" />
       </div>
 
-      <div className="absolute top-4 left-4 z-10">
-        <Link
-          href="/login"
-          className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white dark:bg-gray-800 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 transition-colors shadow-sm"
-        >
-          <ArrowLeft className="h-4 w-4" /> Volver
-        </Link>
-      </div>
-
-      <div className="relative z-10 w-full max-w-md">
-        <div className="text-center mb-7">
-          <div className="relative inline-flex mb-4">
-            <div className="absolute inset-0 rounded-2xl bg-orange-500 blur-xl opacity-40" />
-            <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 shadow-lg shadow-orange-500/30 ring-1 ring-white/40 dark:ring-white/10">
-              <KeyRound className="h-8 w-8 text-white" />
-            </div>
-          </div>
-          <h1 className="font-display text-2xl font-bold text-gray-900 dark:text-gray-50">Portal de desarrollador</h1>
-          <p className="mt-1.5 text-gray-500 dark:text-gray-400 text-sm">
-            Regístrate y genera tu API key al instante — sin aprobación, sin espera.
-          </p>
+      <div className="relative z-10 w-full max-w-lg">
+        {/* Top nav */}
+        <div className="flex items-center justify-between mb-6">
+          <Link href="/login"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600/60 text-gray-700 dark:text-gray-300 text-xs font-bold transition-all shadow-sm">
+            <ArrowLeft className="h-3.5 w-3.5" /> Volver al inicio de sesión
+          </Link>
         </div>
 
-        <div className="relative overflow-hidden bg-white dark:bg-gray-800 rounded-2xl shadow-xl shadow-orange-900/[0.06] border border-gray-100 dark:border-gray-700 p-8">
-          <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-orange-500 via-orange-600 to-selva-500" />
+        {/* Card */}
+        <div className="bg-white dark:bg-gray-800 rounded-3xl border border-gray-200 dark:border-gray-700/60 shadow-xl overflow-hidden">
+          <div className="h-[3px] w-full bg-gradient-to-r from-orange-500 via-rose-500 to-orange-400" />
 
-          <form onSubmit={handleSubmit((d) => mutation.mutate(d))} className="space-y-5">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                Nombre completo
-              </label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <input
-                  {...register('fullName')}
-                  type="text"
-                  placeholder="Tu nombre"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition"
-                />
+          <div className="p-7 sm:p-8">
+            {/* Title */}
+            <div className="mb-6">
+              <div className="flex items-center gap-2.5 mb-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-100 dark:bg-orange-500/20 border border-orange-200 dark:border-orange-500/30">
+                  <KeyRound className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                </div>
+                <span className="text-[11px] font-bold text-orange-600 dark:text-orange-400 uppercase tracking-widest">RestoPoint API</span>
               </div>
-              {errors.fullName && <p className="mt-1 text-xs text-red-500">{errors.fullName.message}</p>}
+              <h1 className="font-display text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white leading-tight">
+                Cuenta de desarrollador
+              </h1>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                API Key instantánea al registrarte — sin aprobación.
+              </p>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                Correo electrónico
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <input
-                  {...register('email')}
-                  type="email"
-                  placeholder="tu@email.com"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition"
-                />
+            <form onSubmit={handleSubmit((d) => mutation.mutate(d))} className="space-y-4">
+              <div>
+                <label className={label}>Nombre completo</label>
+                <div className="relative">
+                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <input {...register('fullName')} type="text" placeholder="Tu nombre"
+                    className={`${field} pl-10`} />
+                </div>
+                {errors.fullName && <p className={errCls}>{errors.fullName.message}</p>}
               </div>
-              {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email.message}</p>}
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                Contraseña
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <input
-                  {...register('password')}
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="••••••••"
-                  className="w-full pl-10 pr-10 py-3 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
+              <div>
+                <label className={label}>Correo electrónico</label>
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <input {...register('email')} type="email" placeholder="dev@empresa.com"
+                    className={`${field} pl-10`} />
+                </div>
+                {errors.email && <p className={errCls}>{errors.email.message}</p>}
               </div>
-              {errors.password && <p className="mt-1 text-xs text-red-500">{errors.password.message}</p>}
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                Confirmar contraseña
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <input
-                  {...register('confirmPassword')}
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="••••••••"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition"
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className={label}>Contraseña</label>
+                  <div className="relative">
+                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <input {...register('password')} type={showPassword ? 'text' : 'password'} placeholder="••••••••"
+                      className={`${field} pl-10 pr-10`} />
+                    <button type="button" onClick={() => setShowPassword((v) => !v)}
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                  {errors.password && <p className={errCls}>{errors.password.message}</p>}
+                </div>
+                <div>
+                  <label className={label}>Confirmar</label>
+                  <div className="relative">
+                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <input {...register('confirmPassword')} type={showConfirm ? 'text' : 'password'} placeholder="••••••••"
+                      className={`${field} pl-10 pr-10`} />
+                    <button type="button" onClick={() => setShowConfirm((v) => !v)}
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+                      {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                  {errors.confirmPassword && <p className={errCls}>{errors.confirmPassword.message}</p>}
+                </div>
               </div>
-              {errors.confirmPassword && (
-                <p className="mt-1 text-xs text-red-500">{errors.confirmPassword.message}</p>
-              )}
-            </div>
 
-            <button
-              type="submit"
-              disabled={mutation.isPending}
-              className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 disabled:opacity-60 text-white font-semibold rounded-xl shadow-lg shadow-orange-500/25 transition-all"
-            >
-              {mutation.isPending ? (
-                <><Loader2 className="h-4 w-4 animate-spin" /> Creando cuenta...</>
-              ) : (
-                'Crear cuenta de desarrollador'
-              )}
-            </button>
-          </form>
+              <button type="submit" disabled={mutation.isPending}
+                className="w-full flex items-center justify-center gap-2 py-3 mt-1 bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 disabled:opacity-60 text-white font-bold text-sm rounded-xl shadow-lg shadow-orange-600/20 hover:scale-[1.01] active:scale-[0.99] transition-all">
+                {mutation.isPending
+                  ? <><Loader2 className="h-4 w-4 animate-spin" /> Creando cuenta...</>
+                  : <><KeyRound className="h-4 w-4" /> Crear cuenta de desarrollador</>}
+              </button>
 
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              ¿Ya tienes cuenta?{' '}
-              <Link href="/login" className="text-orange-600 hover:text-orange-700 font-semibold">
-                Inicia sesión
-              </Link>
-            </p>
+              <p className="text-center text-xs text-gray-500 dark:text-gray-400">
+                ¿Ya tienes cuenta?{' '}
+                <Link href="/login" className="text-orange-600 dark:text-orange-400 font-bold hover:underline">Inicia sesión</Link>
+                {' · '}
+                <Link href="/register" className="text-rose-600 dark:text-rose-400 font-bold hover:underline">Soy dueño de restaurante</Link>
+              </p>
+            </form>
           </div>
         </div>
       </div>

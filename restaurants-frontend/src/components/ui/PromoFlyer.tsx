@@ -25,29 +25,29 @@ export function PromoFlyer({ promo, className = '' }: { promo: Promotion; classN
 
   return (
     <div
-      className={`relative flex min-h-[17rem] flex-col justify-between overflow-hidden rounded-3xl p-5 text-white shadow-lg
+      className={`relative flex min-h-[11rem] flex-col justify-between overflow-hidden rounded-2xl p-4 text-white shadow-lg
         bg-gradient-to-br from-orange-500 via-orange-600 to-selva-600 ${className}`}
     >
       {/* Adornos */}
-      <div aria-hidden className="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-white/10" />
-      <div aria-hidden className="pointer-events-none absolute -bottom-12 -left-8 h-32 w-32 rounded-full bg-black/10" />
+      <div aria-hidden className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/10" />
+      <div aria-hidden className="pointer-events-none absolute -bottom-8 -left-6 h-24 w-24 rounded-full bg-black/10" />
 
       {/* Encabezado */}
       <div className="relative z-10 flex items-center justify-between gap-2">
-        <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-1 text-[11px] font-semibold backdrop-blur-sm">
+        <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold backdrop-blur-sm">
           <Tag className="h-3 w-3" /> Oferta
         </span>
         {badge && (
-          <span className="rounded-xl bg-white px-3 py-1 text-lg font-extrabold leading-none text-orange-600 shadow-sm">
-            {badge}<span className="text-xs font-bold"> {promo.promoType === 'PERCENTAGE_DISCOUNT' ? 'OFF' : ''}</span>
+          <span className="rounded-lg bg-white px-2 py-1 text-sm font-extrabold leading-none text-orange-600 shadow-sm">
+            {badge}<span className="text-[10px] font-bold"> {promo.promoType === 'PERCENTAGE_DISCOUNT' ? 'OFF' : ''}</span>
           </span>
         )}
       </div>
 
       {/* Cuerpo */}
-      <div className="relative z-10 mt-4">
-        <h3 className="font-display text-2xl font-extrabold leading-tight drop-shadow-sm line-clamp-2">{headline}</h3>
-        {tagline && <p className="mt-1.5 text-sm text-white/90 line-clamp-2">{tagline}</p>}
+      <div className="relative z-10 mt-3">
+        <h3 className="font-display text-lg font-extrabold leading-tight drop-shadow-sm line-clamp-2">{headline}</h3>
+        {tagline && <p className="mt-1 text-xs text-white/90 line-clamp-2">{tagline}</p>}
       </div>
 
       {/* Pie */}

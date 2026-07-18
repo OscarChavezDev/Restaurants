@@ -18,15 +18,27 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+import toast from 'react-hot-toast';
+
 // Manejar errores globalmente
 api.interceptors.response.use(
   (response) => response,
   (error: AxiosError<{ message: string; errorCode: string }>) => {
     const isAuthEndpoint = error.config?.url?.includes('/auth/');
+    
     if (error.response?.status === 401 && !isAuthEndpoint) {
       useAuthStore.getState().logout();
-      window.location.href = '/login';
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
+    } else if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
+      if (typeof window !== 'undefined') toast.error('El servidor tardó mucho en responder. Verifica tu conexión.');
+    } else if (error.response?.status === 500) {
+      if (typeof window !== 'undefined') toast.error('Ocurrió un problema en el servidor. Intenta de nuevo en unos minutos.');
+    } else if (!error.response && error.request) {
+      if (typeof window !== 'undefined') toast.error('No se pudo conectar con el servidor. Verifica tu conexión a internet.');
     }
+
     return Promise.reject(error);
   }
 );

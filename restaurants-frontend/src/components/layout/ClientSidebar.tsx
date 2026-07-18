@@ -51,8 +51,8 @@ export function ClientSidebar({ open = false, onClose }: { open?: boolean; onClo
           'flex items-center gap-3 p-4 border-b',
           isDark ? 'border-[#352D25]' : 'border-[#E7E1D8]'
         )}>
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl shadow-lg flex-shrink-0 bg-[#1C1917]">
-            <BrandMark className="h-7 w-7" />
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl flex-shrink-0 bg-transparent">
+            <BrandMark className="h-9 w-9 drop-shadow-sm" />
           </div>
           <div className="flex-1 min-w-0">
             <p className="font-display font-semibold text-sm leading-tight">Panel Cliente</p>
