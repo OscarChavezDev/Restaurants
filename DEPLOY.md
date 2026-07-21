@@ -1,4 +1,4 @@
-00# Despliegue gratuito — Neon + Render + Vercel
+# Despliegue gratuito — Neon + Render + Vercel
 
 Guía paso a paso para desplegar el sistema completo **sin pagar nada**:
 
@@ -8,13 +8,26 @@ Guía paso a paso para desplegar el sistema completo **sin pagar nada**:
 | Backend Spring Boot | [Render](https://render.com) | Free (sin tarjeta) |
 | Frontend Next.js | [Vercel](https://vercel.com) | Hobby (sin tarjeta) |
 
+> **2026-07-20 — se probaron alternativas y se volvió a Render:** el despliegue
+> anterior en Render falló y se exploraron otras plataformas. **Koyeb** ya no
+> permite crear servicios nuevos (su panel solo muestra "Settings"/"Log out" —
+> quedó así tras anunciar que la empresa se une a Mistral AI y gira hacia
+> cargas de trabajo "agentic", no hosting general). **Northflank** sí funciona
+> y no pide tarjeta al registrarte, pero exige verificar una tarjeta (con
+> autorización de $0, no cobro real) antes de poder crear el servicio — se
+> descartó por eso. Conclusión: **Render sigue siendo la única opción 100 %
+> sin tarjeta en ningún punto del flujo**; el problema del primer intento no
+> era la plataforma en sí. Esta vez el servicio se creó a mano (Opción B de
+> abajo, no vía blueprint) con la región emparejada a la de Neon (`us-east`) y
+> la lista completa de variables de entorno.
+
 ## URLs del despliegue actual
 
 | Pieza | URL |
 |-------|-----|
-| API (Render) | <https://restaurants-backend-ni6d.onrender.com/api> |
-| Swagger | <https://restaurants-backend-ni6d.onrender.com/api/swagger-ui/index.html> |
-| Health | <https://restaurants-backend-ni6d.onrender.com/api/actuator/health> |
+| API (Render) | _pendiente — confirmar tras el primer deploy, ej. `https://restaurants-xxxx.onrender.com/api`_ |
+| Swagger | `<URL de arriba>/swagger-ui/index.html` |
+| Health | `<URL de arriba>/actuator/health` |
 | Frontend (Vercel) | <https://restaurants-seven-tan.vercel.app> |
 
 > Requisito: el repo debe estar en GitHub y la rama a desplegar pusheada
@@ -27,7 +40,7 @@ Guía paso a paso para desplegar el sistema completo **sin pagar nada**:
 1. Crea una cuenta en <https://neon.tech> y un proyecto (región `AWS us-east-2`
    o la más cercana). El proyecto trae una base `neondb` con un usuario owner.
 2. En el dashboard, botón **Connect** → copia los datos de conexión:
-   - Host: `ep-xxxx-xxxx.us-east-2.aws.neon.tech`
+   - Host: `ep-xxxx-xxxx.us-east-1.aws.neon.tech`
    - Database: `neondb` · User: `neondb_owner` · Password: `...`
 3. **No necesitas crear tablas ni extensiones a mano**: Flyway aplica todas las
    migraciones (V1…Vn) al primer arranque del backend, y el callback
@@ -37,43 +50,74 @@ El `DB_URL` para el backend se arma en formato **JDBC** (no es el string
 `postgresql://` que muestra Neon):
 
 ```
-jdbc:postgresql://ep-xxxx-xxxx.us-east-2.aws.neon.tech/neondb?sslmode=require
+jdbc:postgresql://ep-xxxx-xxxx.us-east-1.aws.neon.tech/neondb?sslmode=require
 ```
 
 ---
 
 ## 2. Backend en Render
 
-### Opción A — Blueprint (recomendada)
+### Opción A — Blueprint
 
 1. En <https://dashboard.render.com>: **New → Blueprint** → conecta el repo de
    GitHub y elige la rama a desplegar. Render lee el [`render.yaml`](render.yaml)
    de la raíz.
-2. Te pedirá los valores marcados `sync: false`:
+2. Te pedirá los valores marcados `sync: false` (ver tabla de variables abajo).
+3. **Apply**. El primer build tarda ~10 min (Maven + Docker).
 
-   | Variable | Valor |
-   |----------|-------|
-   | `DB_URL` | el JDBC de Neon (arriba) |
-   | `DB_USERNAME` / `DB_PASSWORD` | usuario/clave de Neon |
-   | `CORS_ALLOWED_ORIGINS` | `https://tu-app.vercel.app` (lo tendrás en el paso 3; pon un placeholder y edítalo después) |
-   | `FRONTEND_URL` | el mismo dominio de Vercel (para los enlaces de los correos) |
-   | `MAIL_USERNAME` / `MAIL_PASSWORD` | Gmail + contraseña de aplicación (opcional) |
-   | `GOOGLE_CLIENT_ID` | OAuth Client ID de Google (opcional) |
-   | `CLOUDINARY_*` | credenciales de Cloudinary (opcional) |
-   | `GEMINI_API_KEY` | API key de AI Studio (opcional) |
+### Opción B — Manual (la usada en el despliegue actual)
 
-3. **Apply**. El primer build tarda ~10 min (Maven + Docker). Al arrancar verás
-   en los logs a Flyway aplicando las migraciones contra Neon.
-4. Tu API queda en `https://restaurants-backend-xxxx.onrender.com/api`.
-   Verifica: `https://.../api/actuator/health` debe responder `{"status":"UP"}`
-   y `https://.../api/swagger-ui.html` debe cargar.
+1. **New → Web Service** → conecta el repo de GitHub → elige la rama (`main`).
+2. Configuración:
+   - **Name:** el que quieras (ej. `restaurants-backend`).
+   - **Language/Runtime:** **Docker** (Render lo detecta solo si hay Dockerfile).
+   - **Region:** la más cercana a tu proyecto de Neon (si Neon está en
+     `us-east-1`, elige **Ohio** o **Virginia (US East)** en Render) — reduce
+     mucho la latencia de cada consulta a la BD.
+   - **Root Directory:** `restaurants-backend` (el Dockerfile vive ahí, no en
+     la raíz del repo — si no pones esto, el build falla porque no encuentra
+     el Dockerfile).
+   - **Instance Type:** **Free**.
+   - **Health Check Path:** `/api/actuator/health`.
+3. **Environment Variables** — pégalas todas de una vez con el botón
+   **"Add from .env"** (o agrégalas a mano una por una):
 
-### Opción B — Manual (sin blueprint)
+   ```
+   SPRING_PROFILES_ACTIVE=prod
+   SERVER_PORT=8080
+   TZ=America/Lima
 
-**New → Web Service** → repo → Runtime **Docker** →
-**Root Directory: `restaurants-backend`** → Instance Type **Free** →
-Health Check Path `/api/actuator/health` → y agrega a mano las mismas
-variables de entorno del `render.yaml` (con `SPRING_PROFILES_ACTIVE=prod`).
+   DB_URL=jdbc:postgresql://<host-de-neon>/neondb?sslmode=require
+   DB_USERNAME=neondb_owner
+   DB_PASSWORD=<tu-contraseña-de-neon>
+
+   JWT_SECRET=<genera uno con: openssl rand -base64 48>
+   JWT_EXPIRATION=86400000
+   JWT_REFRESH_EXPIRATION=604800000
+
+   CORS_ALLOWED_ORIGINS=https://tu-app.vercel.app
+   FRONTEND_URL=https://tu-app.vercel.app
+
+   GOOGLE_CLIENT_ID=...       # opcional, login con Google
+   GEMINI_API_KEY=...         # opcional, asistente IA
+   GEMINI_MODEL=gemini-2.5-flash-lite
+   ACTIFY_API_KEY=...         # opcional, integración Actify
+   ACTIFY_BASE_URL=https://actify.qd.je/api/v1
+   HOSPY_API_KEY=...          # opcional, integración Hospy
+   HOSPY_BASE_URL=https://hospy-api-wm7v5futiq-rj.a.run.app/api/v1
+   MAIL_USERNAME=...          # opcional, correos de reserva
+   MAIL_PASSWORD=...          # contraseña de aplicación de Gmail
+   CLOUDINARY_CLOUD_NAME=...  # opcional, subida de imágenes
+   CLOUDINARY_API_KEY=...
+   CLOUDINARY_API_SECRET=...
+   CLOUDINARY_FOLDER=tingo-restaurants
+   ```
+
+4. **Deploy Web Service**. El primer build tarda ~10 min (Maven + Docker). En
+   los logs deberías ver a Flyway aplicando las migraciones contra Neon.
+5. Tu API queda en `https://restaurants-xxxx.onrender.com/api`. Verifica:
+   `.../api/actuator/health` debe responder `{"status":"UP"}` y
+   `.../api/swagger-ui.html` debe cargar. Anota esta URL en la tabla de arriba.
 
 ---
 
@@ -86,7 +130,7 @@ variables de entorno del `render.yaml` (con `SPRING_PROFILES_ACTIVE=prod`).
 
    | Variable | Valor |
    |----------|-------|
-   | `NEXT_PUBLIC_API_URL` | `https://restaurants-backend-xxxx.onrender.com/api` |
+   | `NEXT_PUBLIC_API_URL` | `https://restaurants-xxxx.onrender.com/api` |
    | `NEXT_PUBLIC_GOOGLE_CLIENT_ID` | el mismo Client ID del backend (si usas login Google) |
 
 4. **Deploy** → te da `https://tu-app.vercel.app`.
@@ -111,7 +155,7 @@ Solución gratis: cuenta en <https://uptimerobot.com> (o cron-job.org) →
 monitor HTTP cada 5–10 min a:
 
 ```
-https://restaurants-backend-xxxx.onrender.com/api/actuator/health
+https://restaurants-xxxx.onrender.com/api/actuator/health
 ```
 
 ---
@@ -127,3 +171,6 @@ https://restaurants-backend-xxxx.onrender.com/api/actuator/health
   es el fail-fast del perfil `prod`: falta esa variable de entorno.
 - **Primera petición tras un rato tarda ~1 min** → es el cold start del plan
   free (ver sección 4).
+- **Render no encuentra el Dockerfile / falla el build** → confirma que
+  **Root Directory** sea `restaurants-backend` (el Dockerfile vive ahí, no en
+  la raíz del repo).

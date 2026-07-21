@@ -68,8 +68,11 @@ export function Footer() {
           <p className="text-sm text-gray-500 dark:text-gray-400">
             © {new Date().getFullYear()} RestoPoint. Todos los derechos reservados.
           </p>
-          <div className="flex items-center gap-2 text-sm text-gray-500">
+          <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
             <span>Hecho con CORAZÖN para Tingo María</span>
+            <Link href="/register-developer" className="font-semibold text-rose-600 dark:text-rose-400 hover:underline">
+              ¿Eres desarrollador?
+            </Link>
           </div>
         </div>
       </div>
