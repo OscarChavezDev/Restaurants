@@ -25,10 +25,22 @@ Guía paso a paso para desplegar el sistema completo **sin pagar nada**:
 
 | Pieza | URL |
 |-------|-----|
-| API (Render) | _pendiente — confirmar tras el primer deploy, ej. `https://restaurants-xxxx.onrender.com/api`_ |
-| Swagger | `<URL de arriba>/swagger-ui/index.html` |
-| Health | `<URL de arriba>/actuator/health` |
+| API (Render) | <https://restaurants-h5ma.onrender.com/api> |
+| Swagger | <https://restaurants-h5ma.onrender.com/api/swagger-ui/index.html> |
+| Health | <https://restaurants-h5ma.onrender.com/api/actuator/health> |
 | Frontend (Vercel) | <https://restaurants-seven-tan.vercel.app> |
+
+> **Nota (2026-07-20):** a mitad de este despliegue, el proyecto de Neon
+> original (`restaurants-tingo`, cuenta vieja) agotó su cuota mensual de
+> cómputo gratis (100 CU-hrs) y bloqueó la conexión — no fue un problema de
+> configuración. Se creó una **cuenta de Neon nueva** con un proyecto vacío
+> (mismo nombre de base `neondb`, host `...us-east-2.aws.neon.tech`, **sin**
+> `-pooler`, es decir la conexión directa) y se actualizaron `DB_URL` /
+> `DB_USERNAME` / `DB_PASSWORD` en Render. Flyway recreó todo el esquema +
+> datos semilla desde cero en el primer arranque contra la BD nueva — los
+> datos de prueba de la cuenta anterior no se migraron (quedaron inaccesibles
+> por el bloqueo de cuota). Si el compute vuelve a agotarse, repetir este
+> mismo procedimiento (cuenta nueva + actualizar las 3 variables en Render).
 
 > Requisito: el repo debe estar en GitHub y la rama a desplegar pusheada
 > (Render y Vercel se conectan a una rama del repo).
