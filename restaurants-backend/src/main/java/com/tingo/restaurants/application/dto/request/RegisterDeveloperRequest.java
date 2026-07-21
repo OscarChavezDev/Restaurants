@@ -29,7 +29,7 @@ public class RegisterDeveloperRequest {
              message = "La contraseña debe contener mayúsculas, minúsculas, número y carácter especial")
     private String password;
 
-    @Pattern(regexp = "^[+]?[(]?[0-9]{3}[)]?[-\\s.]?[0-9]{3}[-\\s.]?[0-9]{4,6}$",
+    @Pattern(regexp = "^[+]?[0-9\\s.()-]{7,15}$",
              message = "Formato de teléfono inválido")
     private String phone;
 }

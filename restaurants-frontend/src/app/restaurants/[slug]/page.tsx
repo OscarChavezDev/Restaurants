@@ -16,7 +16,6 @@ import { cn } from '@/utils/cn';
 import { MenuSection } from '@/features/restaurants/MenuSection';
 import { ImageGallery } from '@/features/restaurants/ImageGallery';
 import { PromotionsSection } from '@/features/restaurants/PromotionsSection';
-import { RestaurantLogo } from '@/components/ui/RestaurantLogo';
 import { RatingsSection } from '@/features/restaurants/RatingsSection';
 import { FavoriteButton } from '@/components/ui/FavoriteButton';
 import { NearbyEventsSection } from '@/features/restaurants/NearbyEventsSection';
@@ -27,6 +26,8 @@ const LocationMap = dynamic(() => import('@/components/ui/LocationMap'), {
   loading: () => <div className="h-[220px] rounded-xl bg-gray-100 animate-pulse" />,
 });
 
+const PRICE_SYMBOLS: Record<string, string> = { LOW: '$', MEDIUM: '$$', HIGH: '$$$' };
+
 export default function RestaurantDetailPage() {
   const { slug } = useParams<{ slug: string }>();
   const router = useRouter();
@@ -36,7 +37,7 @@ export default function RestaurantDetailPage() {
   const [scheduleExpanded, setScheduleExpanded] = useState(false);
 
   if (isLoading) return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="h-72 skeleton" />
       <div className="mx-auto max-w-5xl px-4 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-4">
@@ -49,10 +50,10 @@ export default function RestaurantDetailPage() {
   );
 
   if (error || !restaurant) return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
       <div className="text-center">
-        <UtensilsCrossed className="h-12 w-12 text-gray-300 mb-4 mx-auto" />
-        <h2 className="font-display text-xl font-bold text-gray-900 mb-2">Restaurante no encontrado</h2>
+        <UtensilsCrossed className="h-12 w-12 text-gray-300 dark:text-gray-700 mb-4 mx-auto" />
+        <h2 className="font-display text-xl font-bold text-gray-900 dark:text-gray-50 mb-2">Restaurante no encontrado</h2>
         <Link href="/restaurants" className="text-orange-500 hover:underline">Ver todos los restaurantes</Link>
       </div>
     </div>
@@ -107,23 +108,30 @@ export default function RestaurantDetailPage() {
         <FavoriteButton restaurantId={restaurant.id} className="absolute top-3 right-16 h-9 w-9 z-10" />
 
         <div className="absolute bottom-6 left-6 right-6">
-          <div className="flex items-end gap-4">
-            <RestaurantLogo name={restaurant.name} logoUrl={restaurant.logoUrl} className="h-16 w-16 rounded-2xl shadow-lg text-2xl" />
-            <div>
-              <h1 className="font-display text-3xl font-bold text-white">{restaurant.name}</h1>
-              <div className="flex items-center gap-3 mt-1">
-                <div className="flex items-center gap-1 text-yellow-400">
-                  <Star className="h-4 w-4 fill-yellow-400" />
-                  <span className="text-white font-medium">{formatRating(restaurant.avgRating)}</span>
-                  <span className="text-white/70 text-sm">({restaurant.totalRatings} reseñas)</span>
-                </div>
-                <div className="flex items-center gap-1 text-white/80 text-sm">
-                  <MapPin className="h-4 w-4" />
-                  {restaurant.district ? `${restaurant.district}, ` : ''}{restaurant.city}
-                </div>
-              </div>
+          <h1 className="font-display text-3xl font-bold text-white drop-shadow-sm">{restaurant.name}</h1>
+          <div className="flex flex-wrap items-center gap-3 mt-1.5">
+            <div className="flex items-center gap-1 text-yellow-400">
+              <Star className="h-4 w-4 fill-yellow-400" />
+              <span className="text-white font-medium">{formatRating(restaurant.avgRating)}</span>
+              <span className="text-white/70 text-sm">({restaurant.totalRatings} reseñas)</span>
+            </div>
+            {restaurant.priceRange && PRICE_SYMBOLS[restaurant.priceRange] && (
+              <span className="text-white/90 text-sm font-bold">{PRICE_SYMBOLS[restaurant.priceRange]}</span>
+            )}
+            <div className="flex items-center gap-1 text-white/80 text-sm">
+              <MapPin className="h-4 w-4" />
+              {restaurant.district ? `${restaurant.district}, ` : ''}{restaurant.city}
             </div>
           </div>
+          {restaurant.categories?.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mt-3">
+              {restaurant.categories.slice(0, 4).map((cat) => (
+                <span key={cat} className="px-2.5 py-1 rounded-full bg-white/15 backdrop-blur-md text-white text-xs font-semibold border border-white/20">
+                  {cat}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -215,11 +223,11 @@ export default function RestaurantDetailPage() {
 
             {/* 3. Menú & Promos (La Estrella) */}
             <div className="space-y-8 pt-8 border-t border-gray-200 dark:border-gray-800">
-              <PromotionsSection restaurantId={restaurant.id} />
+              <PromotionsSection restaurantId={restaurant.id} restaurantName={restaurant.name} />
               <MenuSection restaurantId={restaurant.id} />
             </div>
 
-            {/* 3. Reseñas (Social Proof) */}
+            {/* 4. Reseñas (Social Proof) */}
             <div className="pt-8 border-t border-gray-200 dark:border-gray-800">
               <RatingsSection
                 restaurantId={restaurant.id}
@@ -227,7 +235,7 @@ export default function RestaurantDetailPage() {
               />
             </div>
 
-            {/* 4. Galería de Fotos */}
+            {/* 5. Galería de Fotos */}
             <ImageGallery restaurantId={restaurant.id} />
 
           </div>

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { LayoutGrid, Plus, Trash2, Loader2, Armchair, Users } from 'lucide-react';
+import { LayoutGrid, Plus, Trash2, Loader2, Users, Pencil, X } from 'lucide-react';
 import { restaurantService } from '@/services/restaurantService';
 import { useRestaurantReservations } from '@/hooks/useReservations';
 import { SelectMenu } from '@/components/ui/SelectMenu';
@@ -56,7 +56,6 @@ export function TablesManager({ restaurantId }: { restaurantId: string }) {
     enabled: !!restaurantId,
   });
   
-  // Obtenemos las reservas para cruzarlas con las mesas
   const { data: reservationsData } = useRestaurantReservations(restaurantId, 0, 200);
   const reservations = reservationsData?.content || [];
 
@@ -68,12 +67,20 @@ export function TablesManager({ restaurantId }: { restaurantId: string }) {
   // ── Forms ──
   const [tblNumber, setTblNumber] = useState('');
   const [tblCap, setTblCap] = useState(4);
-  const [tblSection, setTblSection] = useState('');
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [showAddSection, setShowAddSection] = useState(false);
+  const [newSectionName, setNewSectionName] = useState('');
+  const [newSectionTables, setNewSectionTables] = useState(10);
+  
+  // ── Inline Editing State ──
+  const [editingSectionId, setEditingSectionId] = useState<string | null>(null);
+  const [editingSectionName, setEditingSectionName] = useState('');
+  const [confirmDeleteSectionId, setConfirmDeleteSectionId] = useState<string | null>(null);
+  const [confirmDeleteTableId, setConfirmDeleteTableId] = useState<string | null>(null);
 
   // ── Modal State ──
-  const [selectedTable, setSelectedTable] = useState<RestaurantTable | null>(null);
-
-  // ── Tabs State ──
+  const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
+  const selectedTable = tables?.find(t => t.id === selectedTableId) || null;
   const [activeTabId, setActiveTabId] = useState<string | null>(null);
 
   const addSection = useMutation({
@@ -88,7 +95,7 @@ export function TablesManager({ restaurantId }: { restaurantId: string }) {
       }
       return section;
     },
-    onSuccess: () => { invalidate(); toast.success('Ambiente agregado'); },
+    onSuccess: () => { invalidate(); toast.success('Ambiente agregado'); setShowAddSection(false); setNewSectionName(''); setNewSectionTables(10); },
     onError: () => toast.error('No se pudo agregar el ambiente'),
   });
   const editSection = useMutation({
@@ -103,7 +110,7 @@ export function TablesManager({ restaurantId }: { restaurantId: string }) {
   });
   const addTable = useMutation({
     mutationFn: (sectionIdToUse: string | undefined) => restaurantService.addTable(restaurantId, { tableNumber: tblNumber.trim(), capacity: tblCap, sectionId: sectionIdToUse }),
-    onSuccess: () => { invalidate(); setTblNumber(''); setTblCap(4); toast.success('Mesa agregada'); },
+    onSuccess: () => { invalidate(); setTblNumber(''); setTblCap(4); setShowAddForm(false); toast.success('Mesa agregada'); },
     onError: (e: any) => toast.error(e?.response?.data?.message ?? 'No se pudo agregar la mesa'),
   });
   const delTable = useMutation({
@@ -115,9 +122,6 @@ export function TablesManager({ restaurantId }: { restaurantId: string }) {
   const totalTables = tables?.length ?? 0;
   const totalSeats = (tables ?? []).reduce((s, t) => s + t.capacity, 0);
 
-  const inputCls = 'border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500';
-
-  // Agrupar mesas por ambiente
   const tablesBySection: Record<string, RestaurantTable[]> = {};
   const unassignedTables: RestaurantTable[] = [];
 
@@ -132,7 +136,6 @@ export function TablesManager({ restaurantId }: { restaurantId: string }) {
 
   const availableSections = sections || [];
   
-  // Si no hay tab activo, seleccionamos el primero por defecto
   const currentTab = activeTabId 
     ? activeTabId 
     : (availableSections.length > 0 ? availableSections[0].id : (unassignedTables.length > 0 ? 'unassigned' : null));
@@ -144,194 +147,283 @@ export function TablesManager({ restaurantId }: { restaurantId: string }) {
     stats[getTableStatus(t, reservations)]++;
   });
 
-  return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-      <div className="flex items-center justify-between gap-3 mb-1 flex-wrap">
-        <h2 className="font-display text-base font-semibold text-gray-900 flex items-center gap-2">
-          <LayoutGrid className="h-5 w-5 text-orange-500" /> Ambientes y Mesas
-        </h2>
-        <span className="text-xs font-medium text-gray-400">{totalTables} mesas · {totalSeats} asientos</span>
-      </div>
-      <p className="text-sm text-gray-500 mb-5">
-        Define los ambientes (Salón, Terraza, VIP) y gestiona tus mesas visualmente.
-      </p>
+  const inputCls = 'w-full bg-gray-50 dark:!bg-white/[0.04] border border-gray-200 dark:!border-white/10 text-gray-900 dark:text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all placeholder:text-gray-400';
 
-      {/* ── Gestión Rápida ── */}
-      <div className="bg-gray-50 rounded-xl p-4 mb-8 border border-gray-100 flex items-end gap-4 flex-wrap">
-        <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wider">
-            Agregar mesa al ambiente actual ({currentTab === 'unassigned' ? 'Sin asignar' : availableSections.find(s => s.id === currentTab)?.name})
-          </label>
-          <div className="flex flex-wrap items-center gap-2">
-            <input value={tblNumber} onChange={(e) => setTblNumber(e.target.value)} placeholder="Ej. M1" className={cn(inputCls, 'w-24')} />
-            <div className="flex items-center gap-1.5">
-              <Users className="h-4 w-4 text-gray-400" />
-              <input type="number" min={1} value={tblCap} onChange={(e) => setTblCap(Number(e.target.value))} className={cn(inputCls, 'w-20')} title="Capacidad" />
+  return (
+    <div>
+      {/* Header */}
+      <div className="flex items-center justify-between gap-3 mb-1 flex-wrap">
+        <h2 className="font-display text-lg font-bold text-gray-900 dark:text-white flex items-center gap-3">
+          <span className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-900/20 text-purple-500 flex items-center justify-center shrink-0">
+            <LayoutGrid className="h-5 w-5" />
+          </span>
+          Ambientes y Mesas
+        </h2>
+        <div className="flex items-center gap-3">
+          <span className="text-xs font-medium text-gray-400 dark:text-gray-500">{totalTables} mesas · {totalSeats} asientos</span>
+          <button
+            onClick={() => setShowAddForm(!showAddForm)}
+            className={cn(
+              "inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-semibold rounded-xl transition-all active:scale-95",
+              showAddForm 
+                ? "bg-gray-100 dark:!bg-white/5 text-gray-600 dark:text-gray-300" 
+                : "bg-orange-500 hover:bg-orange-600 text-white shadow-sm shadow-orange-500/20"
+            )}
+          >
+            {showAddForm ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+            {showAddForm ? 'Cerrar' : 'Agregar mesa'}
+          </button>
+        </div>
+      </div>
+      <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">Define los ambientes y gestiona tus mesas visualmente.</p>
+
+      {/* ── Add table form (collapsible) ── */}
+      {showAddForm && (
+        <div className="mb-6 p-4 rounded-2xl border border-orange-200/50 dark:!border-orange-500/20 bg-orange-50/30 dark:!bg-orange-500/5 animate-fade-in">
+          <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
+            Nueva mesa en: {currentTab === 'unassigned' ? 'Sin asignar' : availableSections.find(s => s.id === currentTab)?.name ?? 'Selecciona un ambiente'}
+          </p>
+          <div className="flex flex-wrap items-end gap-3">
+            <div>
+              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Número / Nombre</label>
+              <input value={tblNumber} onChange={(e) => setTblNumber(e.target.value)} placeholder="Ej. M1" className={cn(inputCls, 'w-28')} />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Capacidad</label>
+              <input type="number" min={1} value={tblCap} onChange={(e) => setTblCap(Number(e.target.value))} className={cn(inputCls, 'w-20')} />
             </div>
             <button
               onClick={() => tblNumber.trim() && addTable.mutate(currentTab === 'unassigned' ? undefined : currentTab || undefined)}
               disabled={addTable.isPending || !tblNumber.trim() || !currentTab}
-              className="inline-flex items-center gap-1.5 px-6 py-2 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-all active:scale-95"
+              className="inline-flex items-center gap-1.5 px-5 py-2 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white text-sm font-semibold rounded-xl transition-all active:scale-95 shadow-sm shadow-orange-500/20"
             >
-              {addTable.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} Agregar Mesa
+              {addTable.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} Agregar
             </button>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* ── Matriz por Ambientes (Tabs) ── */}
-      <div className="space-y-6">
-        {/* Tabs Headers */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide border-b border-gray-100">
-          {availableSections.map(section => (
-            <button
-              key={section.id}
-              onClick={() => setActiveTabId(section.id)}
-              className={cn(
-                "whitespace-nowrap px-4 py-2 text-sm font-semibold rounded-t-lg border-b-2 transition-colors",
-                currentTab === section.id 
-                  ? "border-orange-500 text-orange-600 bg-orange-50/50" 
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-              )}
-            >
-              {section.name}
-              <span className={cn(
-                "ml-2 px-1.5 py-0.5 rounded-full text-xs font-normal",
-                currentTab === section.id ? "bg-orange-100 text-orange-700" : "bg-gray-100 text-gray-500"
-              )}>
-                {(tablesBySection[section.id] || []).length}
-              </span>
-            </button>
-          ))}
-          {unassignedTables.length > 0 && (
-            <button
-              onClick={() => setActiveTabId('unassigned')}
-              className={cn(
-                "whitespace-nowrap px-4 py-2 text-sm font-semibold rounded-t-lg border-b-2 transition-colors",
-                currentTab === 'unassigned' 
-                  ? "border-gray-500 text-gray-800 bg-gray-100/50" 
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-              )}
-            >
-              Sin asignar
-              <span className="ml-2 px-1.5 py-0.5 rounded-full text-xs font-normal bg-gray-200 text-gray-600">
-                {unassignedTables.length}
-              </span>
-            </button>
-          )}
+      {/* ── Tabs ── */}
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-0 scrollbar-hide mb-5">
+        {availableSections.map(section => (
           <button
-            onClick={() => {
-              const name = window.prompt("Nombre del nuevo ambiente:");
-              if (name && name.trim()) {
-                const numStr = window.prompt("¿Cuántas mesas quieres crear automáticamente en este ambiente?", "10");
-                const numTables = parseInt(numStr || "0", 10);
-                addSection.mutate({ name: name.trim(), numTables: isNaN(numTables) ? 0 : numTables });
-              }
-            }}
-            className="flex items-center justify-center px-3 py-2 text-gray-400 hover:text-orange-500 hover:bg-orange-50 rounded-t-lg transition-colors border-b-2 border-transparent"
-            title="Agregar ambiente"
-          >
-            <Plus className="h-5 w-5" />
-          </button>
-        </div>
-
-        {/* Tab Content */}
-        {currentTab && (
-          <div className="animate-in fade-in duration-300">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <h3 className="font-display font-semibold text-gray-900 text-lg">
-                  {currentTab === 'unassigned' ? 'Sin ambiente asignado' : availableSections.find(s => s.id === currentTab)?.name}
-                </h3>
-                {currentTab !== 'unassigned' && (
-                  <button 
-                    onClick={() => {
-                      const currentName = availableSections.find(s => s.id === currentTab)?.name;
-                      const name = window.prompt("Editar nombre de ambiente:", currentName);
-                      if (name && name.trim() && name !== currentName) {
-                        editSection.mutate({ id: currentTab, name: name.trim() });
-                      }
-                    }}
-                    className="text-xs text-orange-500 hover:underline flex items-center gap-1"
-                  >
-                    Editar nombre
-                  </button>
-                )}
-              </div>
-              {currentTab !== 'unassigned' && (
-                <button onClick={() => window.confirm("¿Seguro que deseas eliminar este ambiente?") && delSection.mutate(currentTab)} className="text-xs text-red-500 hover:underline">
-                  Eliminar ambiente
-                </button>
-              )}
-            </div>
-
-            {/* Legend Bar */}
-            <div className="flex items-center gap-4 text-xs font-bold border-b border-gray-200 pb-3 mb-4 overflow-x-auto whitespace-nowrap">
-              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full border border-green-200 bg-green-50 text-green-700">
-                <div className="w-2 h-2 rounded-full bg-[#22c55e]"></div>
-                {stats.AVAILABLE} Disponibles
-              </div>
-              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full border border-red-200 bg-red-50 text-red-700">
-                <div className="w-2 h-2 rounded-full bg-[#ef4444]"></div>
-                {stats.OCCUPIED} Ocupados
-              </div>
-              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full border border-yellow-200 bg-yellow-50 text-yellow-700">
-                <div className="w-2 h-2 rounded-full bg-[#f59e0b]"></div>
-                {stats.UPCOMING} Reservados
-              </div>
-              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full border border-gray-200 bg-gray-50 text-gray-700">
-                <div className="w-2 h-2 rounded-full bg-gray-400"></div>
-                0 No Disponible
-              </div>
-            </div>
-
-            {(() => {
-              const unassigned = reservations.filter(r => !r.tableId && r.sectionId === currentTab && (r.status === 'PENDING' || r.status === 'CONFIRMED'));
-              if (unassigned.length === 0) return null;
-              return (
-                <div className="bg-orange-50 border border-orange-200 rounded-xl p-3 mb-4 flex items-start gap-2 text-sm text-orange-800">
-                  <div className="mt-0.5 font-bold text-orange-600">!</div>
-                  <div>
-                    <p className="font-semibold">Tienes {unassigned.length} reserva(s) en este ambiente sin mesa asignada.</p>
-                    <p className="text-orange-700 opacity-90 text-xs mt-0.5">Ve a la pestaña general de "Reservas" en tu menú lateral para asignarles una mesa específica.</p>
-                  </div>
-                </div>
-              );
-            })()}
-
-            {currentSectionTables.length === 0 ? (
-              <p className="text-sm text-gray-400 py-4 italic">No hay mesas en este ambiente.</p>
-            ) : (
-              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 border-l border-t border-gray-200 bg-white">
-                {currentSectionTables.map(t => (
-                  <div key={t.id} className="relative group/delete border-r border-b border-gray-200 p-2 sm:p-3 aspect-square flex items-center justify-center bg-white">
-                    <TableMatrixCard
-                      table={t}
-                      reservations={reservations.filter(r => r.tableId === t.id)}
-                      onClick={() => setSelectedTable(t)}
-                    />
-                    <button 
-                      onClick={() => delTable.mutate(t.id)} 
-                      className="absolute -top-2 -right-2 bg-white rounded-full p-1 shadow-md border border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-200 opacity-0 group-hover/delete:opacity-100 transition-opacity z-10"
-                      title="Eliminar mesa"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                ))}
-                
-                {/* Empty filler cells to complete the grid visually if needed (optional, just let it wrap naturally) */}
-              </div>
+            key={section.id}
+            onClick={() => setActiveTabId(section.id)}
+            className={cn(
+              "whitespace-nowrap px-3.5 py-2 text-sm font-semibold rounded-xl transition-all",
+              currentTab === section.id 
+                ? "bg-orange-500 text-white shadow-sm shadow-orange-500/20" 
+                : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:!bg-white/5"
             )}
+          >
+            {section.name}
+            <span className={cn(
+              "ml-1.5 text-xs",
+              currentTab === section.id ? "text-white/70" : "text-gray-400 dark:text-gray-500"
+            )}>
+              {(tablesBySection[section.id] || []).length}
+            </span>
+          </button>
+        ))}
+        {unassignedTables.length > 0 && (
+          <button
+            onClick={() => setActiveTabId('unassigned')}
+            className={cn(
+              "whitespace-nowrap px-3.5 py-2 text-sm font-semibold rounded-xl transition-all",
+              currentTab === 'unassigned' 
+                ? "bg-gray-600 dark:bg-gray-700 text-white shadow-sm" 
+                : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:!bg-white/5"
+            )}
+          >
+            Sin asignar
+            <span className={cn("ml-1.5 text-xs", currentTab === 'unassigned' ? "text-white/70" : "text-gray-400")}>{unassignedTables.length}</span>
+          </button>
+        )}
+        
+        {/* Add section button */}
+        {!showAddSection ? (
+          <button
+            onClick={() => setShowAddSection(true)}
+            className="flex items-center gap-1 px-3 py-2 text-gray-400 dark:text-gray-500 hover:text-orange-500 hover:bg-orange-50 dark:hover:!bg-orange-500/10 rounded-xl transition-colors text-sm font-medium"
+          >
+            <Plus className="h-4 w-4" /> Ambiente
+          </button>
+        ) : (
+          <div className="flex items-center gap-2 bg-white dark:!bg-white/5 border border-gray-200 dark:!border-white/10 rounded-xl px-3 py-1.5 animate-fade-in">
+            <input 
+              value={newSectionName} 
+              onChange={e => setNewSectionName(e.target.value)} 
+              placeholder="Nombre" 
+              className="bg-transparent text-sm text-gray-900 dark:text-white placeholder:text-gray-400 w-24 focus:outline-none" 
+              autoFocus 
+            />
+            <input 
+              type="number" 
+              min={0} 
+              value={newSectionTables} 
+              onChange={e => setNewSectionTables(Number(e.target.value))} 
+              className="bg-transparent text-sm text-gray-900 dark:text-white w-12 focus:outline-none text-center" 
+              title="Nº mesas"
+            />
+            <span className="text-[10px] text-gray-400">mesas</span>
+            <button 
+              onClick={() => newSectionName.trim() && addSection.mutate({ name: newSectionName.trim(), numTables: newSectionTables })}
+              disabled={!newSectionName.trim() || addSection.isPending}
+              className="p-1 text-orange-500 hover:bg-orange-50 dark:hover:!bg-orange-500/10 rounded-lg disabled:opacity-40"
+            >
+              {addSection.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+            </button>
+            <button onClick={() => { setShowAddSection(false); setNewSectionName(''); }} className="p-1 text-gray-400 hover:text-gray-600 rounded-lg">
+              <X className="h-3.5 w-3.5" />
+            </button>
           </div>
         )}
       </div>
 
+      {/* Tab Content */}
+      {currentTab && (
+        <div>
+          {/* Section actions + legend */}
+          <div className="flex items-center justify-between mb-4 gap-4 flex-wrap">
+            <div className="flex items-center gap-4 text-[11px] font-semibold">
+              <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+                <div className="w-2 h-2 rounded-full bg-emerald-500" /> {stats.AVAILABLE} Libres
+              </span>
+              <span className="flex items-center gap-1.5 text-red-600 dark:text-red-400">
+                <div className="w-2 h-2 rounded-full bg-red-500" /> {stats.OCCUPIED} Ocupadas
+              </span>
+              <span className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
+                <div className="w-2 h-2 rounded-full bg-amber-500" /> {stats.UPCOMING} Reservadas
+              </span>
+              <span className="flex items-center gap-1.5 text-gray-400 dark:text-gray-500">
+                <div className="w-2 h-2 rounded-full bg-gray-400" /> {stats.UNAVAILABLE} N/D
+              </span>
+            </div>
+            {currentTab !== 'unassigned' && (
+              <div className="flex items-center gap-2">
+                {editingSectionId === currentTab ? (
+                  <div className="flex items-center gap-1 animate-fade-in">
+                    <input
+                      autoFocus
+                      value={editingSectionName}
+                      onChange={e => setEditingSectionName(e.target.value)}
+                      className="bg-gray-50 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded px-2 py-0.5 text-xs focus:outline-none focus:border-orange-500"
+                    />
+                    <button 
+                      onClick={() => {
+                        if (editingSectionName.trim() && editingSectionName !== availableSections.find(s => s.id === currentTab)?.name) {
+                          editSection.mutate({ id: currentTab, name: editingSectionName.trim() });
+                        }
+                        setEditingSectionId(null);
+                      }}
+                      className="text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-500/10 p-1 rounded"
+                    >
+                      Guardar
+                    </button>
+                    <button onClick={() => setEditingSectionId(null)} className="text-gray-400 hover:bg-gray-100 dark:hover:bg-neutral-800 p-1 rounded">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ) : (
+                  <button 
+                    onClick={() => {
+                      setEditingSectionName(availableSections.find(s => s.id === currentTab)?.name || '');
+                      setEditingSectionId(currentTab);
+                    }}
+                    className="text-xs text-gray-400 hover:text-orange-500 flex items-center gap-1 transition-colors"
+                  >
+                    <Pencil className="h-3 w-3" /> Renombrar
+                  </button>
+                )}
+
+                {confirmDeleteSectionId === currentTab ? (
+                  <div className="flex items-center gap-1 text-xs animate-fade-in bg-red-50 dark:bg-red-500/10 text-red-600 rounded px-2 py-0.5">
+                    ¿Seguro? 
+                    <button onClick={() => { delSection.mutate(currentTab); setConfirmDeleteSectionId(null); }} className="font-bold hover:underline ml-1">Sí, eliminar</button>
+                    <span className="text-gray-300 mx-0.5">|</span>
+                    <button onClick={() => setConfirmDeleteSectionId(null)} className="hover:underline">Cancelar</button>
+                  </div>
+                ) : (
+                  <button 
+                    onClick={() => setConfirmDeleteSectionId(currentTab)} 
+                    className="text-xs text-gray-400 hover:text-red-500 flex items-center gap-1 transition-colors ml-2"
+                  >
+                    <Trash2 className="h-3 w-3" /> Eliminar
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Unassigned reservations alert */}
+          {(() => {
+            const unassigned = reservations.filter(r => !r.tableId && r.sectionId === currentTab && (r.status === 'PENDING' || r.status === 'CONFIRMED'));
+            if (unassigned.length === 0) return null;
+            return (
+              <div className="bg-orange-50 dark:!bg-orange-500/5 border border-orange-200 dark:!border-orange-500/20 rounded-xl p-3 mb-4 flex items-start gap-2 text-sm text-orange-800 dark:text-orange-300">
+                <div className="mt-0.5 font-bold text-orange-600">!</div>
+                <div>
+                  <p className="font-semibold">{unassigned.length} reserva(s) sin mesa asignada.</p>
+                  <p className="text-orange-700 dark:text-orange-400 opacity-90 text-xs mt-0.5">Haz clic en una mesa de este ambiente para asignarles una.</p>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Tables grid */}
+          {currentSectionTables.length === 0 ? (
+            <div className="text-center py-10">
+              <LayoutGrid className="h-8 w-8 mx-auto text-gray-300 dark:text-gray-600 mb-2" />
+              <p className="text-sm text-gray-400 dark:text-gray-500">No hay mesas en este ambiente.</p>
+              <button onClick={() => setShowAddForm(true)} className="text-xs text-orange-500 hover:underline mt-1">+ Agregar mesa</button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2.5">
+              {currentSectionTables.map(t => (
+                <div key={t.id} className="relative group/delete">
+                  <TableMatrixCard
+                    table={t}
+                    reservations={reservations.filter(r => r.tableId === t.id)}
+                    onClick={() => setSelectedTableId(t.id)}
+                  />
+                  {confirmDeleteTableId === t.id ? (
+                    <div className="absolute -top-1.5 -right-1.5 flex items-center gap-0.5 bg-white dark:bg-neutral-800 rounded-full shadow-md border border-red-200 dark:border-red-900/50 p-0.5 z-10">
+                      <button
+                        onClick={() => { delTable.mutate(t.id); setConfirmDeleteTableId(null); }}
+                        className="p-1 rounded-full text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30"
+                        title="Confirmar: eliminar mesa"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                      <button
+                        onClick={() => setConfirmDeleteTableId(null)}
+                        className="p-1 rounded-full text-gray-400 hover:bg-gray-100 dark:hover:bg-neutral-700"
+                        title="Cancelar"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setConfirmDeleteTableId(t.id)}
+                      className="absolute -top-1.5 -right-1.5 bg-white dark:bg-neutral-800 rounded-full p-1 shadow-md border border-gray-200 dark:border-neutral-700 text-gray-400 hover:text-red-500 hover:border-red-200 dark:hover:border-red-900/50 z-10"
+                      title="Eliminar mesa"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       <TableReservationModal
-        isOpen={!!selectedTable}
-        onClose={() => setSelectedTable(null)}
+        isOpen={!!selectedTableId}
+        onClose={() => setSelectedTableId(null)}
         table={selectedTable}
-        reservations={selectedTable ? reservations.filter(r => r.tableId === selectedTable.id) : []}
+        reservations={reservations}
         restaurantId={restaurantId}
       />
     </div>

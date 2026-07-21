@@ -93,6 +93,11 @@ public class RestaurantRepositoryAdapter implements RestaurantRepository {
         return jpaRepository.existsByEmailAndDeletedAtIsNull(email);
     }
 
+    @Override
+    public boolean existsByOwnerId(UUID ownerId) {
+        return jpaRepository.existsByOwnerIdAndDeletedAtIsNull(ownerId);
+    }
+
     // ─── Mapeo manual entity → domain ───────────────────────────────────────
 
     private Restaurant toDomain(RestaurantEntity e) {

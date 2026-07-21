@@ -4,7 +4,7 @@ const translations = {
   es: {
     // Nav / general
     home: 'Inicio',
-    restaurants: 'Restaurantes',
+    restaurants: 'Restaurante',
     reservations: 'Reservas',
     menus: 'Menús',
     promotions: 'Promociones',

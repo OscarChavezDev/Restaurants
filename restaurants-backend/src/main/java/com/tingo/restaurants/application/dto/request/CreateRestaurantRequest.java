@@ -22,7 +22,7 @@ public class CreateRestaurantRequest {
     @Size(max = 2000, message = "La descripción no puede superar los 2000 caracteres")
     private String description;
 
-    @Pattern(regexp = "^[+]?[(]?[0-9]{3}[)]?[-\\s.]?[0-9]{3}[-\\s.]?[0-9]{4,6}$",
+    @Pattern(regexp = "^[+]?[0-9\\s.()-]{7,15}$",
              message = "Formato de teléfono inválido")
     private String phone;
 

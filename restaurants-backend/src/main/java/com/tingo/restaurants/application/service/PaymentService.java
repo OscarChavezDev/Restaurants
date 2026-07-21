@@ -70,6 +70,15 @@ public class PaymentService {
         ReservationEntity reservation = reservationRepository.findById(payment.getReservationId()).orElse(null);
         if (reservation != null) {
             reservation.setPaymentStatus("PAYMENT_VERIFIED");
+
+            // Verificar el pago también confirma la reserva si seguía pendiente — antes eran
+            // dos pasos manuales separados y era fácil verificar el pago sin confirmar la
+            // reserva, por lo que el cliente nunca recibía el correo de confirmación con el QR.
+            boolean justConfirmed = reservation.getStatus() == com.tingo.restaurants.domain.model.enums.ReservationStatus.PENDING;
+            if (justConfirmed) {
+                reservation.setStatus(com.tingo.restaurants.domain.model.enums.ReservationStatus.CONFIRMED);
+                reservation.setConfirmedAt(LocalDateTime.now());
+            }
             reservationRepository.save(reservation);
 
             // Notificar al cliente por email que su comprobante fue verificado
@@ -86,6 +95,9 @@ public class PaymentService {
                             .advanceAmount(reservation.getAdvanceAmount())
                             .build();
             emailService.sendPaymentVerified(domainRes, payment.getAmount(), payment.getMethod());
+            if (justConfirmed) {
+                emailService.sendReservationConfirmed(domainRes);
+            }
         }
         return toResponse(payment, reservation);
     }

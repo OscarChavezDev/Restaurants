@@ -8,6 +8,8 @@ import com.tingo.restaurants.domain.exception.DomainException;
 import com.tingo.restaurants.domain.model.Restaurant;
 import com.tingo.restaurants.domain.repository.PromotionRepository;
 import com.tingo.restaurants.domain.repository.RestaurantRepository;
+import com.tingo.restaurants.infrastructure.integration.CloudinarySignatureService;
+import com.tingo.restaurants.infrastructure.integration.GeminiImageClient;
 import com.tingo.restaurants.infrastructure.integration.GeminiTextClient;
 import com.tingo.restaurants.infrastructure.security.OwnershipGuard;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +33,8 @@ public class PromotionService {
     private final RestaurantRepository restaurantRepository;
     private final OwnershipGuard ownershipGuard;
     private final GeminiTextClient geminiTextClient;
+    private final GeminiImageClient geminiImageClient;
+    private final CloudinarySignatureService cloudinarySignatureService;
 
     @Transactional
     public PromotionResponse create(UUID restaurantId, String title, String description,
@@ -52,6 +56,26 @@ public class PromotionService {
                 .build();
 
         return toResponse(promotionRepository.save(promo));
+    }
+
+    @Transactional
+    public PromotionResponse update(UUID id, String title, String description,
+                                    PromotionType promoType, BigDecimal discountValue,
+                                    BigDecimal minOrderAmount, String promoCode,
+                                    LocalDateTime validFrom, LocalDateTime validUntil,
+                                    Integer usageLimit) {
+        Promotion p = promotionRepository.findById(id)
+                .orElseThrow(() -> new DomainException("Promoción no encontrada", "PROMOTION_NOT_FOUND") {});
+        ownershipGuard.assertOwnsRestaurant(p.getRestaurantId());
+
+        Promotion updated = p.toBuilder()
+                .title(title).description(description).promoType(promoType)
+                .discountValue(discountValue).minOrderAmount(minOrderAmount)
+                .promoCode(promoCode).validFrom(validFrom).validUntil(validUntil)
+                .usageLimit(usageLimit).updatedAt(LocalDateTime.now())
+                .build();
+
+        return toResponse(promotionRepository.save(updated));
     }
 
     public List<PromotionResponse> findByRestaurant(UUID restaurantId) {
@@ -82,8 +106,11 @@ public class PromotionService {
     }
 
     /**
-     * Genera el copy del flyer (titular + subtítulo) con IA a partir de los datos
-     * de la promoción. Si la IA no está disponible, usa un texto por defecto.
+     * Genera el flyer completo con IA: copy (titular + subtítulo) y fondo artístico
+     * (imagen). Si la IA de texto o de imagen no está disponible o falla, cada una
+     * degrada por separado (copy cae a título/descripción; imagen se omite y el
+     * frontend usa un degradado de marca) — nunca bloquea la generación completa.
+     * Puede volver a llamarse para regenerar (título y fondo se reemplazan).
      */
     @Transactional
     public PromotionResponse generateFlyer(UUID id) {
@@ -91,8 +118,8 @@ public class PromotionService {
                 .orElseThrow(() -> new DomainException("Promoción no encontrada", "PROMOTION_NOT_FOUND") {});
         ownershipGuard.assertOwnsRestaurant(p.getRestaurantId());
 
-        String restaurantName = restaurantRepository.findById(p.getRestaurantId())
-                .map(Restaurant::getName).orElse("nuestro restaurante");
+        Restaurant restaurant = restaurantRepository.findById(p.getRestaurantId()).orElse(null);
+        String restaurantName = restaurant != null ? restaurant.getName() : "nuestro restaurante";
 
         String headline = null;
         String tagline = null;
@@ -125,9 +152,28 @@ public class PromotionService {
         if (headline == null || headline.isBlank()) headline = trunc(nz(p.getTitle()), 120);
         if (tagline == null || tagline.isBlank()) tagline = trunc(nz(p.getDescription()), 200);
 
+        String flyerImageUrl = p.getFlyerImageUrl();
+        byte[] image = geminiImageClient.generateImage(buildFlyerImagePrompt(p, restaurantName));
+        if (image != null) {
+            String uploaded = cloudinarySignatureService.uploadImage(image, "promotions");
+            if (uploaded != null) flyerImageUrl = uploaded;
+        }
+
         Promotion updated = p.toBuilder()
-                .flyerHeadline(headline).flyerTagline(tagline).updatedAt(LocalDateTime.now()).build();
+                .flyerHeadline(headline).flyerTagline(tagline).flyerImageUrl(flyerImageUrl)
+                .updatedAt(LocalDateTime.now()).build();
         return toResponse(promotionRepository.save(updated));
+    }
+
+    private static String buildFlyerImagePrompt(Promotion p, String restaurantName) {
+        return "Fondo artístico para un flyer de promoción gastronómica, estilo fotografía profesional de alta gama, " +
+                "formato retrato. Restaurante: " + restaurantName + ", cocina de la selva peruana (Tingo María). " +
+                "Tema de la promoción: " + nz(p.getTitle()) +
+                (p.getDescription() == null || p.getDescription().isBlank() ? "" : ". " + p.getDescription()) + ". " +
+                "Paleta cálida: terracota, naranja brasa y verde selva profundo. Un plato o ingrediente representativo " +
+                "en primer plano, con espacio negativo arriba y abajo para superponer texto. Iluminación cálida y " +
+                "acogedora, composición premium tipo revista gourmet. " +
+                "IMPORTANTE: la imagen NO debe contener texto, letras, números, marcas de agua ni logotipos.";
     }
 
     /** Promociones activas (con flyer) de todos los restaurantes activos, para el carrusel. */
@@ -157,7 +203,7 @@ public class PromotionService {
                 .promoCode(p.getPromoCode()).imageUrl(p.getImageUrl())
                 .validFrom(p.getValidFrom()).validUntil(p.getValidUntil())
                 .isActive(p.isActive()).usageLimit(p.getUsageLimit()).usageCount(p.getUsageCount())
-                .flyerHeadline(p.getFlyerHeadline()).flyerTagline(p.getFlyerTagline())
+                .flyerHeadline(p.getFlyerHeadline()).flyerTagline(p.getFlyerTagline()).flyerImageUrl(p.getFlyerImageUrl())
                 .build();
     }
 }

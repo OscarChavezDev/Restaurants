@@ -13,7 +13,6 @@ interface Props {
 }
 
 export function TableMatrixCard({ table, reservations, onClick }: Props) {
-  // Solo consideramos reservas de hoy que estén pendientes o confirmadas
   const today = new Date();
   
   const activeReservations = reservations.filter(r => {
@@ -22,7 +21,6 @@ export function TableMatrixCard({ table, reservations, onClick }: Props) {
     return isSameDay(rDate, today);
   });
 
-  // Calcular el estado actual de la mesa
   let status: 'AVAILABLE' | 'OCCUPIED' | 'UPCOMING' | 'UNAVAILABLE' = 'AVAILABLE';
   let nextReservation: Reservation | null = null;
 
@@ -30,9 +28,9 @@ export function TableMatrixCard({ table, reservations, onClick }: Props) {
     const startTime = parse(`${res.reservationDate} ${res.startTime}`, 'yyyy-MM-dd HH:mm:ss', new Date());
     const endTime = res.endTime 
       ? parse(`${res.reservationDate} ${res.endTime}`, 'yyyy-MM-dd HH:mm:ss', new Date())
-      : addMinutes(startTime, 120); // 2 horas por defecto
+      : addMinutes(startTime, 120);
 
-    const bufferStart = addMinutes(startTime, -15); // La mesa se marca ocupada/reservada 15 mins antes
+    const bufferStart = addMinutes(startTime, -15);
 
     if (isAfter(today, bufferStart) && isBefore(today, endTime)) {
       status = 'OCCUPIED';
@@ -40,7 +38,6 @@ export function TableMatrixCard({ table, reservations, onClick }: Props) {
       break;
     } else if (isBefore(today, bufferStart)) {
       status = 'UPCOMING';
-      // Quedarnos con la reserva más próxima
       if (!nextReservation || isBefore(startTime, parse(`${nextReservation.reservationDate} ${nextReservation.startTime}`, 'yyyy-MM-dd HH:mm:ss', new Date()))) {
         nextReservation = res;
       }
@@ -51,31 +48,66 @@ export function TableMatrixCard({ table, reservations, onClick }: Props) {
     status = table.currentStatus as 'OCCUPIED' | 'UNAVAILABLE';
   }
 
-  const bgColors = {
-    AVAILABLE: 'bg-[#22c55e] hover:bg-[#16a34a]', // Verde
-    OCCUPIED: 'bg-[#ef4444] hover:bg-[#dc2626]', // Rojo
-    UPCOMING: 'bg-[#f59e0b] hover:bg-[#d97706]', // Amarillo
-    UNAVAILABLE: 'bg-gray-400 hover:bg-gray-500', // Gris
+  const statusConfig = {
+    AVAILABLE: {
+      bg: 'bg-emerald-500/10 dark:!bg-emerald-500/[0.08]',
+      border: 'border-emerald-500/20 dark:!border-emerald-500/15',
+      text: 'text-emerald-600 dark:text-emerald-400',
+      dot: 'bg-emerald-500',
+      hover: 'hover:bg-emerald-500/20 dark:hover:!bg-emerald-500/[0.15]',
+      label: 'Libre',
+    },
+    OCCUPIED: {
+      bg: 'bg-red-500/10 dark:!bg-red-500/[0.08]',
+      border: 'border-red-500/20 dark:!border-red-500/15',
+      text: 'text-red-600 dark:text-red-400',
+      dot: 'bg-red-500',
+      hover: 'hover:bg-red-500/20 dark:hover:!bg-red-500/[0.15]',
+      label: 'Ocupada',
+    },
+    UPCOMING: {
+      bg: 'bg-amber-500/10 dark:!bg-amber-500/[0.08]',
+      border: 'border-amber-500/20 dark:!border-amber-500/15',
+      text: 'text-amber-600 dark:text-amber-400',
+      dot: 'bg-amber-500',
+      hover: 'hover:bg-amber-500/20 dark:hover:!bg-amber-500/[0.15]',
+      label: 'Reservada',
+    },
+    UNAVAILABLE: {
+      bg: 'bg-gray-500/10 dark:!bg-white/[0.03]',
+      border: 'border-gray-300/50 dark:!border-white/10',
+      text: 'text-gray-500 dark:text-gray-500',
+      dot: 'bg-gray-400',
+      hover: 'hover:bg-gray-500/15 dark:hover:!bg-white/[0.06]',
+      label: 'No disponible',
+    },
   };
+
+  const s = statusConfig[status];
+  const tableLabel = table.tableNumber.toLowerCase().startsWith('mesa') ? table.tableNumber : table.tableNumber;
 
   return (
     <button
       onClick={onClick}
       className={cn(
-        'group relative flex flex-col items-center justify-center p-2 rounded-lg transition-all duration-200 aspect-square shadow-sm active:scale-95 w-full h-full',
-        bgColors[status]
+        'group relative flex flex-col items-center justify-center rounded-xl border transition-all duration-200 active:scale-95 w-full h-full min-h-[72px]',
+        s.bg, s.border, s.text, s.hover
       )}
     >
-      <span className="text-white font-bold text-sm md:text-base text-center px-1 break-words line-clamp-2">
-        {table.tableNumber.toLowerCase().startsWith('mesa') ? table.tableNumber : `Mesa ${table.tableNumber}`}
-      </span>
-      <span className="text-white/80 text-[11px] font-medium mt-1 flex items-center gap-1">
-        {table.capacity} asientos
+      {/* Status dot */}
+      <div className={cn('absolute top-1.5 right-1.5 w-2 h-2 rounded-full', s.dot)} />
+
+      {/* Table number */}
+      <span className="font-bold text-base tabular-nums">{tableLabel}</span>
+      
+      {/* Capacity */}
+      <span className="flex items-center gap-0.5 text-[10px] font-medium opacity-60 mt-0.5">
+        <Users className="h-2.5 w-2.5" /> {table.capacity}
       </span>
 
-      {/* Indicador de número de reservas en el día (si hay más de 1) */}
+      {/* Reservation count badge */}
       {activeReservations.length > 0 && (
-        <div className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-gray-900 text-white text-[10px] font-bold flex items-center justify-center shadow-sm">
+        <div className="absolute -top-1.5 -left-1.5 h-4.5 w-4.5 min-w-[18px] rounded-full bg-orange-500 text-white text-[10px] font-bold flex items-center justify-center shadow-sm px-1">
           {activeReservations.length}
         </div>
       )}

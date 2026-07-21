@@ -131,6 +131,10 @@ export const restaurantService = {
     return extractData<Promotion>(await api.post(`/v1/promotions/restaurant/${restaurantId}`, null, { params }));
   },
 
+  async updatePromotion(id: string, params: Record<string, string | number | undefined>) {
+    return extractData<Promotion>(await api.put(`/v1/promotions/${id}`, null, { params }));
+  },
+
   async togglePromotion(id: string) {
     return extractData<Promotion>(await api.patch(`/v1/promotions/${id}/toggle`));
   },
@@ -140,7 +144,8 @@ export const restaurantService = {
   },
 
   async generatePromotionFlyer(id: string) {
-    return extractData<Promotion>(await api.post(`/v1/promotions/${id}/flyer`));
+    // La generación de imagen con IA + subida a Cloudinary puede tardar hasta ~2 min.
+    return extractData<Promotion>(await api.post(`/v1/promotions/${id}/flyer`, null, { timeout: 120_000 }));
   },
 
   // Ofertas activas (con flyer) de todos los restaurantes, para el carrusel.

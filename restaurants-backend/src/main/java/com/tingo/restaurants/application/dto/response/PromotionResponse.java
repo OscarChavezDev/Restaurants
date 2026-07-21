@@ -29,6 +29,7 @@ public class PromotionResponse {
     private int usageCount;
     private String flyerHeadline;
     private String flyerTagline;
+    private String flyerImageUrl;
     // Solo se completan en el carrusel de ofertas (showcase).
     private String restaurantName;
     private String restaurantSlug;

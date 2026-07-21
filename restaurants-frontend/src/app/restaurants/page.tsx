@@ -40,6 +40,7 @@ export default function RestaurantsPublicPage() {
   const [openNowFilter, setOpenNowFilter] = useState(false);
   const [radiusKm, setRadiusKm] = useState(5);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+  const [selectedMapId, setSelectedMapId] = useState<string | undefined>(undefined);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
   const [priceRange, setPriceRange] = useState('');
@@ -156,6 +157,9 @@ export default function RestaurantsPublicPage() {
 
   const clearNearby = () => setGeo({ status: 'idle' });
 
+  // Toggle: si ya estaba seleccionado, un segundo clic lo desmarca en vez de dejarlo pegado.
+  const toggleMapSelection = (id: string) => setSelectedMapId((prev) => (prev === id ? undefined : id));
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-[#0A0908] relative">
       {/* Subtle Premium Background Glow */}
@@ -164,12 +168,12 @@ export default function RestaurantsPublicPage() {
       {/* Top Navbar & Title - Static (No sticky) */}
       <div className="pt-6 pb-2 relative z-10">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between gap-4 mb-6">
-            <div className="flex items-center gap-4">
-              <Link href="/" className="inline-flex items-center justify-center h-10 w-10 rounded-full bg-white/60 dark:bg-white/5 backdrop-blur-md border border-gray-200/50 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-white/10 transition-colors mr-2 shadow-sm">
+          <div className="flex items-center justify-between gap-x-4 gap-y-3 flex-wrap mb-6">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <Link href="/" className="inline-flex items-center justify-center h-10 w-10 shrink-0 rounded-full bg-white/60 dark:bg-white/5 backdrop-blur-md border border-gray-200/50 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-white/10 transition-colors mr-1 sm:mr-2 shadow-sm">
                 <ArrowLeft className="h-5 w-5" />
               </Link>
-              <Link href="/" className="flex items-center gap-2 group">
+              <Link href="/" className="flex items-center gap-2 group shrink-0">
                 <div className="p-2 bg-white dark:bg-white/5 backdrop-blur-md shadow-sm border border-orange-100 dark:border-white/10 rounded-xl group-hover:scale-105 transition-transform">
                   <BrandMark className="h-6 w-6" />
                 </div>
@@ -182,7 +186,7 @@ export default function RestaurantsPublicPage() {
                 Tingo María, Huánuco
               </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <ThemeLangSwitch />
               <AuthNav />
             </div>
@@ -377,7 +381,7 @@ export default function RestaurantsPublicPage() {
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
 
         {/* Encabezado de la lista */}
-        <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-200 dark:border-gray-800">
+        <div className="flex items-center justify-between gap-3 flex-wrap mb-8 pb-4 border-b border-gray-200 dark:border-gray-800">
           <div className="flex items-center gap-3">
             <span className="font-display text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
               {isNearbyMode ? 'Cerca de ti' : 'Explorar'}
@@ -449,7 +453,45 @@ export default function RestaurantsPublicPage() {
             }
           />
         ) : viewMode === 'map' ? (
-          <RestaurantsMap restaurants={restaurants} />
+          <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-6">
+            {/* Lista lateral sincronizada con el mapa */}
+            <div className="order-2 lg:order-1 max-h-[280px] sm:max-h-[360px] lg:max-h-[600px] overflow-y-auto pr-1 space-y-3">
+              {restaurants.map((r) => (
+                <button
+                  key={r.id}
+                  type="button"
+                  onClick={() => toggleMapSelection(r.id)}
+                  className={cn(
+                    'w-full flex items-center gap-3 p-3 rounded-2xl border text-left transition-all',
+                    selectedMapId === r.id
+                      ? 'border-orange-400 bg-orange-50/70 dark:bg-orange-500/10 shadow-sm'
+                      : 'border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 hover:border-gray-200 dark:hover:border-gray-700'
+                  )}
+                >
+                  <div className="h-14 w-14 shrink-0 rounded-xl overflow-hidden bg-gradient-to-br from-orange-200 to-rose-200 dark:from-orange-900/50 dark:to-rose-900/50 flex items-center justify-center">
+                    {r.coverImageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={r.coverImageUrl} alt={r.name} className="h-full w-full object-cover" />
+                    ) : (
+                      <UtensilsCrossed className="h-5 w-5 text-white" />
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-sm text-gray-900 dark:text-white truncate">{r.name}</p>
+                    <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                      <Star className="h-3 w-3 fill-yellow-400 text-yellow-400 shrink-0" />
+                      <span className="font-medium">{r.avgRating?.toFixed(1) ?? '0.0'}</span>
+                      <span className="text-gray-300 dark:text-gray-600">·</span>
+                      <span className="truncate">{r.district || r.city}</span>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+            <div className="order-1 lg:order-2">
+              <RestaurantsMap restaurants={restaurants} selectedId={selectedMapId} onSelect={toggleMapSelection} />
+            </div>
+          </div>
         ) : (
           <>
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" data-tour="results">

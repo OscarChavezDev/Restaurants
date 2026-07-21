@@ -1,7 +1,8 @@
 'use client';
 
-import { MapPin, Tag } from 'lucide-react';
+import { MapPin, Sparkles, Tag } from 'lucide-react';
 import type { Promotion } from '@/types/restaurant';
+import { cn } from '@/utils/cn';
 
 /** Etiqueta del descuento según el tipo de promoción. */
 function discountBadge(p: Promotion): string | null {
@@ -14,53 +15,90 @@ function discountBadge(p: Promotion): string | null {
 }
 
 /**
- * Flyer de promoción diseñado por el sistema (paleta Brasa & Selva). El titular
- * y el subtítulo provienen del copy generado por IA (flyerHeadline/flyerTagline);
+ * Flyer de promoción, formato póster (4:5). El fondo es la imagen generada por
+ * IA (Gemini, ver PromotionService.generateFlyer) subida a Cloudinary; si aún
+ * no existe (no configurado / falló / no generado), cae a un degradado de
+ * marca. El titular/subtítulo vienen del copy de IA (flyerHeadline/flyerTagline);
  * si no hay, usa el título/descripción de la promoción.
  */
 export function PromoFlyer({ promo, className = '' }: { promo: Promotion; className?: string }) {
   const headline = promo.flyerHeadline?.trim() || promo.title;
   const tagline = promo.flyerTagline?.trim() || promo.description;
   const badge = discountBadge(promo);
+  const hasImage = !!promo.flyerImageUrl;
 
   return (
     <div
-      className={`relative flex min-h-[11rem] flex-col justify-between overflow-hidden rounded-2xl p-4 text-white shadow-lg
-        bg-gradient-to-br from-orange-500 via-orange-600 to-selva-600 ${className}`}
+      className={cn(
+        'relative aspect-[1/1.15] w-full overflow-hidden rounded-2xl shadow-xl shadow-black/20 text-white',
+        !hasImage && 'bg-gradient-to-br from-orange-500 via-orange-600 to-selva-600',
+        className,
+      )}
     >
-      {/* Adornos */}
-      <div aria-hidden className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/10" />
-      <div aria-hidden className="pointer-events-none absolute -bottom-8 -left-6 h-24 w-24 rounded-full bg-black/10" />
+      {hasImage && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={promo.flyerImageUrl}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      )}
 
-      {/* Encabezado */}
-      <div className="relative z-10 flex items-center justify-between gap-2">
-        <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold backdrop-blur-sm">
-          <Tag className="h-3 w-3" /> Oferta
-        </span>
-        {badge && (
-          <span className="rounded-lg bg-white px-2 py-1 text-sm font-extrabold leading-none text-orange-600 shadow-sm">
-            {badge}<span className="text-[10px] font-bold"> {promo.promoType === 'PERCENTAGE_DISCOUNT' ? 'OFF' : ''}</span>
+      {/* Velo para legibilidad del texto: siempre presente, más marcado sobre foto */}
+      <div
+        aria-hidden
+        className={cn(
+          'absolute inset-0',
+          hasImage
+            ? 'bg-gradient-to-t from-black/90 via-black/30 to-black/10'
+            : undefined,
+        )}
+      />
+      {!hasImage && (
+        <>
+          <div aria-hidden className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10" />
+          <div aria-hidden className="pointer-events-none absolute -bottom-10 -left-8 h-32 w-32 rounded-full bg-black/10" />
+        </>
+      )}
+
+      <div className="relative z-10 flex h-full flex-col justify-between p-2.5">
+        {/* Encabezado */}
+        <div className="flex items-start justify-between gap-1.5">
+          <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-1.5 py-0.5 text-[7px] font-bold uppercase tracking-wider backdrop-blur-md ring-1 ring-white/20">
+            <Tag className="h-2 w-2" /> Oferta
           </span>
-        )}
-      </div>
+          {badge && (
+            <span className="flex h-7 w-7 shrink-0 flex-col items-center justify-center rounded-full bg-white text-orange-600 shadow-lg ring-2 ring-white/25">
+              <span className="text-[9px] font-black leading-none">{badge}</span>
+              {promo.promoType === 'PERCENTAGE_DISCOUNT' && <span className="text-[5px] font-bold leading-none">OFF</span>}
+            </span>
+          )}
+        </div>
 
-      {/* Cuerpo */}
-      <div className="relative z-10 mt-3">
-        <h3 className="font-display text-lg font-extrabold leading-tight drop-shadow-sm line-clamp-2">{headline}</h3>
-        {tagline && <p className="mt-1 text-xs text-white/90 line-clamp-2">{tagline}</p>}
-      </div>
+        {/* Cuerpo */}
+        <div className="mt-auto">
+          <h3 className="font-display text-xs font-extrabold leading-tight drop-shadow-md line-clamp-2">{headline}</h3>
+          {tagline && <p className="mt-1 text-[9px] text-white/85 line-clamp-1 leading-snug">{tagline}</p>}
 
-      {/* Pie */}
-      <div className="relative z-10 mt-4 flex items-center justify-between gap-2 border-t border-white/20 pt-3">
-        <span className="inline-flex min-w-0 items-center gap-1 text-xs font-medium text-white/90">
-          <MapPin className="h-3.5 w-3.5 flex-shrink-0" />
-          <span className="truncate">{promo.restaurantName ?? 'Restaurante'}</span>
-        </span>
-        {promo.promoCode && (
-          <code className="flex-shrink-0 rounded-md bg-white/20 px-2 py-1 text-xs font-bold tracking-wide backdrop-blur-sm">
-            {promo.promoCode}
-          </code>
-        )}
+          {promo.promoCode && (
+            <div className="mt-1.5 inline-flex items-center gap-1 rounded-md border border-dashed border-white/40 bg-white/10 px-1.5 py-0.5 backdrop-blur-sm">
+              <span className="text-[6px] font-bold uppercase tracking-wider text-white/70">Código</span>
+              <code className="text-[9px] font-black tracking-wide">{promo.promoCode}</code>
+            </div>
+          )}
+
+          <div className="mt-1.5 flex items-center justify-between gap-2 border-t border-white/20 pt-1.5">
+            <span className="inline-flex min-w-0 items-center gap-1 text-[8px] font-semibold text-white/90">
+              <MapPin className="h-2.5 w-2.5 flex-shrink-0" />
+              <span className="truncate">{promo.restaurantName ?? 'Restaurante'}</span>
+            </span>
+            {hasImage && (
+              <span className="inline-flex shrink-0 items-center gap-1 text-[7px] font-bold uppercase tracking-wider text-white/50">
+                <Sparkles className="h-2 w-2" /> IA
+              </span>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

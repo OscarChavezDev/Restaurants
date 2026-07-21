@@ -75,53 +75,56 @@ export default function LlegadasPage() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="font-display text-2xl font-bold text-gray-900 flex items-center gap-2">
-          <QrCode className="h-6 w-6 text-orange-500" /> Confirmar llegada
+      <div className="sticky top-0 z-10 bg-white/80 dark:bg-[#1C1C1C]/80 backdrop-blur-xl border-b border-gray-100 dark:border-neutral-800 pb-4 mb-6 pt-4 -mx-4 px-4 sm:-mx-8 sm:px-8">
+        <h1 className="font-display text-3xl font-extrabold text-gray-900 dark:text-white flex items-center gap-3 tracking-tight">
+          <div className="p-2.5 bg-orange-500/10 rounded-2xl">
+            <QrCode className="h-7 w-7 text-orange-500" />
+          </div>
+          Confirmar llegada
         </h1>
-        <p className="text-gray-600 mt-1">
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 font-medium">
           Escanea el código QR del correo de confirmación del cliente para marcar su llegada.
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+        <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-100 dark:border-neutral-800 shadow-sm p-6">
           {scannerError ? (
-            <p className="text-sm text-red-500">{scannerError}</p>
+            <p className="text-sm text-red-500 dark:text-red-400">{scannerError}</p>
           ) : (
             <div id="qr-reader" ref={containerRef} />
           )}
-          <p className="text-xs text-gray-400 mt-3">
+          <p className="text-xs text-gray-400 dark:text-gray-500 mt-3">
             Si el navegador no tiene acceso a la cámara, puedes subir una foto del QR usando la opción
             &quot;Scan an Image File&quot; del lector.
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <h2 className="font-display text-base font-semibold text-gray-900 mb-4">
+        <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-100 dark:border-neutral-800 shadow-sm p-6">
+          <h2 className="font-display text-base font-semibold text-gray-900 dark:text-white mb-4">
             Llegadas confirmadas en esta sesión
           </h2>
           {recentArrivals.length === 0 ? (
-            <p className="text-sm text-gray-400 py-8 text-center">Todavía no escaneaste ninguna reserva.</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500 py-8 text-center">Todavía no escaneaste ninguna reserva.</p>
           ) : (
             <div className="space-y-3">
               {recentArrivals.map((r) => (
-                <div key={r.id} className="flex items-center gap-3 p-3 rounded-xl bg-teal-50 border border-teal-100">
-                  <CheckCircle2 className="h-5 w-5 text-teal-600 flex-shrink-0" />
+                <div key={r.id} className="flex items-center gap-3 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
                   <div className="min-w-0 flex-1">
-                    <p className="font-medium text-gray-900 text-sm">{r.customerName}</p>
-                    <p className="text-xs text-gray-500 flex items-center gap-3 mt-0.5">
+                    <p className="font-medium text-gray-900 dark:text-white text-sm">{r.customerName}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-3 mt-0.5">
                       <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {formatTime(r.startTime)}</span>
                       <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {r.partySize} personas</span>
                     </p>
                   </div>
-                  <span className="text-xs font-mono text-gray-400">{r.confirmationCode}</span>
+                  <span className="text-xs font-mono text-gray-400 dark:text-gray-500">{r.confirmationCode}</span>
                 </div>
               ))}
             </div>
           )}
           {arriveMutation.isError && (
-            <p className="text-xs text-red-500 mt-3 flex items-center gap-1">
+            <p className="text-xs text-red-500 dark:text-red-400 mt-3 flex items-center gap-1">
               <XCircle className="h-3.5 w-3.5" /> El último escaneo no se pudo procesar — revisa el código o que la reserva esté confirmada.
             </p>
           )}

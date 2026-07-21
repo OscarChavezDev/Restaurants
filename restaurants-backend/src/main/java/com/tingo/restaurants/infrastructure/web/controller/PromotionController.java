@@ -48,6 +48,26 @@ public class PromotionController {
                 .body(ApiResponse.ok("Promoción creada", response));
     }
 
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'RESTAURANTE_OWNER')")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Actualizar promoción")
+    public ResponseEntity<ApiResponse<PromotionResponse>> update(
+            @PathVariable UUID id,
+            @RequestParam String title,
+            @RequestParam(required = false) String description,
+            @RequestParam PromotionType promoType,
+            @RequestParam(required = false) BigDecimal discountValue,
+            @RequestParam(required = false) BigDecimal minOrderAmount,
+            @RequestParam(required = false) String promoCode,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime validFrom,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime validUntil,
+            @RequestParam(required = false) Integer usageLimit) {
+        PromotionResponse response = promotionService.update(id, title, description,
+                promoType, discountValue, minOrderAmount, promoCode, validFrom, validUntil, usageLimit);
+        return ResponseEntity.ok(ApiResponse.ok("Promoción actualizada", response));
+    }
+
     @GetMapping("/restaurant/{restaurantId}")
     @Operation(summary = "Listar todas las promociones de un restaurante (público)")
     public ResponseEntity<ApiResponse<List<PromotionResponse>>> findByRestaurant(@PathVariable UUID restaurantId) {

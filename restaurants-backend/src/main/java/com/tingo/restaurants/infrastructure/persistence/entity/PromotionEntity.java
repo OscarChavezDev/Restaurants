@@ -68,4 +68,7 @@ public class PromotionEntity extends BaseEntity {
 
     @Column(name = "flyer_tagline", length = 200)
     private String flyerTagline;
+
+    @Column(name = "flyer_image_url", columnDefinition = "TEXT")
+    private String flyerImageUrl;
 }

@@ -3,7 +3,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Loader2, MapPin } from 'lucide-react';
+import { ArrowLeft, Loader2, MapPin, Minus, Plus } from 'lucide-react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import toast from 'react-hot-toast';
@@ -164,16 +164,28 @@ export default function NewRestaurantPage() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Capacidad total *</label>
-              <input {...register('totalCapacity', { valueAsNumber: true })} type="number" min="1" className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
+              <div className="flex items-center justify-between bg-white dark:bg-[#252525] p-1.5 rounded-xl border border-gray-200 dark:border-neutral-800 shadow-sm">
+                <button type="button" onClick={() => setValue('totalCapacity', Math.max(1, (watch('totalCapacity')||0) - 5))} className="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-50 hover:bg-gray-100 dark:bg-[#333] dark:hover:bg-[#444] text-gray-600 dark:text-gray-300 transition-colors"><Minus className="h-4 w-4"/></button>
+                <span className="font-bold text-gray-900 dark:text-white text-lg">{watch('totalCapacity') || 0}</span>
+                <button type="button" onClick={() => setValue('totalCapacity', (watch('totalCapacity')||0) + 5)} className="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-50 hover:bg-gray-100 dark:bg-[#333] dark:hover:bg-[#444] text-gray-600 dark:text-gray-300 transition-colors"><Plus className="h-4 w-4"/></button>
+              </div>
               {errors.totalCapacity && <p className="text-xs text-red-500 mt-1">{errors.totalCapacity.message}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Reserva mínima</label>
-              <input {...register('minReservationSize', { valueAsNumber: true })} type="number" min="1" className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
+              <div className="flex items-center justify-between bg-white dark:bg-[#252525] p-1.5 rounded-xl border border-gray-200 dark:border-neutral-800 shadow-sm">
+                <button type="button" onClick={() => setValue('minReservationSize', Math.max(1, (watch('minReservationSize')||0) - 1))} className="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-50 hover:bg-gray-100 dark:bg-[#333] dark:hover:bg-[#444] text-gray-600 dark:text-gray-300 transition-colors"><Minus className="h-4 w-4"/></button>
+                <span className="font-bold text-gray-900 dark:text-white text-lg">{watch('minReservationSize') || 0}</span>
+                <button type="button" onClick={() => setValue('minReservationSize', (watch('minReservationSize')||0) + 1)} className="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-50 hover:bg-gray-100 dark:bg-[#333] dark:hover:bg-[#444] text-gray-600 dark:text-gray-300 transition-colors"><Plus className="h-4 w-4"/></button>
+              </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Reserva máxima</label>
-              <input {...register('maxReservationSize', { valueAsNumber: true })} type="number" min="1" className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
+              <div className="flex items-center justify-between bg-white dark:bg-[#252525] p-1.5 rounded-xl border border-gray-200 dark:border-neutral-800 shadow-sm">
+                <button type="button" onClick={() => setValue('maxReservationSize', Math.max(1, (watch('maxReservationSize')||0) - 1))} className="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-50 hover:bg-gray-100 dark:bg-[#333] dark:hover:bg-[#444] text-gray-600 dark:text-gray-300 transition-colors"><Minus className="h-4 w-4"/></button>
+                <span className="font-bold text-gray-900 dark:text-white text-lg">{watch('maxReservationSize') || 0}</span>
+                <button type="button" onClick={() => setValue('maxReservationSize', (watch('maxReservationSize')||0) + 1)} className="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-50 hover:bg-gray-100 dark:bg-[#333] dark:hover:bg-[#444] text-gray-600 dark:text-gray-300 transition-colors"><Plus className="h-4 w-4"/></button>
+              </div>
             </div>
           </div>
         </section>

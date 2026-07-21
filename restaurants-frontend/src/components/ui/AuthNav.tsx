@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { LogIn, LogOut, UserPlus, LayoutDashboard, User as UserIcon } from 'lucide-react';
+import { LogIn, LogOut, UserPlus, LayoutDashboard, User as UserIcon, AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '@/store/authStore';
 import { UserProfileModal } from '@/components/ui/UserProfileModal';
@@ -21,6 +21,7 @@ export function AuthNav() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const logout = useAuthStore((s) => s.logout);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [confirmLogout, setConfirmLogout] = useState(false);
 
   // Evita el parpadeo "logueado/no logueado" antes de rehidratar.
   if (!hasHydrated) return <div className="h-9 w-px" aria-hidden />;
@@ -59,10 +60,34 @@ export function AuthNav() {
             />
           </>
         )}
-        <button type="button" onClick={handleLogout} className={solid}>
+        <button type="button" onClick={() => setConfirmLogout(true)} className={solid}>
           <LogOut className="h-4 w-4" />
-          Cerrar sesión
+          <span className="hidden sm:inline">Cerrar sesión</span>
         </button>
+
+        {confirmLogout && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setConfirmLogout(false)}>
+            <div
+              className="relative max-w-sm w-full bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl shadow-2xl p-6 animate-in fade-in zoom-in-95 duration-200"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="font-display text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-2">
+                <AlertTriangle className="h-5 w-5 text-orange-500" /> ¿Cerrar sesión?
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">
+                Tendrás que iniciar sesión de nuevo para volver a acceder a tu cuenta.
+              </p>
+              <div className="flex items-center gap-3 justify-end">
+                <button onClick={() => setConfirmLogout(false)} className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl transition-colors">
+                  Cancelar
+                </button>
+                <button onClick={handleLogout} className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-xl transition-colors">
+                  <LogOut className="h-4 w-4" /> Sí, cerrar sesión
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -72,11 +97,11 @@ export function AuthNav() {
       {/* Botón de clientes */}
       <Link
         href="/login"
-        className="group inline-flex flex-col items-center gap-0 rounded-xl border border-gray-200 dark:border-white/30 bg-white/60 dark:bg-white/10 backdrop-blur-sm px-4 py-1.5 hover:bg-gray-100 dark:hover:bg-white/20 transition-all duration-200 shadow-sm dark:shadow-none"
+        className="group inline-flex flex-col items-center gap-0 rounded-xl border border-gray-200 dark:border-white/30 bg-white/60 dark:bg-white/10 backdrop-blur-sm px-3 sm:px-4 py-1.5 hover:bg-gray-100 dark:hover:bg-white/20 transition-all duration-200 shadow-sm dark:shadow-none"
       >
         <span className="flex items-center gap-1.5 text-sm font-bold text-gray-900 dark:text-white">
           <LogIn className="h-4 w-4" />
-          Iniciar Sesión
+          <span className="hidden sm:inline">Iniciar Sesión</span>
         </span>
         <span className="text-[10px] text-gray-500 dark:text-white/60 font-medium -mt-0.5 hidden sm:block">
           Para clientes
@@ -86,11 +111,11 @@ export function AuthNav() {
       {/* Botón de restaurantes */}
       <Link
         href="/register"
-        className="group inline-flex flex-col items-center gap-0 rounded-xl bg-orange-600 dark:bg-orange-500 px-4 py-1.5 shadow-sm hover:bg-orange-700 dark:hover:bg-orange-400 transition-all duration-200"
+        className="group inline-flex flex-col items-center gap-0 rounded-xl bg-orange-600 dark:bg-orange-500 px-3 sm:px-4 py-1.5 shadow-sm hover:bg-orange-700 dark:hover:bg-orange-400 transition-all duration-200"
       >
         <span className="flex items-center gap-1.5 text-sm font-bold text-white dark:text-white">
           <UserPlus className="h-4 w-4" />
-          Registrar restaurante
+          <span className="hidden sm:inline">Registrar restaurante</span>
         </span>
         <span className="text-[10px] text-orange-200 dark:text-orange-100 font-medium -mt-0.5 hidden sm:block">
           Para propietarios

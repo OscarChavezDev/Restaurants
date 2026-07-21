@@ -4,7 +4,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { MapPin, Star, Users, Wifi, Car, UtensilsCrossed, CheckCircle, XCircle, Clock, ArrowLeft } from 'lucide-react';
 import { cn } from '@/utils/cn';
-import { RestaurantLogo } from '@/components/ui/RestaurantLogo';
 import { FavoriteButton } from '@/components/ui/FavoriteButton';
 import { PromoBadge } from '@/features/restaurants/PromoBadge';
 import { formatDistance, formatRating } from '@/utils/formatters';
@@ -106,44 +105,46 @@ export function RestaurantCard({ restaurant, showDistance, onReview }: Props) {
         </div>
 
         {/* Card body */}
-        <div className="p-6 flex-1 flex flex-col">
-          {/* Logo + Name */}
-          <div className="flex items-start gap-4 mb-4">
-            <RestaurantLogo name={restaurant.name} logoUrl={restaurant.logoUrl} className="h-12 w-12 rounded-xl text-lg shadow-sm border border-gray-100 dark:border-gray-700" />
-            <div className="min-w-0 pt-0.5">
-              <h3 className="font-display font-bold text-lg text-gray-900 dark:text-gray-50 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors leading-tight line-clamp-1">
-                {restaurant.name}
-              </h3>
-              <div className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 mt-1">
-                <MapPin className="h-3.5 w-3.5 flex-shrink-0" />
-                <span className="truncate">{restaurant.district || restaurant.city}</span>
-              </div>
+        <div className="p-5 flex-1 flex flex-col">
+          {/* Name */}
+          <div className="mb-3">
+            <h3 className="font-display font-bold text-base text-gray-900 dark:text-gray-50 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors leading-snug line-clamp-2">
+              {restaurant.name}
+            </h3>
+            <div className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 mt-1">
+              <MapPin className="h-3.5 w-3.5 flex-shrink-0" />
+              <span className="truncate">{restaurant.district || restaurant.city}</span>
             </div>
           </div>
 
-          {/* Categories */}
+          {/* Categories — máx. 2 chips en una fila + contador, sin desbordar a otra línea */}
           {restaurant.categories?.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-4">
-              {restaurant.categories.slice(0, 3).map((cat) => (
+            <div className="flex flex-wrap gap-1.5 mb-3">
+              {restaurant.categories.slice(0, 2).map((cat) => (
                 <span
                   key={cat}
-                  className="px-2.5 py-1 bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-xs rounded-lg font-medium border border-gray-100 dark:border-gray-700"
+                  className="px-2 py-0.5 bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-[11px] rounded-lg font-medium border border-gray-100 dark:border-gray-700"
                 >
                   {cat}
                 </span>
               ))}
+              {restaurant.categories.length > 2 && (
+                <span className="px-2 py-0.5 bg-gray-50 dark:bg-gray-800 text-gray-400 dark:text-gray-500 text-[11px] rounded-lg font-medium border border-gray-100 dark:border-gray-700">
+                  +{restaurant.categories.length - 2}
+                </span>
+              )}
             </div>
           )}
 
           {/* Description */}
           {restaurant.description && (
-            <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-4 flex-1 leading-relaxed">
+            <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-3 flex-1 leading-relaxed">
               {restaurant.description}
             </p>
           )}
 
           {/* Footer */}
-          <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mt-auto pt-4 border-t border-gray-100 dark:border-gray-800">
+          <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mt-auto pt-3 border-t border-gray-100 dark:border-gray-800">
             <div className="flex items-center gap-1.5">
               <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
               <span className="font-bold text-gray-900 dark:text-gray-200">{formatRating(restaurant.avgRating)}</span>

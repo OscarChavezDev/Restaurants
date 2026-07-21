@@ -25,6 +25,8 @@ public interface RestaurantJpaRepository extends JpaRepository<RestaurantEntity,
 
     boolean existsByEmailAndDeletedAtIsNull(String email);
 
+    boolean existsByOwnerIdAndDeletedAtIsNull(UUID ownerId);
+
     @Query(value = """
         SELECT * FROM restaurants r
         WHERE r.deleted_at IS NULL

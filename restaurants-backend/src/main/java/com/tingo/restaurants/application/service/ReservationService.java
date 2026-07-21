@@ -42,6 +42,7 @@ public class ReservationService {
     private final ApplicationEventPublisher eventPublisher;
     private final EmailService emailService;
     private final com.tingo.restaurants.infrastructure.persistence.repository.RestaurantSectionJpaRepository sectionRepository;
+    private final com.tingo.restaurants.infrastructure.persistence.repository.RestaurantTableJpaRepository tableJpaRepository;
     private final ReservationConfigService reservationConfigService;
     private final com.tingo.restaurants.infrastructure.persistence.repository.DishJpaRepository dishRepository;
     private final com.tingo.restaurants.infrastructure.persistence.repository.ReservationOrderItemJpaRepository orderItemRepository;
@@ -189,6 +190,29 @@ public class ReservationService {
         Reservation saved = reservationRepository.save(confirmed);
         emailService.sendReservationConfirmed(saved);
         return mapToResponse(saved);
+    }
+
+    /**
+     * Asigna (o quita, si tableId es null) una mesa física a la reserva. Es la única
+     * forma de poblar Reservation.tableId — en la creación el cliente solo elige
+     * sección (sectionId); la mesa concreta la asigna el dueño desde el panel.
+     */
+    @Transactional
+    public ReservationResponse assignTable(UUID id, UUID tableId, UUID requesterId, boolean isAdmin) {
+        Reservation reservation = reservationRepository.findById(id)
+                .orElseThrow(() -> new ReservationException("Reserva no encontrada"));
+        requireRestaurantOwnership(reservation, requesterId, isAdmin);
+
+        if (tableId != null) {
+            var table = tableJpaRepository.findById(tableId)
+                    .orElseThrow(() -> new ReservationException("Mesa no encontrada"));
+            if (!table.getRestaurantId().equals(reservation.getRestaurantId())) {
+                throw new ReservationException("La mesa no pertenece a este restaurante");
+            }
+        }
+
+        Reservation updated = reservation.toBuilder().tableId(tableId).build();
+        return mapToResponse(reservationRepository.save(updated));
     }
 
     @Transactional

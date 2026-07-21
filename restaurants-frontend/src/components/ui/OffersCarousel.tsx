@@ -57,7 +57,7 @@ export function OffersCarousel() {
           {offers.map((promo) => {
             const card = <PromoFlyer promo={promo} className="h-full w-full" />;
             return (
-              <div key={promo.id} className="flex snap-start shrink-0 w-full min-w-[260px] max-w-full">
+              <div key={promo.id} className="flex snap-start shrink-0 w-[150px] sm:w-[165px]">
                 {promo.restaurantSlug ? (
                   <Link href={`/restaurants/${promo.restaurantSlug}`} className="flex w-full transition-transform hover:-translate-y-0.5">
                     {card}

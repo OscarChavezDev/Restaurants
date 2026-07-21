@@ -13,6 +13,7 @@ import {
 import { useMyRestaurants, useRestaurants } from '@/hooks/useRestaurants';
 import { useAuthStore } from '@/store/authStore';
 import { RestaurantPicker } from '@/components/ui/RestaurantPicker';
+import { SelectMenu } from '@/components/ui/SelectMenu';
 import { formatDate, formatTime, STATUS_LABELS, STATUS_COLORS } from '@/utils/formatters';
 import { cn } from '@/utils/cn';
 import toast from 'react-hot-toast';
@@ -23,6 +24,8 @@ import { ReservationDetailsModal } from '@/components/ui/ReservationDetailsModal
 
 import { ReservationRow } from '@/components/ui/ReservationRow';
 
+
+import { useEffect } from 'react';
 
 export default function ReservationsPage() {
   const isOwner = useAuthStore((s) => s.isOwner());
@@ -44,6 +47,12 @@ export default function ReservationsPage() {
   const { data: myRestaurants } = useMyRestaurants();
   const { data: allRestaurants } = useRestaurants(0, 100);
   const restaurantList = isAdmin ? allRestaurants : myRestaurants;
+
+  useEffect(() => {
+    if (restaurantList?.content && restaurantList.content.length === 1 && !restaurantId) {
+      setRestaurantId(restaurantList.content[0].id);
+    }
+  }, [restaurantList?.content, restaurantId]);
 
   const { data: restaurantReservations, isLoading: loadingRestaurant } =
     useRestaurantReservations(restaurantId, 0, 50);
@@ -147,58 +156,74 @@ export default function ReservationsPage() {
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
     return (
-      <div>
-        <div className="mb-6">
-          <h1 className="font-display text-2xl font-bold text-gray-900">Reservas</h1>
-          <p className="text-gray-600 mt-1">Gestiona las reservas de tus restaurantes</p>
+      <div className="h-full flex flex-col">
+        <div className="sticky top-0 z-10 bg-white/80 dark:bg-[#1C1C1C]/80 backdrop-blur-xl border-b border-gray-100 dark:border-neutral-800 pb-4 mb-6 pt-4 -mx-4 px-4 sm:-mx-8 sm:px-8">
+          <h1 className="font-display text-3xl font-extrabold text-gray-900 dark:text-white flex items-center gap-3 tracking-tight">
+            <div className="p-2.5 bg-orange-500/10 rounded-2xl">
+              <Calendar className="h-7 w-7 text-orange-500" />
+            </div>
+            Reservas
+          </h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 font-medium">Gestiona las reservas de tus restaurantes.</p>
         </div>
 
-        <RestaurantPicker
-          restaurants={restaurantList?.content ?? []}
-          value={restaurantId}
-          onChange={setRestaurantId}
-        />
+        {(!restaurantList?.content || restaurantList.content.length > 1) && (
+          <div className="bg-white dark:bg-neutral-900 rounded-3xl p-5 border border-gray-100 dark:border-neutral-800 shadow-sm mb-6">
+            <RestaurantPicker
+              restaurants={restaurantList?.content ?? []}
+              value={restaurantId}
+              onChange={setRestaurantId}
+            />
+          </div>
+        )}
 
         {restaurantId && (
-          <div className="mt-4 mb-6 flex flex-col sm:flex-row gap-3">
-            <input
-              type="text"
-              placeholder="Buscar por cliente, correo o código..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="flex-1 rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-            />
-            <select
+          <div className="mb-6 flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <input
+                type="text"
+                placeholder="Buscar por cliente, correo o código..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-white dark:bg-neutral-900/40 border border-gray-200 dark:border-gray-800/60 text-gray-900 dark:text-white rounded-xl px-4 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all placeholder:text-gray-400"
+              />
+            </div>
+            <SelectMenu
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white min-w-[160px]"
-            >
-              <option value="">Todos los estados</option>
-              <option value="PENDING">Pendiente</option>
-              <option value="CONFIRMED">Confirmada</option>
-              <option value="ARRIVED">Cliente Llegó</option>
-              <option value="COMPLETED">Completada</option>
-              <option value="CANCELLED">Cancelada</option>
-              <option value="NO_SHOW">No asistió</option>
-            </select>
+              onChange={setStatusFilter}
+              className="sm:w-[200px]"
+              options={[
+                { value: '', label: 'Todos los estados' },
+                { value: 'PENDING', label: 'Pendiente' },
+                { value: 'CONFIRMED', label: 'Confirmada' },
+                { value: 'ARRIVED', label: 'Cliente Llegó' },
+                { value: 'COMPLETED', label: 'Completada' },
+                { value: 'CANCELLED', label: 'Cancelada' },
+                { value: 'NO_SHOW', label: 'No asistió' },
+              ]}
+            />
           </div>
         )}
 
         {!restaurantId ? (
-          <div className="text-center py-24">
-            <Calendar className="h-16 w-16 mx-auto text-gray-200 mb-4" />
-            <p className="text-gray-500">Selecciona un restaurante para ver sus reservas</p>
+          <div className="text-center py-24 bg-white dark:bg-neutral-900 rounded-3xl border border-dashed border-gray-200 dark:border-neutral-800 flex flex-col items-center justify-center">
+            <div className="w-16 h-16 bg-gray-50 dark:bg-neutral-800 rounded-full flex items-center justify-center mb-4">
+              <Calendar className="h-8 w-8 text-gray-300 dark:text-gray-600" />
+            </div>
+            <p className="text-gray-500 dark:text-gray-400 font-medium">Selecciona un restaurante para ver sus reservas</p>
           </div>
         ) : isLoading ? (
-          <div className="space-y-3">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-20 skeleton rounded-2xl" />)}</div>
+          <div className="space-y-3">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-24 skeleton rounded-2xl dark:bg-neutral-800" />)}</div>
         ) : filteredAndSortedReservations.length === 0 ? (
-          <div className="text-center py-24">
-            <Calendar className="h-16 w-16 mx-auto text-gray-200 mb-4" />
-            <h3 className="font-display text-lg font-semibold text-gray-900 mb-2">Sin reservas</h3>
-            <p className="text-gray-500">No se encontraron reservas con esos filtros</p>
+          <div className="text-center py-24 bg-white dark:bg-neutral-900 rounded-3xl border border-dashed border-gray-200 dark:border-neutral-800 flex flex-col items-center justify-center">
+            <div className="w-16 h-16 bg-gray-50 dark:bg-neutral-800 rounded-full flex items-center justify-center mb-4">
+              <Calendar className="h-8 w-8 text-gray-300 dark:text-gray-600" />
+            </div>
+            <h3 className="font-display text-lg font-semibold text-gray-900 dark:text-white mb-1">Sin reservas</h3>
+            <p className="text-gray-500 dark:text-gray-400 text-sm">No se encontraron reservas con esos filtros</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-3 pb-8">
             {filteredAndSortedReservations.map((res) => <ReservationRow key={res.id} res={res} {...rowProps} />)}
           </div>
         )}

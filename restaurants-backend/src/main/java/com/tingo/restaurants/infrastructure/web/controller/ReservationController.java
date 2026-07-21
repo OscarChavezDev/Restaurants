@@ -97,6 +97,17 @@ public class ReservationController {
                 reservationService.confirm(id, requesterId(userDetails), isAdmin(userDetails))));
     }
 
+    @PatchMapping("/{id}/table")
+    @PreAuthorize("hasAnyRole('ADMIN', 'RESTAURANTE_OWNER')")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Asignar (o quitar, sin tableId) una mesa física a la reserva")
+    public ResponseEntity<ApiResponse<ReservationResponse>> assignTable(
+            @PathVariable UUID id, @RequestParam(required = false) UUID tableId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(ApiResponse.ok("Mesa asignada",
+                reservationService.assignTable(id, tableId, requesterId(userDetails), isAdmin(userDetails))));
+    }
+
     @PatchMapping("/{id}/cancel")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Cancelar reserva (dueño del restaurante, cliente que la creó o ADMIN)")

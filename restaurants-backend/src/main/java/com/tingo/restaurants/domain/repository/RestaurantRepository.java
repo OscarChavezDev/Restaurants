@@ -34,4 +34,6 @@ public interface RestaurantRepository {
     boolean existsBySlug(String slug);
 
     boolean existsByEmail(String email);
+
+    boolean existsByOwnerId(UUID ownerId);
 }

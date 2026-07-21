@@ -4,9 +4,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.tingo.restaurants.application.dto.request.AssistantChatRequest;
 import com.tingo.restaurants.infrastructure.persistence.entity.ReservationConfigEntity;
 import com.tingo.restaurants.infrastructure.persistence.entity.ReservationEntity;
+import com.tingo.restaurants.infrastructure.persistence.entity.RestaurantEntity;
+import com.tingo.restaurants.infrastructure.persistence.entity.ScheduleEntity;
 import com.tingo.restaurants.infrastructure.persistence.repository.ReservationConfigJpaRepository;
 import com.tingo.restaurants.infrastructure.persistence.repository.ReservationJpaRepository;
 import com.tingo.restaurants.infrastructure.persistence.repository.RestaurantJpaRepository;
+import com.tingo.restaurants.infrastructure.persistence.repository.ScheduleJpaRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -28,6 +31,7 @@ public class AssistantService {
     private final ReservationJpaRepository reservationRepository;
     private final RestaurantJpaRepository restaurantRepository;
     private final ReservationConfigJpaRepository configRepository;
+    private final ScheduleJpaRepository scheduleRepository;
     private final String apiKey;
     private final String model;
     private final RestClient http = RestClient.create();
@@ -35,11 +39,13 @@ public class AssistantService {
     public AssistantService(ReservationJpaRepository reservationRepository,
                             RestaurantJpaRepository restaurantRepository,
                             ReservationConfigJpaRepository configRepository,
+                            ScheduleJpaRepository scheduleRepository,
                             @Value("${gemini.api-key:}") String apiKey,
                             @Value("${gemini.model:gemini-2.5-flash-lite}") String model) {
         this.reservationRepository = reservationRepository;
         this.restaurantRepository = restaurantRepository;
         this.configRepository = configRepository;
+        this.scheduleRepository = scheduleRepository;
         this.apiKey = apiKey;
         this.model = model;
     }
@@ -85,21 +91,23 @@ public class AssistantService {
     private String buildSystemPrompt(String code) {
         StringBuilder sb = new StringBuilder();
         sb.append("Eres el asistente virtual de Tingo Restaurants, una plataforma de reservas de ")
-          .append("restaurantes en Tingo María, Perú. Ayudas SOLO con temas de reservas: estado, ")
-          .append("pago/adelanto, comprobante, alergias, horarios y cómo reservar. ")
+          .append("restaurantes en Tingo María, Perú. Ayudas con temas de reservas (estado, ")
+          .append("pago/adelanto, comprobante, alergias, cómo reservar) Y con preguntas sobre el ")
+          .append("restaurante de la reserva del cliente: horarios, ubicación, teléfono, servicios ")
+          .append("(estacionamiento, wifi, aire acondicionado, accesibilidad, eventos) — usa SOLO los ")
+          .append("datos que se te dan abajo para esas respuestas, nunca inventes datos que no tengas. ")
           .append("Responde en español, breve, cordial y claro. NO uses emojis. ")
           .append("No puedes ejecutar acciones tú mismo (subir comprobante, guardar alergias): para ")
           .append("eso indícale al cliente que use los botones del asistente. ")
           .append("Si no conoces el código de la reserva del cliente, pídele que lo escriba ")
-          .append("(formato RES-XXXXXXXX) para ayudarlo con su reserva específica.\n");
+          .append("(formato RES-XXXXXXXX) para ayudarlo con su reserva específica y con datos de ese restaurante.\n");
 
         if (code != null && !code.isBlank()) {
             reservationRepository.findByConfirmationCode(code.toUpperCase().trim()).ifPresent(r -> {
                 sb.append("\nDatos de la reserva del cliente (úsalos para responder):\n");
                 sb.append("- Código: ").append(r.getConfirmationCode()).append("\n");
-                String restName = restaurantRepository.findById(r.getRestaurantId())
-                        .map(x -> x.getName()).orElse("el restaurante");
-                sb.append("- Restaurante: ").append(restName).append("\n");
+                RestaurantEntity restaurant = restaurantRepository.findById(r.getRestaurantId()).orElse(null);
+                sb.append("- Restaurante: ").append(restaurant != null ? restaurant.getName() : "el restaurante").append("\n");
                 sb.append("- Cliente: ").append(r.getCustomerName()).append("\n");
                 sb.append("- Estado: ").append(statusEs(r)).append("\n");
                 sb.append("- Fecha: ").append(r.getReservationDate())
@@ -119,6 +127,31 @@ public class AssistantService {
                     }
                 } else {
                     sb.append("- Esta reserva no requiere adelanto.\n");
+                }
+
+                if (restaurant != null) {
+                    sb.append("\nDatos del restaurante (para preguntas de ubicación/horario/servicios):\n");
+                    sb.append("- Dirección: ").append(restaurant.getAddress()).append(", ")
+                      .append(restaurant.getDistrict()).append(", ").append(restaurant.getCity()).append("\n");
+                    if (restaurant.getPhone() != null && !restaurant.getPhone().isBlank()) {
+                        sb.append("- Teléfono: ").append(restaurant.getPhone()).append("\n");
+                    }
+                    sb.append("- Servicios: ")
+                      .append("estacionamiento ").append(restaurant.isHasParking() ? "sí" : "no").append(", ")
+                      .append("wifi ").append(restaurant.isHasWifi() ? "sí" : "no").append(", ")
+                      .append("aire acondicionado ").append(restaurant.isHasAirConditioning() ? "sí" : "no").append(", ")
+                      .append("accesible ").append(restaurant.isAccessible() ? "sí" : "no").append(", ")
+                      .append("eventos ").append(restaurant.isAcceptsEvents() ? "sí" : "no").append("\n");
+
+                    List<ScheduleEntity> schedules = scheduleRepository.findByRestaurant_IdOrderByDayOfWeekAsc(restaurant.getId());
+                    if (!schedules.isEmpty()) {
+                        sb.append("- Horario de atención:\n");
+                        for (ScheduleEntity s : schedules) {
+                            sb.append("  ").append(diaEs(s.getDayOfWeek())).append(": ")
+                              .append(s.isClosed() ? "cerrado" : EmailService.time12h(s.getOpeningTime()) + " - " + EmailService.time12h(s.getClosingTime()))
+                              .append("\n");
+                        }
+                    }
                 }
             });
         }
@@ -143,6 +176,18 @@ public class AssistantService {
             case "PROOF_SUBMITTED" -> "comprobante enviado, en revisión";
             case "PAYMENT_VERIFIED" -> "verificado";
             default -> "no requerido";
+        };
+    }
+
+    private String diaEs(java.time.DayOfWeek d) {
+        return switch (d) {
+            case MONDAY -> "Lunes";
+            case TUESDAY -> "Martes";
+            case WEDNESDAY -> "Miércoles";
+            case THURSDAY -> "Jueves";
+            case FRIDAY -> "Viernes";
+            case SATURDAY -> "Sábado";
+            case SUNDAY -> "Domingo";
         };
     }
 }

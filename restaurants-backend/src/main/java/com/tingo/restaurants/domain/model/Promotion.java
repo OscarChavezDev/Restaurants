@@ -32,6 +32,7 @@ public class Promotion {
     private int usageCount;
     private String flyerHeadline;
     private String flyerTagline;
+    private String flyerImageUrl;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;

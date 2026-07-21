@@ -32,6 +32,7 @@ export interface Restaurant {
   phone: string;
   email: string;
   website: string;
+  ruc?: string;
   status: RestaurantStatus;
   address: string;
   district: string;
@@ -108,6 +109,7 @@ export interface Promotion {
   usageCount: number;
   flyerHeadline?: string;
   flyerTagline?: string;
+  flyerImageUrl?: string;
   // Solo en el carrusel de ofertas (showcase):
   restaurantName?: string;
   restaurantSlug?: string;

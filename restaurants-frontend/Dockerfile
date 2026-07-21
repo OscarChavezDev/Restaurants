@@ -6,6 +6,7 @@ COPY package*.json ./
 RUN npm install
 
 COPY . .
+RUN echo "Bust cache 17"
 ENV NEXT_TELEMETRY_DISABLED=1
 # Las variables NEXT_PUBLIC_* se hornean en build; se reciben como build args.
 ARG NEXT_PUBLIC_API_URL=http://localhost:8080/api

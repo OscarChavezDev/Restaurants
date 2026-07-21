@@ -38,7 +38,6 @@ export function PhotoManager({ restaurantId }: { restaurantId: string }) {
     onError: () => toast.error('No se pudo reordenar'),
   });
 
-  // Mueve una foto (dir = -1 izquierda, +1 derecha) y reasigna el orden 0..n.
   const move = (idx: number, dir: number) => {
     if (!images) return;
     const arr = [...images];
@@ -48,7 +47,6 @@ export function PhotoManager({ restaurantId }: { restaurantId: string }) {
     reorder.mutate(arr.map((img, k) => ({ id: img.id, displayOrder: k })));
   };
 
-  // Pone una foto como portada (posición 0).
   const makeCover = (idx: number) => {
     if (!images || idx === 0) return;
     const arr = [...images];
@@ -59,71 +57,88 @@ export function PhotoManager({ restaurantId }: { restaurantId: string }) {
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-      <h2 className="font-display text-base font-semibold text-gray-900 flex items-center gap-2">
-        <ImageIcon className="h-5 w-5 text-orange-500" /> Galería de fotos
-      </h2>
-      <p className="text-xs text-gray-400 mb-4 mt-1">La primera foto (Portada) se usa como imagen principal del restaurante.</p>
+    <div className="bg-white dark:bg-neutral-900 rounded-[2.5rem] border border-gray-100 dark:border-neutral-800 shadow-sm p-6 sm:p-8 h-full transition-colors hover:border-gray-200 dark:hover:border-neutral-700">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-display text-2xl font-extrabold text-gray-900 dark:text-white flex items-center gap-3">
+          <span className="w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-500/10 text-orange-500 flex items-center justify-center shrink-0">
+            <ImageIcon className="h-5 w-5" />
+          </span>
+          Galería de fotos
+        </h2>
+        {images && images.length > 0 && (
+          <span className="text-xs font-bold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-neutral-800 px-3 py-1.5 rounded-full">{images.length} fotos</span>
+        )}
+      </div>
+      <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-6">La primera foto se usa como portada del restaurante.</p>
 
-      {/* Subir foto (Cloudinary) */}
-      <div className="mb-5">
+      {/* Upload zone — compact */}
+      <div className="mb-4">
         <ImageUploader
           folder={restaurantId}
           onUploaded={(url) => add.mutate(url)}
-          label="Subir foto del restaurante"
+          label="Subir foto"
+          compact
         />
       </div>
 
-      {/* Grilla de fotos */}
+      {/* Photo grid */}
       {isLoading ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">{[1, 2, 3].map((i) => <div key={i} className="aspect-video skeleton rounded-xl" />)}</div>
+        <div className="grid grid-cols-3 gap-2">{[1, 2, 3].map((i) => <div key={i} className="aspect-video skeleton rounded-lg" />)}</div>
       ) : !images?.length ? (
-        <div className="text-center py-10 text-gray-400">
-          <ImageIcon className="h-10 w-10 mx-auto mb-2 opacity-30" />
-          <p className="text-sm">Sin fotos aún. Sube la primera con el botón de arriba.</p>
+        <div className="text-center py-8 text-gray-400 dark:text-gray-500">
+          <ImageIcon className="h-8 w-8 mx-auto mb-2 opacity-30" />
+          <p className="text-xs">Sin fotos aún</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-3 gap-2">
           {images.map((img, idx) => (
-            <div key={img.id} className={`relative group rounded-xl overflow-hidden border ${idx === 0 ? 'border-orange-400 ring-2 ring-orange-200' : 'border-gray-100'}`}>
+            <div key={img.id} className={`relative group rounded-lg overflow-hidden ${idx === 0 ? 'ring-2 ring-orange-400 ring-offset-1 ring-offset-white dark:ring-offset-neutral-900' : ''}`}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={img.url}
                 alt={img.caption ?? 'Foto del restaurante'}
-                className="w-full aspect-video object-cover bg-gray-100"
+                className="w-full aspect-video object-cover bg-gray-100 dark:bg-neutral-800"
                 onError={(e) => { (e.target as HTMLImageElement).src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="160" height="90"><rect width="100%" height="100%" fill="%23f3f4f6"/><text x="50%" y="50%" font-size="10" fill="%239ca3af" text-anchor="middle" dy=".3em">URL inválida</text></svg>'; }}
               />
-              <span className={`absolute top-1.5 left-1.5 text-[10px] font-semibold px-1.5 py-0.5 rounded ${idx === 0 ? 'bg-orange-500 text-white' : 'bg-black/60 text-white'}`}>{idx === 0 ? 'Portada' : `#${idx + 1}`}</span>
+              
+              {/* Label */}
+              <span className={`absolute top-1 left-1 text-[9px] font-bold px-1.5 py-0.5 rounded ${idx === 0 ? 'bg-orange-500 text-white' : 'bg-black/60 text-white/80'}`}>
+                {idx === 0 ? 'Portada' : `#${idx + 1}`}
+              </span>
+              
+              {/* Delete button */}
               <button
                 onClick={() => remove.mutate(img.id)}
                 disabled={remove.isPending}
-                title="Eliminar foto"
-                className="absolute top-1.5 right-1.5 p-1.5 bg-white/90 hover:bg-red-500 hover:text-white text-red-500 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                title="Eliminar"
+                className="absolute top-1 right-1 p-1 bg-white/90 dark:bg-neutral-800/90 hover:bg-red-500 hover:text-white text-red-500 rounded-md opacity-0 group-hover:opacity-100 transition-opacity"
               >
-                <Trash2 className="h-3.5 w-3.5" />
+                <Trash2 className="h-3 w-3" />
               </button>
 
-              {/* Controles de orden */}
-              <div className="absolute bottom-1.5 inset-x-1.5 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity">
-                <div className="flex gap-1">
+              {/* Reorder + cover controls */}
+              <div className="absolute bottom-1 inset-x-1 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="flex gap-0.5">
                   <button onClick={() => move(idx, -1)} disabled={idx === 0 || reorder.isPending} title="Mover antes"
-                    className="p-1 bg-white/90 hover:bg-orange-500 hover:text-white text-gray-700 rounded-md disabled:opacity-30 disabled:hover:bg-white/90 disabled:hover:text-gray-700">
-                    <ChevronLeft className="h-3.5 w-3.5" />
+                    className="p-0.5 bg-white/90 dark:bg-neutral-800/90 hover:bg-orange-500 hover:text-white text-gray-700 dark:text-gray-300 rounded disabled:opacity-30 disabled:hover:bg-white/90 disabled:hover:text-gray-700">
+                    <ChevronLeft className="h-3 w-3" />
                   </button>
                   <button onClick={() => move(idx, 1)} disabled={idx === images.length - 1 || reorder.isPending} title="Mover después"
-                    className="p-1 bg-white/90 hover:bg-orange-500 hover:text-white text-gray-700 rounded-md disabled:opacity-30 disabled:hover:bg-white/90 disabled:hover:text-gray-700">
-                    <ChevronRight className="h-3.5 w-3.5" />
+                    className="p-0.5 bg-white/90 dark:bg-neutral-800/90 hover:bg-orange-500 hover:text-white text-gray-700 dark:text-gray-300 rounded disabled:opacity-30 disabled:hover:bg-white/90 disabled:hover:text-gray-700">
+                    <ChevronRight className="h-3 w-3" />
                   </button>
                 </div>
                 {idx !== 0 && (
                   <button onClick={() => makeCover(idx)} disabled={reorder.isPending} title="Usar como portada"
-                    className="p-1 bg-white/90 hover:bg-orange-500 hover:text-white text-orange-600 rounded-md">
-                    <Star className="h-3.5 w-3.5" />
+                    className="p-0.5 bg-white/90 dark:bg-neutral-800/90 hover:bg-orange-500 hover:text-white text-orange-600 rounded">
+                    <Star className="h-3 w-3" />
                   </button>
                 )}
               </div>
+
               {img.caption && (
-                <p className="absolute bottom-0 inset-x-0 text-[11px] text-white bg-gradient-to-t from-black/70 to-transparent px-2 py-1 truncate">{img.caption}</p>
+                <p className="absolute bottom-0 inset-x-0 text-[10px] text-white bg-gradient-to-t from-black/70 to-transparent px-1.5 py-0.5 truncate">{img.caption}</p>
               )}
             </div>
           ))}

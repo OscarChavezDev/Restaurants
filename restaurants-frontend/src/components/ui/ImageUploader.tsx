@@ -48,10 +48,10 @@ export function ImageUploader({
       onDragLeave={() => setDragOver(false)}
       onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFile(e.dataTransfer.files?.[0]); }}
       className={cn(
-        'flex flex-col items-center justify-center text-center rounded-xl border-2 border-dashed cursor-pointer transition-colors',
-        compact ? 'p-4 gap-1.5' : 'p-6 gap-2',
-        dragOver ? 'border-orange-400 bg-orange-50' : 'border-gray-200 hover:border-orange-300 hover:bg-orange-50/40',
-        uploading && 'pointer-events-none opacity-70',
+        'flex flex-col items-center justify-center text-center rounded-2xl border-2 border-dashed cursor-pointer transition-all duration-300',
+        compact ? 'p-6 py-8 gap-4' : 'p-8 py-12 gap-5',
+        dragOver ? 'border-orange-500 bg-orange-50/50 dark:bg-orange-500/10' : 'border-gray-200 dark:border-neutral-700 hover:border-orange-400 dark:hover:border-orange-500/50 hover:bg-gray-50/50 dark:hover:bg-neutral-800/50',
+        uploading && 'pointer-events-none opacity-70 scale-95',
         className
       )}
     >
@@ -62,13 +62,13 @@ export function ImageUploader({
         className="hidden"
         onChange={(e) => handleFile(e.target.files?.[0])}
       />
-      <span className={cn('flex items-center justify-center rounded-full bg-orange-100 text-orange-600', compact ? 'h-9 w-9' : 'h-12 w-12')}>
-        {uploading ? <Loader2 className={cn('animate-spin', compact ? 'h-4 w-4' : 'h-5 w-5')} /> : <UploadCloud className={cn(compact ? 'h-4 w-4' : 'h-5 w-5')} />}
+      <span className={cn('flex items-center justify-center rounded-2xl bg-white dark:bg-neutral-800 border border-gray-100 dark:border-neutral-700 text-gray-700 dark:text-gray-300 shadow-sm transition-transform group-hover:scale-110 mb-2', compact ? 'h-14 w-14' : 'h-20 w-20')}>
+        {uploading ? <Loader2 className={cn('animate-spin text-orange-500', compact ? 'h-6 w-6' : 'h-8 w-8')} /> : <UploadCloud className={cn('text-orange-500', compact ? 'h-6 w-6' : 'h-10 w-10')} />}
       </span>
-      <p className={cn('font-medium text-gray-700', compact ? 'text-xs' : 'text-sm')}>
-        {uploading ? 'Subiendo…' : label}
+      <p className={cn('font-extrabold text-gray-900 dark:text-white tracking-wide', compact ? 'text-base' : 'text-lg')}>
+        {uploading ? 'Subiendo imagen…' : label}
       </p>
-      {!compact && <p className="text-xs text-gray-400">{hint}</p>}
+      {!compact && <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">{hint}</p>}
     </div>
   );
 }

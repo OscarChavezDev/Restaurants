@@ -20,7 +20,7 @@ export function CategoryPicker({ value, onChange }: { value: string[]; onChange:
   }
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap gap-2.5 p-2">
       {(categories ?? []).map((c) => {
         const active = value.includes(c.id);
         return (
@@ -29,10 +29,10 @@ export function CategoryPicker({ value, onChange }: { value: string[]; onChange:
             type="button"
             onClick={() => toggle(c.id)}
             className={cn(
-              'px-3 py-1.5 rounded-full text-sm font-medium border transition-colors',
+              'px-4 py-2 rounded-xl text-sm font-semibold border transition-all duration-200',
               active
-                ? 'bg-orange-500 text-white border-orange-500'
-                : 'bg-white text-gray-600 border-gray-200 hover:border-orange-300'
+                ? 'bg-orange-500 text-white border-orange-500 shadow-md shadow-orange-500/20 scale-105'
+                : 'bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-orange-300 dark:hover:border-orange-500/50 hover:bg-orange-50 dark:hover:bg-orange-900/20'
             )}
           >
             {c.name}

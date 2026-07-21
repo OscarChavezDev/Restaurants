@@ -25,17 +25,15 @@ function compose(h12: number, min: string, ampm: 'AM' | 'PM'): string {
   return `${pad(h)}:${min}`;
 }
 
-function label(value?: string | null): string {
+function formatLabel(value?: string | null): string {
   if (!value) return '--:--';
   const { h12, min, ampm } = parse(value);
-  return `${h12}:${min} ${ampm === 'PM' ? 'p. m.' : 'a. m.'}`;
+  return `${h12}:${min} ${ampm === 'PM' ? 'pm' : 'am'}`;
 }
 
 /**
- * Selector de hora propio en formato 12h (a.m./p.m.) con minutos de 10 en 10.
- * El popover se renderiza en un portal con posición fija para que NO se recorte
- * dentro de contenedores con overflow (p. ej. el modal de reserva).
- * Guarda el valor en 24h "HH:mm" para el backend.
+ * Selector de hora compacto en formato 12h.
+ * Renderiza el popover como portal fijo para no recortarse.
  */
 export function TimePicker({
   value,
@@ -54,12 +52,11 @@ export function TimePicker({
   const popRef = useRef<HTMLDivElement>(null);
   const { h12, min, ampm } = parse(value);
 
-  // Posiciona el popover respecto al trigger (fixed → no lo recorta ningún overflow).
   const place = () => {
     const el = wrapRef.current;
     if (!el) return;
     const r = el.getBoundingClientRect();
-    const width = 224; // w-56
+    const width = 224;
     const popH = 250;
     let left = Math.max(8, Math.min(r.left, window.innerWidth - width - 8));
     const openUp = r.bottom + popH > window.innerHeight && r.top - popH > 8;
@@ -96,10 +93,10 @@ export function TimePicker({
       type="button"
       onClick={onClick}
       className={cn(
-        'rounded-lg py-1.5 text-sm font-medium transition-all active:scale-90',
+        'rounded-xl py-1.5 text-sm font-bold transition-all active:scale-90',
         active
           ? 'bg-orange-500 text-white shadow-sm'
-          : 'text-gray-600 dark:text-gray-300 hover:bg-orange-50 dark:hover:bg-orange-500/15 hover:text-orange-600'
+          : 'text-gray-500 dark:text-gray-400 hover:bg-orange-50 dark:hover:bg-orange-500/10 hover:text-orange-600 dark:hover:text-orange-400'
       )}
     >
       {children}
@@ -112,31 +109,31 @@ export function TimePicker({
         type="button"
         onClick={() => setOpen((o) => !o)}
         className={cn(
-          'inline-flex items-center gap-2 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-1.5 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 tabular-nums hover:border-orange-300 transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500',
-          fullWidth && 'w-full',
+          'inline-flex items-center gap-2 border border-gray-200 dark:border-neutral-700 rounded-xl px-4 py-2.5 text-sm font-bold bg-white dark:bg-neutral-800 text-gray-800 dark:text-gray-200 tabular-nums whitespace-nowrap hover:border-orange-400 dark:hover:border-orange-500/50 hover:bg-gray-50 dark:hover:bg-neutral-700/50 transition-all shadow-sm focus:outline-none focus:ring-4 focus:ring-orange-500/20 focus:border-orange-500',
+          fullWidth && 'w-full justify-center',
           className
         )}
       >
-        <Clock className="h-4 w-4 text-gray-400 flex-shrink-0" />
-        <span>{label(value)}</span>
+        <Clock className="h-3.5 w-3.5 text-orange-500 flex-shrink-0" />
+        <span>{formatLabel(value)}</span>
       </button>
 
       {open && pos && typeof document !== 'undefined' && createPortal(
         <div
           ref={popRef}
           style={{ position: 'fixed', top: pos.top, left: pos.left, width: pos.width }}
-          className="z-[100] rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-xl p-3 animate-pop-in"
+          className="z-[100] rounded-[2rem] bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 shadow-2xl p-4 animate-pop-in"
         >
           {/* AM / PM */}
-          <div className="flex gap-1 mb-2 p-1 bg-gray-100 dark:bg-gray-700 rounded-xl">
+          <div className="flex gap-1.5 mb-3 p-1.5 bg-gray-100/50 dark:bg-neutral-800/50 border border-gray-200/50 dark:border-neutral-700/50 rounded-2xl">
             {(['AM', 'PM'] as const).map((p) => (
               <button
                 key={p}
                 type="button"
                 onClick={() => onChange(compose(h12, min, p))}
                 className={cn(
-                  'flex-1 rounded-lg py-1.5 text-sm font-semibold transition-all active:scale-95',
-                  ampm === p ? 'bg-orange-500 text-white shadow-sm' : 'text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-100'
+                  'flex-1 rounded-xl py-2 text-sm font-bold transition-all active:scale-95',
+                  ampm === p ? 'bg-white dark:bg-neutral-700 text-orange-600 dark:text-orange-400 shadow-sm border border-gray-200 dark:border-neutral-600' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-white/50 dark:hover:bg-neutral-700/50'
                 )}
               >
                 {p === 'AM' ? 'a. m.' : 'p. m.'}

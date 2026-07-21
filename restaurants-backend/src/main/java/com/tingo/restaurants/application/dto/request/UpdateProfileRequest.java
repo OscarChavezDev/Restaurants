@@ -14,7 +14,7 @@ public class UpdateProfileRequest {
     @Size(min = 2, max = 150, message = "El nombre debe tener entre 2 y 150 caracteres")
     private String fullName;
 
-    @Pattern(regexp = "^[+]?[(]?[0-9]{3}[)]?[-\\s.]?[0-9]{3}[-\\s.]?[0-9]{4,6}$",
+    @Pattern(regexp = "^[+]?[0-9\\s.()-]{7,15}$",
              message = "Formato de teléfono inválido")
     private String phone;
 

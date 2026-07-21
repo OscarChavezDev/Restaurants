@@ -22,7 +22,7 @@ public class RestaurantEntity extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "owner_id", nullable = false)
+    @Column(name = "owner_id", nullable = false, unique = true)
     private UUID ownerId;
 
     @Column(nullable = false, length = 200)

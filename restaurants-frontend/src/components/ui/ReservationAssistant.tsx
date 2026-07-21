@@ -211,6 +211,11 @@ export function ReservationAssistant() {
 
   return (
     <>
+      {/* Espaciador: reserva espacio al final del documento para que el widget fijo
+          (esquina inferior derecha) nunca quede tapando el último contenido de la
+          página al hacer scroll hasta el final (ej. enlaces de Hospy/Actify). */}
+      <div aria-hidden className="h-24" />
+
       {/* Botón flotante */}
       {!open && (
         <button

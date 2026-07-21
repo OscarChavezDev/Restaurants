@@ -31,6 +31,13 @@ export const reservationService = {
     return extractData<Reservation>(await api.patch(`/v1/reservations/${id}/confirm`));
   },
 
+  /** Asigna una mesa física a la reserva; pasar tableId undefined la desasigna. */
+  async assignTable(id: string, tableId?: string) {
+    return extractData<Reservation>(
+      await api.patch(`/v1/reservations/${id}/table`, null, { params: { tableId } })
+    );
+  },
+
   async cancel(id: string, reason?: string) {
     return extractData<Reservation>(
       await api.patch(`/v1/reservations/${id}/cancel`, null, { params: { reason } })

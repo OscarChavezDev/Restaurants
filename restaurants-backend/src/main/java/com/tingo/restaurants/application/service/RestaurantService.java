@@ -54,6 +54,10 @@ public class RestaurantService {
     public RestaurantResponse create(CreateRestaurantRequest request, UUID ownerId) {
         log.info("Creando restaurante: {} para owner: {}", request.getName(), ownerId);
 
+        if (restaurantRepository.existsByOwnerId(ownerId)) {
+            throw new com.tingo.restaurants.domain.exception.OwnerAlreadyHasRestaurantException("El dueño ya tiene un restaurante registrado");
+        }
+
         String slug = generateUniqueSlug(request.getName());
 
         Restaurant restaurant = Restaurant.builder()

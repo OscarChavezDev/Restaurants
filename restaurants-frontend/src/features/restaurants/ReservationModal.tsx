@@ -14,6 +14,7 @@ import { restaurantService } from '@/services/restaurantService';
 import { reservationConfigService, estimateAdvance, estimateTables } from '@/services/reservationConfigService';
 import { waitlistService } from '@/services/waitlistService';
 import { TimePicker } from '@/components/ui/TimePicker';
+import { DatePicker } from '@/components/ui/DatePicker';
 import { GoogleLoginButton } from '@/components/ui/GoogleLoginButton';
 import { formatTime } from '@/utils/formatters';
 import { cn } from '@/utils/cn';
@@ -328,7 +329,7 @@ export function ReservationModal({
                 <div className="space-y-4">
                   <div>
                     <label className={labelCls}><Calendar className="inline h-3.5 w-3.5 mr-1 -mt-0.5" />Fecha</label>
-                    <input type="date" min={TODAY} value={date} onChange={(e) => setDate(e.target.value)} className={inputCls} />
+                    <DatePicker min={TODAY} value={date} onChange={setDate} fullWidth />
                   </div>
                   <div>
                     <label className={labelCls}><Clock className="inline h-3.5 w-3.5 mr-1 -mt-0.5" />Hora</label>

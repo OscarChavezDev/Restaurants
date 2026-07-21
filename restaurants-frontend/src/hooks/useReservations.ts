@@ -84,6 +84,17 @@ export function useConfirmReservation() {
   });
 }
 
+export function useAssignTable() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, tableId }: { id: string; tableId?: string }) =>
+      reservationService.assignTable(id, tableId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: RESERVATION_KEYS.all });
+    },
+  });
+}
+
 export function useCancelReservation() {
   const queryClient = useQueryClient();
   return useMutation({

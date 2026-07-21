@@ -172,6 +172,19 @@
   .dark .text-sky-600, .dark .text-sky-700, .dark .text-sky-800 { color: #6FC0EE; }
 }
 
+/* Inputs numéricos: el spinner nativo del navegador no respeta el radio/tema
+   de los inputs y se ve roto (recuadro cuadrado flotando sobre fondo oscuro).
+   Se oculta y el valor se ingresa a mano; donde hace falta contexto se añade
+   un sufijo visual (%, S/) junto al input. */
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
 /* Inputs en oscuro — superficie cálida */
 .dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not(.no-dark),
 .dark textarea:not(.no-dark),

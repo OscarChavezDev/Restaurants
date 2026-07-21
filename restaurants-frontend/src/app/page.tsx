@@ -1,16 +1,38 @@
 'use client';
 
 import Link from 'next/link';
-import { MapPin, Star, Calendar, UtensilsCrossed, ArrowRight, Building2, CheckCircle2, ChevronRight, Sparkles } from 'lucide-react';
+import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { MapPin, Star, Calendar, UtensilsCrossed, ArrowRight, Building2, CheckCircle2, ChevronRight, Sparkles, ShieldCheck } from 'lucide-react';
 import { AnimateOnScroll } from '@/components/ui/AnimateOnScroll';
 import { ThemeLangSwitch } from '@/components/ui/ThemeLangSwitch';
 import { AuthNav } from '@/components/ui/AuthNav';
 import { Footer } from '@/components/ui/Footer';
 import { BrandMark } from '@/components/ui/BrandMark';
+import { RestaurantCard } from '@/features/restaurants/RestaurantCard';
+import { restaurantService } from '@/services/restaurantService';
 import { useTranslation } from '@/hooks/useTranslation';
 
 export default function HomePage() {
   const t = useTranslation();
+
+  // Datos reales para el hero (estadísticas y tarjeta destacada) y la sección
+  // de restaurantes destacados — nada de cifras inventadas.
+  const { data: restaurantsPage } = useQuery({
+    queryKey: ['restaurants', 'home'],
+    queryFn: () => restaurantService.getAll(0, 100, 'avgRating', 'DESC'),
+    staleTime: 5 * 60 * 1000,
+  });
+  const restaurants = restaurantsPage?.content ?? [];
+  const heroRestaurant = restaurants[0];
+  const featured = restaurants.slice(0, 4);
+
+  const stats = useMemo(() => {
+    if (!restaurants.length) return null;
+    const reviews = restaurants.reduce((sum, r) => sum + (r.totalRatings ?? 0), 0);
+    const avgRating = restaurants.reduce((sum, r) => sum + (r.avgRating ?? 0), 0) / restaurants.length;
+    return { count: restaurantsPage?.totalElements ?? restaurants.length, reviews, avgRating };
+  }, [restaurants, restaurantsPage]);
 
   const features = [
     { icon: UtensilsCrossed, title: t('feat1Title'), description: t('feat1Desc'), span: 'lg:col-span-2' },
@@ -22,34 +44,34 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-[#FAF8F5] dark:bg-[#0A0908] selection:bg-orange-500/30">
+      {/* ── Navbar (persistente en toda la página) ── */}
+      <nav className="sticky top-0 z-50 w-full px-6 py-4 sm:px-10 lg:px-12 flex items-center justify-between gap-3 flex-wrap backdrop-blur-xl bg-[#FAF8F5]/75 dark:bg-[#0A0908]/75 border-b border-gray-100/70 dark:border-gray-800/70">
+        <span className="flex items-center gap-3 font-extrabold text-3xl tracking-tight">
+          <BrandMark className="h-12 w-12 drop-shadow-sm text-orange-600 dark:text-orange-500" />
+          <span className="text-gray-900 dark:text-white">Resto<span className="text-orange-500">Point</span></span>
+        </span>
+        <div className="flex items-center gap-2">
+          <ThemeLangSwitch />
+          <AuthNav />
+        </div>
+      </nav>
+
       {/* ── Hero ── */}
-      <header className="relative min-h-[100dvh] flex flex-col overflow-hidden">
+      <header className="relative min-h-[92dvh] flex flex-col overflow-hidden">
         {/* Background Gradients & Textures */}
         <div className="absolute inset-0 z-0">
           {/* Subtle mesh gradient background */}
           <div className="absolute inset-0 bg-gradient-to-br from-orange-50/50 via-white to-orange-100/30 dark:from-[#1A100C] dark:via-[#0A0908] dark:to-[#1A100C]" />
-          
+
           {/* Glow spheres */}
           <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-orange-400/20 dark:bg-orange-600/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3 animate-glow" />
           <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-rose-400/20 dark:bg-rose-900/10 rounded-full blur-[120px] translate-y-1/3 -translate-x-1/4" />
-          
+
           {/* Texture pattern */}
           <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.02]"
             style={{ backgroundImage: 'repeating-linear-gradient(45deg, #000 0, #000 1px, transparent 0, transparent 50%)', backgroundSize: '16px 16px' }}
           />
         </div>
-
-        {/* ── Navbar ── */}
-        <nav className="relative z-50 w-full px-6 pt-6 sm:px-10 lg:px-12 flex items-center justify-between gap-3 flex-wrap">
-          <span className="flex items-center gap-3 font-extrabold text-3xl tracking-tight">
-            <BrandMark className="h-12 w-12 drop-shadow-sm text-orange-600 dark:text-orange-500" />
-            <span className="text-gray-900 dark:text-white">Resto<span className="text-orange-500">Point</span></span>
-          </span>
-          <div className="flex items-center gap-2">
-            <ThemeLangSwitch />
-            <AuthNav />
-          </div>
-        </nav>
 
         {/* ── Hero Content ── */}
         <div className="relative z-10 flex-1 flex flex-col justify-center max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-12 lg:py-0">
@@ -89,21 +111,26 @@ export default function HomePage() {
                 </Link>
               </div>
 
-              {/* Social Proof Stats */}
+              {/* Social Proof Stats — datos reales, no cifras infladas */}
               <div className="mt-12 flex items-center gap-8 text-gray-500 dark:text-gray-400">
                 <div className="flex flex-col">
-                  <span className="text-2xl font-black text-gray-900 dark:text-white">50+</span>
+                  <span className="text-2xl font-black text-gray-900 dark:text-white">
+                    {stats ? stats.count : <span className="skeleton inline-block h-7 w-9 rounded-md align-middle" />}
+                  </span>
                   <span className="text-sm font-medium">Restaurantes</span>
                 </div>
                 <div className="w-px h-10 bg-gray-200 dark:bg-gray-800" />
                 <div className="flex flex-col">
-                  <span className="text-2xl font-black text-gray-900 dark:text-white">10k+</span>
-                  <span className="text-sm font-medium">Reservas</span>
+                  <span className="text-2xl font-black text-gray-900 dark:text-white">
+                    {stats ? stats.reviews : <span className="skeleton inline-block h-7 w-12 rounded-md align-middle" />}
+                  </span>
+                  <span className="text-sm font-medium">Reseñas</span>
                 </div>
                 <div className="w-px h-10 bg-gray-200 dark:bg-gray-800" />
                 <div className="flex flex-col">
                   <span className="flex items-center gap-1 text-2xl font-black text-gray-900 dark:text-white">
-                    4.9 <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                    {stats ? stats.avgRating.toFixed(1) : <span className="skeleton inline-block h-7 w-9 rounded-md align-middle" />}
+                    <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
                   </span>
                   <span className="text-sm font-medium">Calificación Promedio</span>
                 </div>
@@ -112,20 +139,40 @@ export default function HomePage() {
 
             {/* Right Column: Floating Bento Graphics */}
             <div className="relative hidden lg:block h-full min-h-[500px] w-full">
-              {/* Card 1: Restaurant Preview */}
+              {/* Card 1: Restaurant Preview — el mejor calificado, con datos y foto reales */}
               <div className="absolute top-10 right-0 w-[300px] rounded-3xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-white dark:border-gray-700 shadow-2xl p-5 animate-float" style={{ animationDelay: '0s' }}>
                 <div className="w-full h-32 rounded-2xl bg-gradient-to-br from-orange-200 to-rose-200 dark:from-orange-900/50 dark:to-rose-900/50 mb-4 flex items-center justify-center relative overflow-hidden">
-                   <div className="absolute inset-0 bg-black/5" />
-                   <UtensilsCrossed className="h-10 w-10 text-white drop-shadow-md" />
+                  {heroRestaurant?.coverImageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={heroRestaurant.coverImageUrl} alt={heroRestaurant.name} className="absolute inset-0 h-full w-full object-cover" />
+                  ) : (
+                    <>
+                      <div className="absolute inset-0 bg-black/5" />
+                      <UtensilsCrossed className="h-10 w-10 text-white drop-shadow-md" />
+                    </>
+                  )}
                 </div>
-                <h3 className="font-bold text-gray-900 dark:text-white text-lg">El Encanto de la Selva</h3>
-                <div className="flex items-center gap-1 mt-1 text-sm text-gray-500 dark:text-gray-400">
-                  <MapPin className="h-3 w-3" /> Av. Alameda Perú 123
-                </div>
-                <div className="mt-4 flex gap-2">
-                  <div className="px-3 py-1.5 rounded-lg bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 text-xs font-semibold">Abierto hoy</div>
-                  <div className="px-3 py-1.5 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-xs font-semibold flex items-center gap-1"><Star className="h-3 w-3 fill-yellow-400 text-yellow-400" /> 4.8</div>
-                </div>
+                {heroRestaurant ? (
+                  <>
+                    <h3 className="font-bold text-gray-900 dark:text-white text-lg truncate">{heroRestaurant.name}</h3>
+                    <div className="flex items-center gap-1 mt-1 text-sm text-gray-500 dark:text-gray-400">
+                      <MapPin className="h-3 w-3 flex-shrink-0" /> <span className="truncate">{heroRestaurant.district || heroRestaurant.city}</span>
+                    </div>
+                    <div className="mt-4 flex gap-2">
+                      <div className="px-3 py-1.5 rounded-lg bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 text-xs font-semibold flex items-center gap-1">
+                        <ShieldCheck className="h-3 w-3" /> Verificado
+                      </div>
+                      <div className="px-3 py-1.5 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-xs font-semibold flex items-center gap-1">
+                        <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" /> {heroRestaurant.avgRating?.toFixed(1) ?? '—'}
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="skeleton h-5 w-3/4 rounded-md mb-2" />
+                    <div className="skeleton h-4 w-1/2 rounded-md" />
+                  </>
+                )}
               </div>
 
               {/* Card 2: Reservation Success */}
@@ -210,6 +257,32 @@ export default function HomePage() {
           </AnimateOnScroll>
         </div>
       </section>
+
+      {/* ── Restaurantes destacados (datos reales) ── */}
+      {featured.length > 0 && (
+        <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+          <AnimateOnScroll animation="slide-up" className="flex items-end justify-between mb-8 gap-4">
+            <div>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-xs font-bold uppercase tracking-widest mb-3">
+                <Star className="h-3.5 w-3.5" /> Mejor calificados
+              </span>
+              <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white">
+                Restaurantes destacados
+              </h2>
+            </div>
+            <Link href="/restaurants" className="hidden sm:inline-flex items-center gap-1.5 text-sm font-bold text-orange-600 dark:text-orange-400 hover:gap-2.5 transition-all shrink-0">
+              Ver todos <ArrowRight className="h-4 w-4" />
+            </Link>
+          </AnimateOnScroll>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {featured.map((r, i) => (
+              <AnimateOnScroll key={r.id} animation="slide-up" delay={i * 50}>
+                <RestaurantCard restaurant={r} />
+              </AnimateOnScroll>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* ── Features Bento Grid ── */}
       <section className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
