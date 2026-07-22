@@ -322,10 +322,14 @@ public class EmailService {
     /** Genera un PNG con el código QR del enlace dado (S11-04). */
     private byte[] qrPng(String text) throws Exception {
         var hints = new java.util.HashMap<com.google.zxing.EncodeHintType, Object>();
-        hints.put(com.google.zxing.EncodeHintType.MARGIN, 1);
+        // Margen angosto (1 módulo) rompía la detección al escanear desde una imagen/foto
+        // (el estándar recomienda 4 módulos de zona de silencio); nivel de corrección M
+        // en vez del default L para tolerar compresión JPEG/fotos borrosas del correo.
+        hints.put(com.google.zxing.EncodeHintType.MARGIN, 4);
+        hints.put(com.google.zxing.EncodeHintType.ERROR_CORRECTION, com.google.zxing.qrcode.decoder.ErrorCorrectionLevel.M);
         hints.put(com.google.zxing.EncodeHintType.CHARACTER_SET, "UTF-8");
         com.google.zxing.common.BitMatrix matrix = new com.google.zxing.MultiFormatWriter()
-                .encode(text, com.google.zxing.BarcodeFormat.QR_CODE, 220, 220, hints);
+                .encode(text, com.google.zxing.BarcodeFormat.QR_CODE, 300, 300, hints);
         java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
         com.google.zxing.client.j2se.MatrixToImageWriter.writeToStream(matrix, "PNG", out);
         return out.toByteArray();

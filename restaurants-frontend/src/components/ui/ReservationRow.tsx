@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { Calendar, CheckCircle, XCircle, CheckCheck, UserX, Star, Info } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { formatDate, formatTime, STATUS_LABELS, STATUS_COLORS } from '@/utils/formatters';
@@ -85,13 +86,23 @@ export function ReservationRow({
         </span>
 
         {canManage && res.status === 'PENDING' && (
-          <button
-            onClick={() => onConfirm(res.id)}
-            disabled={confirmPending}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-xl transition-colors active:scale-95 disabled:opacity-60 disabled:active:scale-100"
-          >
-            <CheckCircle className="h-3.5 w-3.5" /> Confirmar
-          </button>
+          (res.paymentStatus === 'PENDING_PAYMENT' || res.paymentStatus === 'PROOF_SUBMITTED') ? (
+            <Link
+              href="/dashboard/pagos"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 dark:bg-orange-500/10 text-orange-700 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-orange-500/20 text-xs font-bold rounded-xl transition-colors active:scale-95"
+              title="Requiere verificar el pago del adelanto antes de confirmarse"
+            >
+              Ver pago
+            </Link>
+          ) : (
+            <button
+              onClick={() => onConfirm(res.id)}
+              disabled={confirmPending}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-xl transition-colors active:scale-95 disabled:opacity-60 disabled:active:scale-100"
+            >
+              <CheckCircle className="h-3.5 w-3.5" /> Confirmar
+            </button>
+          )
         )}
 
         {canManage && res.status === 'CONFIRMED' && (

@@ -186,6 +186,14 @@ public class ReservationService {
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new ReservationException("Reserva no encontrada"));
         requireRestaurantOwnership(reservation, requesterId, isAdmin);
+
+        // Si la reserva exige adelanto, la confirmación manual no basta — hay que verificar
+        // el pago primero (eso confirma automáticamente, ver PaymentService.verify()).
+        String paymentStatus = reservation.getPaymentStatus();
+        if (paymentStatus != null && !paymentStatus.equals("NOT_REQUIRED") && !paymentStatus.equals("PAYMENT_VERIFIED")) {
+            throw new ReservationException("Esta reserva requiere verificar el pago del adelanto antes de confirmarla");
+        }
+
         Reservation confirmed = reservation.confirm();
         Reservation saved = reservationRepository.save(confirmed);
         emailService.sendReservationConfirmed(saved);
@@ -196,6 +204,10 @@ public class ReservationService {
      * Asigna (o quita, si tableId es null) una mesa física a la reserva. Es la única
      * forma de poblar Reservation.tableId — en la creación el cliente solo elige
      * sección (sectionId); la mesa concreta la asigna el dueño desde el panel.
+     *
+     * También marca la mesa como RESERVED/AVAILABLE, pero solo si su estado actual
+     * es el otro extremo de ese mismo par — nunca pisa OCCUPIED/MAINTENANCE, que son
+     * dueños del software del mesero (webhook de pedidos) o de mantenimiento manual.
      */
     @Transactional
     public ReservationResponse assignTable(UUID id, UUID tableId, UUID requesterId, boolean isAdmin) {
@@ -203,12 +215,32 @@ public class ReservationService {
                 .orElseThrow(() -> new ReservationException("Reserva no encontrada"));
         requireRestaurantOwnership(reservation, requesterId, isAdmin);
 
+        UUID previousTableId = reservation.getTableId();
+
         if (tableId != null) {
+            // Solo reservas ya CONFIRMADAS pueden recibir mesa — una PENDING todavía puede
+            // caerse (no llega el pago, se rechaza, etc.) y reservaría el espacio de más.
+            if (reservation.getStatus() != com.tingo.restaurants.domain.model.enums.ReservationStatus.CONFIRMED) {
+                throw new ReservationException("Solo se puede asignar mesa a una reserva ya confirmada");
+            }
             var table = tableJpaRepository.findById(tableId)
                     .orElseThrow(() -> new ReservationException("Mesa no encontrada"));
             if (!table.getRestaurantId().equals(reservation.getRestaurantId())) {
                 throw new ReservationException("La mesa no pertenece a este restaurante");
             }
+            if ("AVAILABLE".equals(table.getCurrentStatus())) {
+                table.setCurrentStatus("RESERVED");
+                tableJpaRepository.save(table);
+            }
+        }
+
+        if (previousTableId != null && !previousTableId.equals(tableId)) {
+            tableJpaRepository.findById(previousTableId).ifPresent(prev -> {
+                if ("RESERVED".equals(prev.getCurrentStatus())) {
+                    prev.setCurrentStatus("AVAILABLE");
+                    tableJpaRepository.save(prev);
+                }
+            });
         }
 
         Reservation updated = reservation.toBuilder().tableId(tableId).build();

@@ -2,6 +2,7 @@ package com.tingo.restaurants.infrastructure.web.controller;
 
 import com.tingo.restaurants.application.dto.request.CreateSectionRequest;
 import com.tingo.restaurants.application.dto.request.CreateTableRequest;
+import com.tingo.restaurants.application.dto.request.UpdateTableRequest;
 import com.tingo.restaurants.application.dto.response.ApiResponse;
 import com.tingo.restaurants.application.dto.response.SectionResponse;
 import com.tingo.restaurants.application.dto.response.TableResponse;
@@ -133,6 +134,25 @@ public class LayoutController {
                 .stream().collect(Collectors.toMap(RestaurantSectionEntity::getId, RestaurantSectionEntity::getName));
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.ok("Mesa creada", toTableResponse(tableRepository.save(e), sectionNames)));
+    }
+
+    @PutMapping("/tables/{tableId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'RESTAURANTE_OWNER')")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Actualizar capacidad de una mesa")
+    public ResponseEntity<ApiResponse<TableResponse>> updateTable(
+            @PathVariable UUID restaurantId, @PathVariable UUID tableId, @Valid @RequestBody UpdateTableRequest req) {
+        ownershipGuard.assertOwnsRestaurant(restaurantId);
+        RestaurantTableEntity e = tableRepository.findById(tableId)
+                .orElseThrow(() -> new IllegalStateException("Mesa no encontrada"));
+        if (!e.getRestaurantId().equals(restaurantId)) {
+            throw new AccessDeniedException("La mesa no pertenece a este restaurante");
+        }
+        e.setCapacity(req.getCapacity());
+        tableRepository.save(e);
+        Map<UUID, String> sectionNames = sectionRepository.findByRestaurantIdOrderByName(restaurantId)
+                .stream().collect(Collectors.toMap(RestaurantSectionEntity::getId, RestaurantSectionEntity::getName));
+        return ResponseEntity.ok(ApiResponse.ok("Mesa actualizada", toTableResponse(e, sectionNames)));
     }
 
     @DeleteMapping("/tables/{tableId}")

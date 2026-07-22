@@ -184,6 +184,9 @@ export const restaurantService = {
   async updateTableStatus(restaurantId: string, tableId: string, status: string) {
     return extractData<RestaurantTable>(await api.patch(`/v1/restaurants/${restaurantId}/tables/${tableId}/status`, null, { params: { status } }));
   },
+  async updateTable(restaurantId: string, tableId: string, data: { capacity: number }) {
+    return extractData<RestaurantTable>(await api.put(`/v1/restaurants/${restaurantId}/tables/${tableId}`, data));
+  },
   async deleteTable(restaurantId: string, tableId: string) {
     return api.delete(`/v1/restaurants/${restaurantId}/tables/${tableId}`);
   },

@@ -11,7 +11,7 @@ import { useUiStore } from '@/store/uiStore';
 import { useMyRestaurants } from '@/hooks/useRestaurants';
 import { useManagedReservations, useConfirmReservation, useCancelReservation } from '@/hooks/useReservations';
 import { useRestaurantStats } from '@/hooks/useRestaurantStats';
-import { LiveTableMap } from '@/features/dashboard/components/LiveTableMap';
+import { TableAssignmentBoard } from '@/features/dashboard/components/TableAssignmentBoard';
 import { formatTime } from '@/utils/formatters';
 import toast from 'react-hot-toast';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
@@ -71,6 +71,11 @@ export function OwnerDashboard() {
     r.reservationDate === today && !r.tableId && !!r.sectionId && (r.status === 'PENDING' || r.status === 'CONFIRMED')
   );
 
+  // Prioridad dinámica: si ya no hay reservas por confirmar pero sí mesas por
+  // asignar, ese es el trabajo real pendiente — se muestra primero en vez de
+  // dejar "¡Estás al día!" ocupando el primer lugar.
+  const mesasFirst = pending.length === 0 && unassignedToday.length > 0;
+
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Buenos días' : hour < 19 ? 'Buenas tardes' : 'Buenas noches';
   const todayLabel = new Date().toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -125,32 +130,33 @@ export function OwnerDashboard() {
       </div>
 
       {/* Alerta: reservas de hoy sin mesa asignada */}
-      {unassignedToday.length > 0 && restaurantId && (
-        <motion.div variants={itemVariants}>
-          <Link
-            href={`/dashboard/restaurants/${restaurantId}`}
-            className="flex items-start gap-3 bg-orange-50 dark:bg-orange-500/5 border border-orange-200 dark:border-orange-500/20 rounded-2xl p-4 hover:bg-orange-100/60 dark:hover:bg-orange-500/10 transition-colors"
-          >
-            <div className="mt-0.5 font-bold text-orange-600 dark:text-orange-400">!</div>
-            <div className="flex-1">
-              <p className="font-semibold text-orange-800 dark:text-orange-300 text-sm">
-                {unassignedToday.length} reserva(s) de hoy sin mesa asignada.
-              </p>
-              <p className="text-orange-700 dark:text-orange-400 opacity-90 text-xs mt-0.5">
-                Ve a Ambientes y Mesas para asignarles una.
-              </p>
-            </div>
-            <ArrowRight className="h-4 w-4 text-orange-400 shrink-0 mt-1" />
-          </Link>
+      {unassignedToday.length > 0 && (
+        <motion.div
+          variants={itemVariants}
+          className="flex items-start gap-3 bg-orange-50 dark:bg-orange-500/5 border border-orange-200 dark:border-orange-500/20 rounded-2xl p-4"
+        >
+          <div className="mt-0.5 font-bold text-orange-600 dark:text-orange-400">!</div>
+          <div className="flex-1">
+            <p className="font-semibold text-orange-800 dark:text-orange-300 text-sm">
+              {unassignedToday.length} reserva(s) de hoy sin mesa asignada.
+            </p>
+            <p className="text-orange-700 dark:text-orange-400 opacity-90 text-xs mt-0.5">
+              Asígnales una en el tablero de mesas de abajo.
+            </p>
+          </div>
         </motion.div>
       )}
 
-      {/* 1.5 Live Table Map */}
-      <motion.div variants={itemVariants}>
-        {restaurantId && <LiveTableMap restaurantId={restaurantId} />}
-      </motion.div>
+      {/* Orden dinámico: por defecto "Reservas por Confirmar" va primero (hay que
+          confirmar antes de poder asignar mesa), pero si ya no queda ninguna por
+          confirmar y sí hay mesas por asignar, el tablero de mesas pasa a ser lo
+          primero — es el trabajo real pendiente en ese momento. */}
+      {mesasFirst && (
+        <motion.div variants={itemVariants}>
+          {restaurantId && <TableAssignmentBoard restaurantId={restaurantId} />}
+        </motion.div>
+      )}
 
-      {/* 1.75 Reservas Pendientes (Prioridad Alta) */}
       <motion.div variants={itemVariants}>
         <div className="bg-white dark:bg-neutral-800 rounded-3xl p-6 border border-gray-100 dark:border-neutral-700 shadow-sm relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-400 to-amber-400" />
@@ -173,7 +179,11 @@ export function OwnerDashboard() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {pending.map(res => (
+              {pending.map(res => {
+                // Si la reserva exige adelanto, no basta con "Confirmar" — primero hay que
+                // verificar el comprobante de pago (eso confirma solo, ver /dashboard/pagos).
+                const needsPayment = res.paymentStatus === 'PENDING_PAYMENT' || res.paymentStatus === 'PROOF_SUBMITTED';
+                return (
                 <div key={res.id} className="group bg-gray-50 dark:bg-neutral-900 rounded-2xl p-4 border border-gray-100 dark:border-neutral-800 hover:border-orange-200 dark:hover:border-orange-500/50 hover:shadow-md transition-all">
                   <div className="flex justify-between items-start mb-3">
                     <div className="flex items-center gap-3">
@@ -187,39 +197,74 @@ export function OwnerDashboard() {
                         </p>
                       </div>
                     </div>
-                    <span className="px-2.5 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-500 text-xs font-bold rounded-full">
-                      Pendiente
+                    <span className={cn(
+                      "px-2.5 py-1 text-xs font-bold rounded-full",
+                      needsPayment
+                        ? "bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-400"
+                        : "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-500"
+                    )}>
+                      {needsPayment ? 'Falta pago' : 'Pendiente'}
                     </span>
                   </div>
-                  
+
                   <div className="flex items-center justify-between mt-4 gap-2">
                     <div className="text-sm">
                       <span className="font-semibold text-gray-900 dark:text-white">{res.partySize}</span> <span className="text-gray-500 dark:text-gray-400 text-xs">personas</span>
                     </div>
                     <div className="flex gap-2">
                       <button
-                        onClick={async () => { await cancelMutation.mutateAsync({ id: res.id }); toast.error('Rechazada'); }}
+                        onClick={async () => {
+                          try {
+                            await cancelMutation.mutateAsync({ id: res.id });
+                            toast.error('Rechazada');
+                          } catch {
+                            toast.error('No se pudo rechazar la reserva');
+                          }
+                        }}
                         disabled={cancelMutation.isPending}
                         className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl transition-colors"
                         title="Rechazar"
                       >
                         <XCircle className="h-5 w-5" />
                       </button>
-                      <button
-                        onClick={async () => { await confirmMutation.mutateAsync(res.id); toast.success('Confirmada'); }}
-                        disabled={confirmMutation.isPending}
-                        className="px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-sm font-semibold rounded-xl hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors shadow-sm"
-                      >
-                        Confirmar
-                      </button>
+                      {needsPayment ? (
+                        <Link
+                          href="/dashboard/pagos"
+                          className="px-4 py-2 bg-orange-50 dark:bg-orange-500/10 text-orange-700 dark:text-orange-400 text-sm font-semibold rounded-xl hover:bg-orange-100 dark:hover:bg-orange-500/20 transition-colors"
+                        >
+                          Ver pago
+                        </Link>
+                      ) : (
+                        <button
+                          onClick={async () => {
+                            try {
+                              await confirmMutation.mutateAsync(res.id);
+                              toast.success('Confirmada');
+                            } catch {
+                              toast.error('No se pudo confirmar la reserva');
+                            }
+                          }}
+                          disabled={confirmMutation.isPending}
+                          className="px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-sm font-semibold rounded-xl hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors shadow-sm"
+                        >
+                          Confirmar
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
       </motion.div>
+
+      {!mesasFirst && (
+        <motion.div variants={itemVariants}>
+          {restaurantId && <TableAssignmentBoard restaurantId={restaurantId} />}
+        </motion.div>
+      )}
 
       {/* 2. Key Metrics Cards */}
       <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">

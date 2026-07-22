@@ -132,6 +132,12 @@ hospy:
   api-key: ${HOSPY_API_KEY:}
   base-url: ${HOSPY_BASE_URL:https://hospy-api-wm7v5futiq-rj.a.run.app/api/v1}
 
+table-order-integration:
+  # Webhook piloto (un solo restaurante: "El Encanto de la Selva") para el
+  # software propio de pedidos en mesas. Si está vacía, el endpoint rechaza
+  # cualquier llamada con 403.
+  api-key: ${TABLE_ORDER_INTEGRATION_API_KEY:}
+
 google:
   oauth:
     # Client ID del OAuth Client (tipo "Aplicación web") de Google Cloud.

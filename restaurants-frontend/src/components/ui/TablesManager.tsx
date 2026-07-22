@@ -2,46 +2,11 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { LayoutGrid, Plus, Trash2, Loader2, Users, Pencil, X } from 'lucide-react';
+import { LayoutGrid, Plus, Minus, Trash2, Loader2, Pencil, X, Check } from 'lucide-react';
 import { restaurantService } from '@/services/restaurantService';
-import { useRestaurantReservations } from '@/hooks/useReservations';
-import { SelectMenu } from '@/components/ui/SelectMenu';
-import { TableMatrixCard } from '@/components/ui/TableMatrixCard';
-import { TableReservationModal } from '@/components/ui/TableReservationModal';
 import { cn } from '@/utils/cn';
 import toast from 'react-hot-toast';
 import type { RestaurantTable } from '@/types/restaurant';
-import type { Reservation } from '@/types/reservation';
-import { isBefore, isAfter, parse, addMinutes, isSameDay } from 'date-fns';
-
-function getTableStatus(table: RestaurantTable, allReservations: Reservation[]) {
-  if (table.currentStatus === 'OCCUPIED' || table.currentStatus === 'UNAVAILABLE') {
-    return table.currentStatus as 'OCCUPIED' | 'UNAVAILABLE';
-  }
-
-  const tableRes = allReservations.filter(r => r.tableId === table.id);
-  const today = new Date();
-  const active = tableRes.filter(r => {
-    if (r.status !== 'PENDING' && r.status !== 'CONFIRMED') return false;
-    return isSameDay(parse(r.reservationDate, 'yyyy-MM-dd', new Date()), today);
-  });
-
-  let status: 'AVAILABLE' | 'OCCUPIED' | 'UPCOMING' = 'AVAILABLE';
-  for (const res of active) {
-    const startTime = parse(`${res.reservationDate} ${res.startTime}`, 'yyyy-MM-dd HH:mm:ss', new Date());
-    const endTime = res.endTime 
-      ? parse(`${res.reservationDate} ${res.endTime}`, 'yyyy-MM-dd HH:mm:ss', new Date())
-      : addMinutes(startTime, 120);
-    const bufferStart = addMinutes(startTime, -15);
-
-    if (isAfter(today, bufferStart) && isBefore(today, endTime)) {
-      return 'OCCUPIED';
-    } else if (isBefore(today, bufferStart)) {
-      status = 'UPCOMING';
-    }
-  }
-  return status;
-}
 
 export function TablesManager({ restaurantId }: { restaurantId: string }) {
   const qc = useQueryClient();
@@ -55,9 +20,6 @@ export function TablesManager({ restaurantId }: { restaurantId: string }) {
     queryFn: () => restaurantService.getTables(restaurantId),
     enabled: !!restaurantId,
   });
-  
-  const { data: reservationsData } = useRestaurantReservations(restaurantId, 0, 200);
-  const reservations = reservationsData?.content || [];
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: ['sections', restaurantId] });
@@ -77,10 +39,8 @@ export function TablesManager({ restaurantId }: { restaurantId: string }) {
   const [editingSectionName, setEditingSectionName] = useState('');
   const [confirmDeleteSectionId, setConfirmDeleteSectionId] = useState<string | null>(null);
   const [confirmDeleteTableId, setConfirmDeleteTableId] = useState<string | null>(null);
-
-  // ── Modal State ──
-  const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
-  const selectedTable = tables?.find(t => t.id === selectedTableId) || null;
+  const [editingTableId, setEditingTableId] = useState<string | null>(null);
+  const [editingTableCap, setEditingTableCap] = useState(1);
   const [activeTabId, setActiveTabId] = useState<string | null>(null);
 
   const addSection = useMutation({
@@ -118,6 +78,11 @@ export function TablesManager({ restaurantId }: { restaurantId: string }) {
     onSuccess: () => { invalidate(); toast.success('Mesa eliminada'); },
     onError: () => toast.error('No se pudo eliminar'),
   });
+  const editTable = useMutation({
+    mutationFn: ({ id, capacity }: { id: string, capacity: number }) => restaurantService.updateTable(restaurantId, id, { capacity }),
+    onSuccess: () => { invalidate(); toast.success('Capacidad actualizada'); setEditingTableId(null); },
+    onError: () => toast.error('No se pudo actualizar la capacidad'),
+  });
 
   const totalTables = tables?.length ?? 0;
   const totalSeats = (tables ?? []).reduce((s, t) => s + t.capacity, 0);
@@ -141,11 +106,6 @@ export function TablesManager({ restaurantId }: { restaurantId: string }) {
     : (availableSections.length > 0 ? availableSections[0].id : (unassignedTables.length > 0 ? 'unassigned' : null));
 
   const currentSectionTables = currentTab === 'unassigned' ? unassignedTables : (currentTab ? tablesBySection[currentTab] || [] : []);
-  
-  const stats = { AVAILABLE: 0, OCCUPIED: 0, UPCOMING: 0, UNAVAILABLE: 0 };
-  currentSectionTables.forEach(t => {
-    stats[getTableStatus(t, reservations)]++;
-  });
 
   const inputCls = 'w-full bg-gray-50 dark:!bg-white/[0.04] border border-gray-200 dark:!border-white/10 text-gray-900 dark:text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all placeholder:text-gray-400';
 
@@ -283,22 +243,8 @@ export function TablesManager({ restaurantId }: { restaurantId: string }) {
       {/* Tab Content */}
       {currentTab && (
         <div>
-          {/* Section actions + legend */}
-          <div className="flex items-center justify-between mb-4 gap-4 flex-wrap">
-            <div className="flex items-center gap-4 text-[11px] font-semibold">
-              <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
-                <div className="w-2 h-2 rounded-full bg-emerald-500" /> {stats.AVAILABLE} Libres
-              </span>
-              <span className="flex items-center gap-1.5 text-red-600 dark:text-red-400">
-                <div className="w-2 h-2 rounded-full bg-red-500" /> {stats.OCCUPIED} Ocupadas
-              </span>
-              <span className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
-                <div className="w-2 h-2 rounded-full bg-amber-500" /> {stats.UPCOMING} Reservadas
-              </span>
-              <span className="flex items-center gap-1.5 text-gray-400 dark:text-gray-500">
-                <div className="w-2 h-2 rounded-full bg-gray-400" /> {stats.UNAVAILABLE} N/D
-              </span>
-            </div>
+          {/* Section actions */}
+          <div className="flex items-center justify-end mb-4 gap-4 flex-wrap">
             {currentTab !== 'unassigned' && (
               <div className="flex items-center gap-2">
                 {editingSectionId === currentTab ? (
@@ -355,22 +301,7 @@ export function TablesManager({ restaurantId }: { restaurantId: string }) {
             )}
           </div>
 
-          {/* Unassigned reservations alert */}
-          {(() => {
-            const unassigned = reservations.filter(r => !r.tableId && r.sectionId === currentTab && (r.status === 'PENDING' || r.status === 'CONFIRMED'));
-            if (unassigned.length === 0) return null;
-            return (
-              <div className="bg-orange-50 dark:!bg-orange-500/5 border border-orange-200 dark:!border-orange-500/20 rounded-xl p-3 mb-4 flex items-start gap-2 text-sm text-orange-800 dark:text-orange-300">
-                <div className="mt-0.5 font-bold text-orange-600">!</div>
-                <div>
-                  <p className="font-semibold">{unassigned.length} reserva(s) sin mesa asignada.</p>
-                  <p className="text-orange-700 dark:text-orange-400 opacity-90 text-xs mt-0.5">Haz clic en una mesa de este ambiente para asignarles una.</p>
-                </div>
-              </div>
-            );
-          })()}
-
-          {/* Tables grid */}
+          {/* Tables grid — solo estructura (número + capacidad), sin estado en vivo ni asignación */}
           {currentSectionTables.length === 0 ? (
             <div className="text-center py-10">
               <LayoutGrid className="h-8 w-8 mx-auto text-gray-300 dark:text-gray-600 mb-2" />
@@ -380,12 +311,57 @@ export function TablesManager({ restaurantId }: { restaurantId: string }) {
           ) : (
             <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2.5">
               {currentSectionTables.map(t => (
-                <div key={t.id} className="relative group/delete">
-                  <TableMatrixCard
-                    table={t}
-                    reservations={reservations.filter(r => r.tableId === t.id)}
-                    onClick={() => setSelectedTableId(t.id)}
-                  />
+                <div
+                  key={t.id}
+                  className="relative flex flex-col items-center justify-center rounded-xl border border-gray-200 dark:!border-white/10 bg-gray-50 dark:!bg-white/[0.04] w-full min-h-[72px] py-2"
+                >
+                  <span className="font-bold text-base tabular-nums text-gray-900 dark:text-white">{t.tableNumber}</span>
+
+                  {editingTableId === t.id ? (
+                    <div className="flex flex-col items-center gap-1 mt-0.5">
+                      <div className="flex items-center gap-0.5 bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-lg overflow-hidden">
+                        <button
+                          onClick={() => setEditingTableCap(c => Math.max(1, c - 1))}
+                          className="p-1 text-gray-500 dark:text-gray-400 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-500/10 active:scale-95 transition-all"
+                          title="Disminuir"
+                        >
+                          <Minus className="h-3 w-3" />
+                        </button>
+                        <span className="w-6 text-center text-[11px] font-bold text-gray-900 dark:text-white tabular-nums">
+                          {editingTableCap}
+                        </span>
+                        <button
+                          onClick={() => setEditingTableCap(c => c + 1)}
+                          className="p-1 text-gray-500 dark:text-gray-400 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-500/10 active:scale-95 transition-all"
+                          title="Aumentar"
+                        >
+                          <Plus className="h-3 w-3" />
+                        </button>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => editTable.mutate({ id: t.id, capacity: editingTableCap })}
+                          disabled={editTable.isPending}
+                          className="text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-500/10 p-0.5 rounded"
+                          title="Guardar capacidad"
+                        >
+                          <Check className="h-3.5 w-3.5" />
+                        </button>
+                        <button onClick={() => setEditingTableId(null)} className="text-gray-400 hover:bg-gray-100 dark:hover:bg-neutral-800 p-0.5 rounded">
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => { setEditingTableId(t.id); setEditingTableCap(t.capacity); }}
+                      className="flex items-center gap-0.5 text-[10px] font-medium text-gray-500 dark:text-gray-400 hover:text-orange-500 mt-0.5"
+                      title="Editar capacidad"
+                    >
+                      {t.capacity} pax <Pencil className="h-2.5 w-2.5" />
+                    </button>
+                  )}
+
                   {confirmDeleteTableId === t.id ? (
                     <div className="absolute -top-1.5 -right-1.5 flex items-center gap-0.5 bg-white dark:bg-neutral-800 rounded-full shadow-md border border-red-200 dark:border-red-900/50 p-0.5 z-10">
                       <button
@@ -418,14 +394,6 @@ export function TablesManager({ restaurantId }: { restaurantId: string }) {
           )}
         </div>
       )}
-
-      <TableReservationModal
-        isOpen={!!selectedTableId}
-        onClose={() => setSelectedTableId(null)}
-        table={selectedTable}
-        reservations={reservations}
-        restaurantId={restaurantId}
-      />
     </div>
   );
 }

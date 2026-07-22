@@ -47,9 +47,17 @@ export function TableReservationModal({ isOpen, onClose, table, reservations, re
     isSameDay(parse(r.reservationDate, 'yyyy-MM-dd', new Date()), today);
 
   const assignedReservations = reservations.filter((r) => r.tableId === table.id && isActiveToday(r));
-  const assignableReservations = reservations.filter(
-    (r) => !r.tableId && !!r.sectionId && r.sectionId === table.sectionId && isActiveToday(r)
+  // Solo reservas ya CONFIRMADAS pueden ser candidatas a mesa — una reserva PENDING
+  // todavía puede caerse (no se presentó a pagar, el dueño la rechazó, etc.), así
+  // que asignarle mesa antes de confirmar reservaría el espacio de más.
+  const candidateReservations = reservations.filter(
+    (r) => !r.tableId && !!r.sectionId && r.sectionId === table.sectionId &&
+      r.status === 'CONFIRMED' && isSameDay(parse(r.reservationDate, 'yyyy-MM-dd', new Date()), today)
   );
+  // Solo se puede asignar una reserva a esta mesa si su grupo cabe en la capacidad de la mesa
+  // (todavía no soportamos combinar varias mesas para un solo grupo grande).
+  const assignableReservations = candidateReservations.filter((r) => r.partySize <= table.capacity);
+  const oversizedReservations = candidateReservations.filter((r) => r.partySize > table.capacity);
 
   const tableLabel = table.tableNumber.toLowerCase().startsWith('mesa') ? table.tableNumber : `Mesa ${table.tableNumber}`;
 
@@ -126,11 +134,14 @@ export function TableReservationModal({ isOpen, onClose, table, reservations, re
         </div>
 
         {/* Reservas de la sección sin mesa asignada: candidatas para esta mesa */}
-        {assignableReservations.length > 0 && (
+        {(assignableReservations.length > 0 || oversizedReservations.length > 0) && (
           <div className="p-5 border-b border-gray-100 dark:border-neutral-800 bg-amber-50/40 dark:bg-amber-500/5">
             <h3 className="text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider mb-3">
               Sin mesa en este ambiente — hoy
             </h3>
+            {assignableReservations.length === 0 && (
+              <p className="text-xs text-gray-500 dark:text-gray-400">Ninguna cabe en esta mesa (ver abajo).</p>
+            )}
             <div className="space-y-2">
               {assignableReservations.map((res) => (
                 <div key={res.id} className="flex items-center justify-between gap-3 bg-white dark:bg-neutral-900 rounded-xl p-3 border border-amber-100 dark:border-amber-500/10">
@@ -153,6 +164,11 @@ export function TableReservationModal({ isOpen, onClose, table, reservations, re
                 </div>
               ))}
             </div>
+            {oversizedReservations.length > 0 && (
+              <p className="text-[11px] text-amber-700/80 dark:text-amber-400/70 mt-3">
+                {oversizedReservations.length} reserva(s) más en este ambiente no caben aquí (necesitan mesa para más de {table.capacity}).
+              </p>
+            )}
           </div>
         )}
 

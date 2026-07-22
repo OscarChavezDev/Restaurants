@@ -54,6 +54,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/v1/reservations/code/**").permitAll()
                         // Asistente con IA (consulta pública por código)
                         .requestMatchers(HttpMethod.POST, "/v1/assistant/**").permitAll()
+                        // Webhook piloto de pedidos en mesa: se autentica con su propio header
+                        // (X-Table-Integration-Key), no con JWT — ver TableOrderIntegrationController.
+                        .requestMatchers(HttpMethod.PATCH, "/v1/table-order-integration/**").permitAll()
                         // Reservar y reseñar exige cuenta de cliente (login con Google) — Etapa 3
                         .anyRequest().authenticated()
                 )
