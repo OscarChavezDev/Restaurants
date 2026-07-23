@@ -143,7 +143,7 @@ function ProfileContent() {
           </div>
         </div>
 
-        <div className="bg-gray-50 dark:bg-gray-800/50 px-6 py-4 border-t border-gray-100 dark:border-gray-800">
+        <div className="bg-gray-50 dark:bg-gray-800 px-6 py-4 border-t border-gray-100 dark:border-gray-800">
           <p className="text-sm text-gray-500 dark:text-gray-400 text-center sm:text-left">
             Si deseas actualizar tus datos, por favor contacta a soporte o usa el panel de configuración (próximamente).
           </p>
