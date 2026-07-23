@@ -71,10 +71,11 @@ export function OwnerDashboard() {
     r.reservationDate === today && !r.tableId && !!r.sectionId && (r.status === 'PENDING' || r.status === 'CONFIRMED')
   );
 
-  // Prioridad dinámica: si ya no hay reservas por confirmar pero sí mesas por
-  // asignar, ese es el trabajo real pendiente — se muestra primero en vez de
-  // dejar "¡Estás al día!" ocupando el primer lugar.
-  const mesasFirst = pending.length === 0 && unassignedToday.length > 0;
+  // Prioridad dinámica: si no hay reservas por confirmar, no tiene sentido que
+  // "¡Estás al día!" ocupe el primer lugar — se muestra el tablero de mesas
+  // primero, que es información accionable. Si sí hay reservas pendientes,
+  // esas van primero (hay que confirmarlas antes de poder asignarles mesa).
+  const mesasFirst = pending.length === 0;
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Buenos días' : hour < 19 ? 'Buenas tardes' : 'Buenas noches';
