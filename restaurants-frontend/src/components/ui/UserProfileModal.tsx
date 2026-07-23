@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, User as UserIcon, Calendar, Clock, Mail, Phone, Calendar as CalendarIcon, Star, CalendarCheck, UtensilsCrossed, MessageSquare } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { formatDate } from '@/utils/formatters';
@@ -39,7 +40,13 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
 
   if (!isOpen) return null;
 
-  return (
+  // Portal a document.body: si este modal se renderiza anidado dentro del
+  // <nav> (que tiene su propio stacking context por `sticky` + `z-50`), un
+  // `fixed inset-0` interno puede terminar apilándose mal contra elementos
+  // decorativos de otras partes de la página (ej. la tarjeta flotante del
+  // Hero) aunque visualmente cubra toda la pantalla. Montarlo directo en
+  // <body> lo saca de ese árbol y garantiza que quede siempre encima.
+  return createPortal(
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 sm:p-6 animate-in fade-in duration-200">
       <div className="bg-slate-50 dark:bg-[#0A0908] rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
         {/* Header */}
@@ -73,7 +80,8 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
           {activeTab === 'history' && <HistoryContent />}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
