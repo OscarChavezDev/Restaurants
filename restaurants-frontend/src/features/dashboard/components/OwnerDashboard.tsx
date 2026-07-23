@@ -12,7 +12,7 @@ import { useMyRestaurants } from '@/hooks/useRestaurants';
 import { useManagedReservations, useConfirmReservation, useCancelReservation } from '@/hooks/useReservations';
 import { useRestaurantStats } from '@/hooks/useRestaurantStats';
 import { TableAssignmentBoard } from '@/features/dashboard/components/TableAssignmentBoard';
-import { formatTime } from '@/utils/formatters';
+import { formatTime, todayLocal } from '@/utils/formatters';
 import toast from 'react-hot-toast';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { cn } from '@/utils/cn';
@@ -64,7 +64,7 @@ export function OwnerDashboard() {
   const confirmMutation = useConfirmReservation();
   const cancelMutation = useCancelReservation();
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayLocal();
   const pending = reservations.filter((r) => r.status === 'PENDING');
   const todayReservations = reservations.filter((r) => r.reservationDate === today && r.status !== 'CANCELLED');
   const unassignedToday = reservations.filter((r) =>

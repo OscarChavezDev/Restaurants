@@ -7,7 +7,7 @@ import {
 import { useAuthStore } from '@/store/authStore';
 import { useMyRestaurants } from '@/hooks/useRestaurants';
 import { useManagedReservations, useConfirmReservation, useCancelReservation } from '@/hooks/useReservations';
-import { formatTime } from '@/utils/formatters';
+import { formatTime, todayLocal } from '@/utils/formatters';
 import toast from 'react-hot-toast';
 
 export function AdminDashboard() {
@@ -17,7 +17,7 @@ export function AdminDashboard() {
   const confirmMutation = useConfirmReservation();
   const cancelMutation = useCancelReservation();
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayLocal();
   const pending = reservations.filter((r) => r.status === 'PENDING');
   const restaurantList = restaurants?.content ?? [];
   const pendingApproval = restaurantList.filter((r) => r.status === 'PENDING_APPROVAL').length;

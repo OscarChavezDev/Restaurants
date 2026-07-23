@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { useManagedReservations } from '@/hooks/useReservations';
+import { todayLocal } from '@/utils/formatters';
 
 /** S14-04: avisa al dueño (toast) cuando una reserva de hoy pasa a ARRIVED. */
 export function useArrivalNotifications() {
@@ -8,7 +9,7 @@ export function useArrivalNotifications() {
   const seenRef = useRef<Set<string> | null>(null);
 
   useEffect(() => {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayLocal();
     const arrivedToday = reservations.filter((r) => r.status === 'ARRIVED' && r.reservationDate === today);
     const arrivedIds = new Set(arrivedToday.map((r) => r.id));
 

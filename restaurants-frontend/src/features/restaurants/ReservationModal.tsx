@@ -16,11 +16,11 @@ import { waitlistService } from '@/services/waitlistService';
 import { TimePicker } from '@/components/ui/TimePicker';
 import { DatePicker } from '@/components/ui/DatePicker';
 import { GoogleLoginButton } from '@/components/ui/GoogleLoginButton';
-import { formatTime } from '@/utils/formatters';
+import { formatTime, todayLocal } from '@/utils/formatters';
 import { cn } from '@/utils/cn';
 import type { Restaurant } from '@/types/restaurant';
 
-const TODAY = new Date().toISOString().split('T')[0];
+const TODAY = todayLocal();
 const DAYS = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
 
 interface Availability {

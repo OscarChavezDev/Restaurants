@@ -4,6 +4,14 @@ import { es } from 'date-fns/locale';
 export const formatDate = (date: string) =>
   format(parseISO(date), "d 'de' MMMM 'de' yyyy", { locale: es });
 
+/**
+ * Fecha de HOY en zona horaria local, como 'yyyy-MM-dd'. NUNCA uses
+ * `new Date().toISOString().slice(0, 10)` para esto: toISOString() convierte
+ * a UTC primero, así que en Perú (UTC-5) entre ~19:00 y 23:59 devuelve la
+ * fecha de MAÑANA en vez de la de hoy.
+ */
+export const todayLocal = () => format(new Date(), 'yyyy-MM-dd');
+
 export const formatTime = (time: string) => {
   const [h, m] = time.split(':');
   const hour = parseInt(h);

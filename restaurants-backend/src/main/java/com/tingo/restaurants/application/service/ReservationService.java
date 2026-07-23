@@ -46,6 +46,7 @@ public class ReservationService {
     private final ReservationConfigService reservationConfigService;
     private final com.tingo.restaurants.infrastructure.persistence.repository.DishJpaRepository dishRepository;
     private final com.tingo.restaurants.infrastructure.persistence.repository.ReservationOrderItemJpaRepository orderItemRepository;
+    private final com.tingo.restaurants.infrastructure.persistence.repository.UserJpaRepository userJpaRepository;
     private final AuditLogService auditLogService;
 
     @Transactional
@@ -175,10 +176,28 @@ public class ReservationService {
             orderItemRepository.saveAll(orderItems);
         }
 
+        backfillCustomerPhone(customerId, request.getCustomerPhone());
+
         eventPublisher.publishEvent(new ReservationCreatedEvent(saved));
         emailService.sendReservationCreated(saved);
         log.info("Reserva creada: {} para restaurante: {}", saved.getConfirmationCode(), request.getRestaurantId());
         return mapToResponse(saved);
+    }
+
+    /**
+     * Si la cuenta del cliente todavía no tiene teléfono guardado (típico con
+     * login de Google, que no lo pide), se completa con el que dio al
+     * reservar — así "Mi Perfil" deja de mostrar "No registrado" después de
+     * la primera reserva, sin necesitar una pantalla de edición de perfil.
+     */
+    private void backfillCustomerPhone(UUID customerId, String phone) {
+        if (customerId == null || phone == null || phone.isBlank()) return;
+        userJpaRepository.findById(customerId).ifPresent(user -> {
+            if (user.getPhone() == null || user.getPhone().isBlank()) {
+                user.setPhone(phone);
+                userJpaRepository.save(user);
+            }
+        });
     }
 
     @Transactional
