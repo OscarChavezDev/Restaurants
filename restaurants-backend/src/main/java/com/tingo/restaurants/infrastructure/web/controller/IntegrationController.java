@@ -12,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -27,21 +26,6 @@ import java.util.UUID;
 public class IntegrationController {
 
     private final RestaurantService restaurantService;
-
-    @GetMapping("/restaurants/near-event/{eventId}")
-    @PreAuthorize("hasAnyRole('SYSTEM_INTEGRATION', 'ADMIN')")
-    @SecurityRequirement(name = "bearerAuth")
-    @Operation(
-        summary = "Restaurantes cercanos a un evento",
-        description = "Endpoint para que el Sistema de Eventos consulte restaurantes disponibles " +
-                      "cercanos a la ubicación de un evento específico"
-    )
-    public ResponseEntity<ApiResponse<List<RestaurantResponse>>> restaurantsNearEvent(
-            @PathVariable String eventId,
-            @RequestParam(defaultValue = "3.0") double radiusKm) {
-        return ResponseEntity.ok(
-                ApiResponse.ok(restaurantService.findNearbyEvent(eventId, radiusKm)));
-    }
 
     @GetMapping("/restaurants/{id}/availability")
     @PreAuthorize("hasAnyRole('SYSTEM_INTEGRATION', 'ADMIN')")
