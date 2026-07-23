@@ -48,6 +48,11 @@ export function TableMatrixCard({ table, reservations, onClick }: Props) {
     status = table.currentStatus as 'OCCUPIED' | 'UNAVAILABLE';
   }
 
+  // El backend ya marca la mesa OCCUPIED al escanear el QR de llegada — acá
+  // solo se detecta el caso para mostrar "Llegó" en vez del genérico "Ocupada".
+  const arrivedToday = reservations.some(r => r.status === 'ARRIVED' &&
+    isSameDay(parse(r.reservationDate, 'yyyy-MM-dd', new Date()), today));
+
   const statusConfig = {
     AVAILABLE: {
       bg: 'bg-emerald-500/10 dark:!bg-emerald-500/[0.08]',
@@ -83,7 +88,9 @@ export function TableMatrixCard({ table, reservations, onClick }: Props) {
     },
   };
 
-  const s = statusConfig[status];
+  const s = arrivedToday && status === 'OCCUPIED'
+    ? { ...statusConfig.OCCUPIED, label: 'Llegó' }
+    : statusConfig[status];
   const tableLabel = table.tableNumber.toLowerCase().startsWith('mesa') ? table.tableNumber : table.tableNumber;
 
   return (

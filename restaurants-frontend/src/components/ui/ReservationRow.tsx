@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Calendar, CheckCircle, XCircle, CheckCheck, UserX, Star, Info } from 'lucide-react';
+import { Calendar, CheckCircle, XCircle, CheckCheck, CheckSquare, UserX, Star, Info } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { formatDate, formatTime, STATUS_LABELS, STATUS_COLORS } from '@/utils/formatters';
 import type { Reservation } from '@/types/reservation';
@@ -75,6 +75,12 @@ export function ReservationRow({
               {res.customerPhone && (
                 <span className="text-gray-500 dark:text-gray-500">{res.customerPhone}</span>
               )}
+            </div>
+          )}
+          {res.status === 'ARRIVED' && res.arrivedAt && (
+            <div className="mt-2 flex items-center gap-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+              <CheckSquare className="h-3.5 w-3.5" />
+              Llegó a las {new Date(res.arrivedAt).toLocaleTimeString('es-PE', { hour: 'numeric', minute: '2-digit', hour12: true })}
             </div>
           )}
         </div>

@@ -333,6 +333,18 @@ public class ReservationService {
         Reservation arrived = reservation.arrive();
         log.info("Reserva {} marcada como ARRIVED", arrived.getConfirmationCode());
         Reservation saved = reservationRepository.save(arrived);
+
+        // Si la reserva ya tenía mesa asignada, el cliente llegó de verdad: la mesa
+        // pasa a OCUPADA. Antes esto no se hacía y la mesa se veía "disponible" al
+        // escanear el QR, porque el tablero solo cuenta reservas PENDING/CONFIRMED
+        // como activas — una vez ARRIVED, dejaba de contar para nada.
+        if (saved.getTableId() != null) {
+            tableJpaRepository.findById(saved.getTableId()).ifPresent(t -> {
+                t.setCurrentStatus("OCCUPIED");
+                tableJpaRepository.save(t);
+            });
+        }
+
         auditLogService.record("RESERVATION", saved.getId(), "MARK_ARRIVED", requesterId,
                 "Código: " + saved.getConfirmationCode());
         return mapToResponse(saved);

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, User as UserIcon, Calendar, Clock, Mail, Phone, Calendar as CalendarIcon, Star, CalendarCheck, UtensilsCrossed, MessageSquare } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
-import { formatDate } from '@/utils/formatters';
+import { formatDate, formatTime } from '@/utils/formatters';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import toast from 'react-hot-toast';
@@ -399,7 +399,7 @@ function HistoryContent() {
                     <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                       <div className="flex items-center gap-2">
                         <CalendarCheck className="w-4 h-4 text-orange-500" />
-                        <span>{format(new Date(res.reservationDate), "dd 'de' MMMM, yyyy", { locale: es })} a las {res.startTime}</span>
+                        <span>{format(new Date(res.reservationDate), "dd 'de' MMMM, yyyy", { locale: es })} a las {formatTime(res.startTime)}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <UtensilsCrossed className="w-4 h-4 text-orange-500" />

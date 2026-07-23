@@ -4,7 +4,7 @@ import { X, Clock, User, Phone, CheckCircle, XCircle, UserX, CheckSquare, Armcha
 import type { RestaurantTable } from '@/types/restaurant';
 import type { Reservation } from '@/types/reservation';
 import { useConfirmReservation, useCancelReservation, useCompleteReservation, useNoShowReservation, useAssignTable } from '@/hooks/useReservations';
-import { STATUS_LABELS, STATUS_COLORS } from '@/utils/formatters';
+import { STATUS_LABELS, STATUS_COLORS, formatTime } from '@/utils/formatters';
 import { cn } from '@/utils/cn';
 import toast from 'react-hot-toast';
 import { isSameDay, parse } from 'date-fns';
@@ -149,7 +149,7 @@ export function TableReservationModal({ isOpen, onClose, table, reservations, re
                 <div key={res.id} className="flex items-center justify-between gap-3 bg-white dark:bg-neutral-900 rounded-xl p-3 border border-amber-100 dark:border-amber-500/10">
                   <div className="min-w-0">
                     <p className="text-sm font-bold text-gray-900 dark:text-white truncate">
-                      {res.startTime.substring(0, 5)} · {res.customerName}
+                      {formatTime(res.startTime)} · {res.customerName}
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">{res.partySize} pax</p>
                   </div>
@@ -197,9 +197,9 @@ export function TableReservationModal({ isOpen, onClose, table, reservations, re
                     <div className="flex items-center gap-2">
                       <Clock className="h-4 w-4 text-orange-500" />
                       <span className="font-bold text-gray-900 dark:text-white text-lg tabular-nums">
-                        {res.startTime.substring(0,5)}
+                        {formatTime(res.startTime)}
                       </span>
-                      {res.endTime && <span className="text-gray-400 dark:text-gray-500 text-sm font-medium tabular-nums">- {res.endTime.substring(0,5)}</span>}
+                      {res.endTime && <span className="text-gray-400 dark:text-gray-500 text-sm font-medium tabular-nums">- {formatTime(res.endTime)}</span>}
                     </div>
                     <span className={cn('px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider', STATUS_COLORS[res.status])}>
                       {STATUS_LABELS[res.status]}
@@ -213,6 +213,12 @@ export function TableReservationModal({ isOpen, onClose, table, reservations, re
                     {res.customerPhone && (
                       <div className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                         <Phone className="h-4 w-4 text-gray-400" /> {res.customerPhone}
+                      </div>
+                    )}
+                    {res.status === 'ARRIVED' && res.arrivedAt && (
+                      <div className="flex items-center gap-2 text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                        <CheckSquare className="h-4 w-4" />
+                        Llegó a las {new Date(res.arrivedAt).toLocaleTimeString('es-PE', { hour: 'numeric', minute: '2-digit', hour12: true })}
                       </div>
                     )}
                   </div>
