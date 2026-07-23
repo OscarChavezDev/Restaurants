@@ -50,8 +50,10 @@ export function TableReservationModal({ isOpen, onClose, table, reservations, re
   // Solo reservas ya CONFIRMADAS pueden ser candidatas a mesa — una reserva PENDING
   // todavía puede caerse (no se presentó a pagar, el dueño la rechazó, etc.), así
   // que asignarle mesa antes de confirmar reservaría el espacio de más.
+  // La sección es opcional al reservar: si el cliente no eligió una, la reserva
+  // es candidata para CUALQUIER mesa (no solo las de una sección que nunca eligió).
   const candidateReservations = reservations.filter(
-    (r) => !r.tableId && !!r.sectionId && r.sectionId === table.sectionId &&
+    (r) => !r.tableId && (!r.sectionId || r.sectionId === table.sectionId) &&
       r.status === 'CONFIRMED' && isSameDay(parse(r.reservationDate, 'yyyy-MM-dd', new Date()), today)
   );
   // Solo se puede asignar una reserva a esta mesa si su grupo cabe en la capacidad de la mesa
