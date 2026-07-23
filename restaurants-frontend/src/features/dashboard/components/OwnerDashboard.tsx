@@ -67,8 +67,11 @@ export function OwnerDashboard() {
   const today = todayLocal();
   const pending = reservations.filter((r) => r.status === 'PENDING');
   const todayReservations = reservations.filter((r) => r.reservationDate === today && r.status !== 'CANCELLED');
+  // La sección es opcional al reservar, así que NO se exige r.sectionId acá:
+  // una reserva de hoy sin mesa sigue necesitando que alguien se la asigne
+  // aunque el cliente no haya elegido sección.
   const unassignedToday = reservations.filter((r) =>
-    r.reservationDate === today && !r.tableId && !!r.sectionId && (r.status === 'PENDING' || r.status === 'CONFIRMED')
+    r.reservationDate === today && !r.tableId && (r.status === 'PENDING' || r.status === 'CONFIRMED')
   );
 
   // Prioridad dinámica: si no hay reservas por confirmar, no tiene sentido que
