@@ -80,10 +80,15 @@ public class GlobalExceptionHandler {
             String fieldName = error instanceof FieldError ? ((FieldError) error).getField() : error.getObjectName();
             errors.put(fieldName, error.getDefaultMessage());
         });
+        // El frontend muestra este "message" tal cual en el toast de error — antes
+        // decía siempre "Error de validación" sin explicar qué corregir. Ahora junta
+        // los mensajes reales de cada campo (ej. "La fecha de reserva no puede ser
+        // en el pasado"), que ya existían en `data` pero nadie los mostraba.
+        String message = String.join(" ", errors.values());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ApiResponse.<Map<String, String>>builder()
                         .success(false)
-                        .message("Error de validación")
+                        .message(message.isBlank() ? "Error de validación" : message)
                         .data(errors)
                         .errorCode("VALIDATION_ERROR")
                         .build());

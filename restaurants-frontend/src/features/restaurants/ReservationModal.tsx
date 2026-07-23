@@ -20,7 +20,6 @@ import { formatTime, todayLocal } from '@/utils/formatters';
 import { cn } from '@/utils/cn';
 import type { Restaurant } from '@/types/restaurant';
 
-const TODAY = todayLocal();
 const DAYS = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
 
 interface Availability {
@@ -49,7 +48,10 @@ export function ReservationModal({
   const createReservation = useCreateReservation();
 
   const [step, setStep] = useState(0);
-  const [date, setDate] = useState(TODAY);
+  // Calculado en cada apertura del modal (no una vez por carga de página): si el
+  // cliente deja la pestaña abierta de un día para otro, "hoy" debe seguir siendo
+  // el día real, no el que era cuando se cargó la página originalmente.
+  const [date, setDate] = useState(() => todayLocal());
   const [time, setTime] = useState('13:00');
   const [partySize, setPartySize] = useState(2);
   const [sectionId, setSectionId] = useState<string | undefined>(undefined);
@@ -136,6 +138,9 @@ export function ReservationModal({
       setTermsAccepted(false);
       setWaitlistJoined(false);
       setOrderQty({});
+      // Por si el modal se quedó abierto (o solo oculto) de un día para otro:
+      // al reabrirlo, la fecha por defecto vuelve a ser el día real de hoy.
+      setDate((d) => (d < todayLocal() ? todayLocal() : d));
     }
   }, [open]);
 
@@ -329,7 +334,7 @@ export function ReservationModal({
                 <div className="space-y-4">
                   <div>
                     <label className={labelCls}><Calendar className="inline h-3.5 w-3.5 mr-1 -mt-0.5" />Fecha</label>
-                    <DatePicker min={TODAY} value={date} onChange={setDate} fullWidth />
+                    <DatePicker min={todayLocal()} value={date} onChange={setDate} fullWidth />
                   </div>
                   <div>
                     <label className={labelCls}><Clock className="inline h-3.5 w-3.5 mr-1 -mt-0.5" />Hora</label>
