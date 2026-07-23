@@ -28,15 +28,6 @@ spring:
     show-sql: false
     open-in-view: false
 
-  mail:
-    host: smtp.gmail.com
-    port: 587
-    username: ${MAIL_USERNAME:}
-    password: ${MAIL_PASSWORD:}
-    properties:
-      mail.smtp.starttls.enable: true
-      mail.smtp.auth: true
-
   flyway:
     enabled: true
     locations: classpath:db/migration
@@ -79,12 +70,6 @@ management:
   endpoint:
     health:
       show-details: when-authorized
-  health:
-    # El indicador de mail intenta conectar al SMTP en cada health check; sin
-    # credenciales SMTP eso deja el health en DOWN y marca el contenedor unhealthy.
-    # El envío de correos sigue funcionando; solo se excluye del /actuator/health.
-    mail:
-      enabled: false
 
 logging:
   level:
@@ -109,6 +94,18 @@ cors:
 app:
   # URL pública del frontend (para los enlaces de los correos).
   frontend-url: ${FRONTEND_URL:http://localhost:3000}
+
+resend:
+  # Envío de correos vía la API HTTP de Resend (https://resend.com), no SMTP:
+  # Render bloquea las conexiones salientes por los puertos SMTP (25/465/587)
+  # en todos sus planes, así que Gmail por SMTP nunca puede conectar desde ahí.
+  # Si está vacía, se loggea y no se manda (igual que el resto de integraciones).
+  api-key: ${RESEND_API_KEY:}
+  # "onboarding@resend.dev" funciona sin verificar dominio propio, pero Resend
+  # lo limita a mandar solo a la cuenta con la que te registraste — para mandar
+  # a cualquier cliente hace falta verificar un dominio propio en Resend y
+  # poner acá una dirección de ese dominio.
+  from: ${RESEND_FROM:onboarding@resend.dev}
 
 gemini:
   # API key gratuita de Google AI Studio (https://aistudio.google.com/apikey)

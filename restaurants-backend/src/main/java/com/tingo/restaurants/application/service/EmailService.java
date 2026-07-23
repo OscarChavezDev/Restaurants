@@ -2,13 +2,10 @@ package com.tingo.restaurants.application.service;
 
 import com.tingo.restaurants.domain.model.Reservation;
 import com.tingo.restaurants.domain.repository.RestaurantRepository;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
+import com.tingo.restaurants.infrastructure.integration.ResendEmailClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -22,12 +19,9 @@ import java.util.Locale;
 @RequiredArgsConstructor
 public class EmailService {
 
-    private final JavaMailSender mailSender;
+    private final ResendEmailClient resendClient;
     private final RestaurantRepository restaurantRepository;
     private final com.tingo.restaurants.infrastructure.persistence.repository.ReservationConfigJpaRepository reservationConfigRepository;
-
-    @Value("${spring.mail.username:noreply@tingo-restaurants.com}")
-    private String fromEmail;
 
     @Value("${app.frontend-url:http://localhost:3000}")
     private String frontendUrl;
@@ -178,18 +172,7 @@ public class EmailService {
     }
 
     private void sendHtml(String to, String subject, String html) {
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-            helper.setFrom(fromEmail);
-            helper.setTo(to);
-            helper.setSubject(subject);
-            helper.setText(html, true);
-            mailSender.send(message);
-            log.info("Email '{}' enviado a {}", subject, to);
-        } catch (MessagingException | RuntimeException e) {
-            log.error("Error enviando email a {}: {}", to, e.getMessage());
-        }
+        resendClient.send(to, subject, html);
     }
 
     private boolean noEmail(Reservation r) {
@@ -302,20 +285,10 @@ public class EmailService {
     }
 
     private void send(Reservation r, String subject, String html, byte[] qrPng) {
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-            helper.setFrom(fromEmail);
-            helper.setTo(r.getCustomerEmail());
-            helper.setSubject(subject);
-            helper.setText(html, true);
-            if (qrPng != null) {
-                helper.addInline("qr", new org.springframework.core.io.ByteArrayResource(qrPng), "image/png");
-            }
-            mailSender.send(message);
-            log.info("Email '{}' enviado a {}", subject, r.getCustomerEmail());
-        } catch (MessagingException | RuntimeException e) {
-            log.error("Error enviando email a {}: {}", r.getCustomerEmail(), e.getMessage());
+        if (qrPng != null) {
+            resendClient.send(r.getCustomerEmail(), subject, html, qrPng, "qr", "qr.png");
+        } else {
+            resendClient.send(r.getCustomerEmail(), subject, html);
         }
     }
 
