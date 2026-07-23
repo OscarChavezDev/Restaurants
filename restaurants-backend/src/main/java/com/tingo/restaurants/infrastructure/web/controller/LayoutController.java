@@ -6,8 +6,11 @@ import com.tingo.restaurants.application.dto.request.UpdateTableRequest;
 import com.tingo.restaurants.application.dto.response.ApiResponse;
 import com.tingo.restaurants.application.dto.response.SectionResponse;
 import com.tingo.restaurants.application.dto.response.TableResponse;
+import com.tingo.restaurants.domain.model.enums.ReservationStatus;
+import com.tingo.restaurants.infrastructure.persistence.entity.ReservationEntity;
 import com.tingo.restaurants.infrastructure.persistence.entity.RestaurantSectionEntity;
 import com.tingo.restaurants.infrastructure.persistence.entity.RestaurantTableEntity;
+import com.tingo.restaurants.infrastructure.persistence.repository.ReservationJpaRepository;
 import com.tingo.restaurants.infrastructure.persistence.repository.RestaurantSectionJpaRepository;
 import com.tingo.restaurants.infrastructure.persistence.repository.RestaurantTableJpaRepository;
 import com.tingo.restaurants.infrastructure.security.OwnershipGuard;
@@ -22,6 +25,12 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -35,6 +44,7 @@ public class LayoutController {
 
     private final RestaurantSectionJpaRepository sectionRepository;
     private final RestaurantTableJpaRepository tableRepository;
+    private final ReservationJpaRepository reservationRepository;
     private final OwnershipGuard ownershipGuard;
 
     // ─── Secciones ──────────────────────────────────────────────
@@ -108,9 +118,44 @@ public class LayoutController {
     public ResponseEntity<ApiResponse<List<TableResponse>>> listTables(@PathVariable UUID restaurantId) {
         Map<UUID, String> sectionNames = sectionRepository.findByRestaurantIdOrderByName(restaurantId)
                 .stream().collect(Collectors.toMap(RestaurantSectionEntity::getId, RestaurantSectionEntity::getName));
+        Map<UUID, String> nextReservationTimes = nextReservationTimeByTable(restaurantId);
         List<TableResponse> data = tableRepository.findByRestaurantIdOrderByTableNumber(restaurantId)
-                .stream().map(t -> toTableResponse(t, sectionNames)).toList();
+                .stream().map(t -> toTableResponse(t, sectionNames, nextReservationTimes.get(t.getId()))).toList();
         return ResponseEntity.ok(ApiResponse.ok(data));
+    }
+
+    /**
+     * Hora (HH:mm) de la próxima reserva de hoy por mesa, para que el software
+     * del mesero (u otro consumidor externo de este endpoint público) sepa qué
+     * mesa está reservada y a qué hora, sin exponer datos del cliente — la
+     * lista completa de reservas (con nombre/teléfono) requiere login de
+     * dueño (`GET /v1/reservations/restaurant/{id}`), esto no.
+     */
+    private Map<UUID, String> nextReservationTimeByTable(UUID restaurantId) {
+        LocalDate today = LocalDate.now();
+        LocalDateTime now = LocalDateTime.now();
+
+        List<ReservationEntity> todays = new ArrayList<>();
+        todays.addAll(reservationRepository.findByRestaurantIdAndReservationDateAndStatus(
+                restaurantId, today, ReservationStatus.PENDING));
+        todays.addAll(reservationRepository.findByRestaurantIdAndReservationDateAndStatus(
+                restaurantId, today, ReservationStatus.CONFIRMED));
+
+        Map<UUID, LocalTime> earliestByTable = new HashMap<>();
+        for (ReservationEntity r : todays) {
+            if (r.getTableId() == null) continue;
+            LocalDateTime end = r.getEndTime() != null
+                    ? LocalDateTime.of(today, r.getEndTime())
+                    : LocalDateTime.of(today, r.getStartTime()).plusMinutes(120);
+            if (end.isBefore(now)) continue; // ya pasó, no la mostramos
+            earliestByTable.merge(r.getTableId(), r.getStartTime(),
+                    (a, b) -> a.isBefore(b) ? a : b);
+        }
+
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("HH:mm");
+        Map<UUID, String> result = new HashMap<>();
+        earliestByTable.forEach((tableId, time) -> result.put(tableId, time.format(fmt)));
+        return result;
     }
 
     @PostMapping("/tables")
@@ -202,11 +247,16 @@ public class LayoutController {
     }
 
     private TableResponse toTableResponse(RestaurantTableEntity t, Map<UUID, String> sectionNames) {
+        return toTableResponse(t, sectionNames, null);
+    }
+
+    private TableResponse toTableResponse(RestaurantTableEntity t, Map<UUID, String> sectionNames, String nextReservationTime) {
         return TableResponse.builder()
                 .id(t.getId()).tableNumber(t.getTableNumber()).capacity(t.getCapacity())
                 .sectionId(t.getSectionId())
                 .sectionName(t.getSectionId() != null ? sectionNames.get(t.getSectionId()) : null)
                 .currentStatus(t.getCurrentStatus())
+                .nextReservationTime(nextReservationTime)
                 .active(t.isActive()).build();
     }
 }

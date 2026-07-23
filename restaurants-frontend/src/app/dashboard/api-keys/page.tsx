@@ -215,6 +215,10 @@ export default function ApiKeysPage() {
                 title="Detalle restaurante (GET)"
                 code={`curl "${apiBaseUrl}/v1/developer-api/restaurants/{id}" \\\n  -H "X-API-Key: rp_live_..."`}
               />
+              <CodeSnippet
+                title="Marcar mesa ocupada/libre (PATCH, tu propio restaurante)"
+                code={`curl -X PATCH "${apiBaseUrl}/v1/restaurants/{tuRestaurantId}/tables/{tableId}/status?status=OCCUPIED" \\\n  -H "X-API-Key: rp_live_..."`}
+              />
             </div>
           </div>
 

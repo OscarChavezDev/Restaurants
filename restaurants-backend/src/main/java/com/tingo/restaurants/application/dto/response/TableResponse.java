@@ -17,4 +17,6 @@ public class TableResponse {
     @JsonProperty("isActive")
     private boolean active;
     private String currentStatus;
+    /** Hora (HH:mm) de la próxima reserva de hoy asignada a esta mesa, si tiene. Solo la hora: sin datos del cliente. */
+    private String nextReservationTime;
 }

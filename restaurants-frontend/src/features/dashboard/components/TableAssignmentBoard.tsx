@@ -56,6 +56,11 @@ export function TableAssignmentBoard({ restaurantId }: { restaurantId: string })
     queryKey: ['tables', restaurantId],
     queryFn: () => restaurantService.getTables(restaurantId),
     enabled: !!restaurantId,
+    // El estado de la mesa puede cambiar desde fuera (ej. el software del
+    // mesero marcándola ocupada/libre), no solo desde acciones en este
+    // dashboard — por eso este tablero refresca solo, a diferencia del resto
+    // de queries que usan el staleTime por defecto.
+    refetchInterval: 10000,
   });
 
   const { data: reservationsData } = useRestaurantReservations(restaurantId, 0, 200);

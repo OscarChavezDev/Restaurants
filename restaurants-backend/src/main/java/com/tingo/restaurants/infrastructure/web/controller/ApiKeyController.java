@@ -21,15 +21,20 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Gestión de las propias API keys del desarrollador (requiere el JWT normal de
- * sesión, no una key — la key se usa solo contra /v1/developer-api/**).
+ * Gestión de las propias API keys (requiere el JWT normal de sesión, no una
+ * key). Originalmente solo para el rol DEVELOPER (portal de catálogo); también
+ * la usan dueños de restaurante (RESTAURANTE_OWNER) para generar la key que
+ * autentica a su propio software de mesero — ApiKeyAuthenticationFilter carga
+ * al usuario real dueño de la key, así que los @PreAuthorize/OwnershipGuard de
+ * cualquier endpoint (ej. LayoutController.updateTableStatus) funcionan igual
+ * que con el JWT, sin necesitar código nuevo por rol.
  */
 @RestController
 @RequestMapping("/v1/developer/api-keys")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('DEVELOPER')")
+@PreAuthorize("hasAnyRole('DEVELOPER', 'RESTAURANTE_OWNER')")
 @SecurityRequirement(name = "bearerAuth")
-@Tag(name = "Gestión de API Keys", description = "Generar, listar y revocar las propias API keys de desarrollador")
+@Tag(name = "Gestión de API Keys", description = "Generar, listar y revocar las propias API keys")
 public class ApiKeyController {
 
     private final ApiKeyService apiKeyService;

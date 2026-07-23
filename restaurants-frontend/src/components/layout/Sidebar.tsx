@@ -28,7 +28,7 @@ const navItems = [
   { href: '/dashboard/users',        icon: Users,           labelKey: 'users',        roles: ['ADMIN'] },
   { href: '/dashboard/admin',        icon: LayoutDashboard, labelKey: 'adminPanel',   roles: ['ADMIN'] },
   { href: '/dashboard/auditoria',    icon: ShieldCheck,     labelKey: 'auditLogs',    roles: ['ADMIN'] },
-  { href: '/dashboard/api-keys',     icon: KeyRound,       labelKey: 'apiKeys',      roles: ['DEVELOPER'] },
+  { href: '/dashboard/api-keys',     icon: KeyRound,       labelKey: 'apiKeys',      roles: ['DEVELOPER', 'RESTAURANTE_OWNER'] },
 ] as const;
 
 const NAV_GROUPS = [
