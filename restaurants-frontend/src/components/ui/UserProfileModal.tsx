@@ -234,7 +234,7 @@ function ReservationsContent() {
       </div>
 
       <div className="mb-6 flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
+        <div className="relative flex-1 min-w-0">
           <input
             type="text"
             placeholder="Buscar por restaurante o código..."
@@ -243,18 +243,19 @@ function ReservationsContent() {
             className="w-full rounded-xl border border-gray-200 dark:border-gray-800/60 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 bg-white dark:bg-gray-900/40 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 transition-all shadow-sm hover:border-gray-300 dark:hover:border-gray-700"
           />
         </div>
-        <SelectMenu
-          value={statusFilter}
-          onChange={setStatusFilter}
-          options={[
-            { value: '', label: 'Todos los estados' },
-            { value: 'PENDING', label: 'Pendiente' },
-            { value: 'CONFIRMED', label: 'Confirmada' },
-            { value: 'COMPLETED', label: 'Completada' },
-            { value: 'CANCELLED', label: 'Cancelada' },
-          ]}
-          className="min-w-[180px]"
-        />
+        <div className="shrink-0 sm:w-[180px]">
+          <SelectMenu
+            value={statusFilter}
+            onChange={setStatusFilter}
+            options={[
+              { value: '', label: 'Todos los estados' },
+              { value: 'PENDING', label: 'Pendiente' },
+              { value: 'CONFIRMED', label: 'Confirmada' },
+              { value: 'COMPLETED', label: 'Completada' },
+              { value: 'CANCELLED', label: 'Cancelada' },
+            ]}
+          />
+        </div>
       </div>
 
       {isLoading ? (
