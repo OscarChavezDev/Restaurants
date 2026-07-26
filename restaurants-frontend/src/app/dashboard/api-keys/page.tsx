@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { KeyRound, Plus, Trash2, Copy, Check, X, Loader2, AlertTriangle, Terminal, RefreshCw, Sparkles } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useApiKeys, useGenerateApiKey, useRevokeApiKey, useRegenerateApiKey } from '@/hooks/useApiKeys';
+import { useAuthStore } from '@/store/authStore';
 
 const CodeSnippet = ({ title, code }: { title: string; code: string }) => {
   const [copiedLocal, setCopiedLocal] = useState(false);
@@ -28,6 +29,8 @@ const CodeSnippet = ({ title, code }: { title: string; code: string }) => {
 };
 
 export default function ApiKeysPage() {
+  const user = useAuthStore((s) => s.user);
+  const isDeveloper = user?.role === 'DEVELOPER';
   const { data: keys, isLoading } = useApiKeys();
   const generateMutation = useGenerateApiKey();
   const revokeMutation = useRevokeApiKey();
@@ -100,7 +103,9 @@ export default function ApiKeysPage() {
         <div>
           <h1 className="font-display text-2xl font-bold text-gray-900 dark:text-gray-50">API Keys</h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Genera claves para consumir el catálogo de restaurantes desde tu propio sistema.
+            {isDeveloper
+              ? 'Genera claves para consumir el catálogo de restaurantes desde tu propio sistema.'
+              : 'Genera claves para conectar tus propias herramientas (ej. un sistema de pedidos) a tu restaurante.'}
           </p>
         </div>
         <button
@@ -194,7 +199,9 @@ export default function ApiKeysPage() {
         )}
       </div>
 
-      {/* Documentación Compacta (Bento Grid) */}
+      {/* Documentación Compacta (Bento Grid) — solo tiene sentido para quien está integrando
+          contra el catálogo público (rol DEVELOPER); a un dueño de restaurante no le pertenece. */}
+      {isDeveloper && (
       <div className="flex flex-col gap-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Intro y Autenticación */}
@@ -214,10 +221,6 @@ export default function ApiKeysPage() {
               <CodeSnippet
                 title="Detalle restaurante (GET)"
                 code={`curl "${apiBaseUrl}/v1/developer-api/restaurants/{id}" \\\n  -H "X-API-Key: rp_live_..."`}
-              />
-              <CodeSnippet
-                title="Marcar mesa ocupada/libre (PATCH, tu propio restaurante)"
-                code={`curl -X PATCH "${apiBaseUrl}/v1/restaurants/{tuRestaurantId}/tables/{tableId}/status?status=OCCUPIED" \\\n  -H "X-API-Key: rp_live_..."`}
               />
             </div>
           </div>
@@ -275,6 +278,7 @@ export default function ApiKeysPage() {
           </div>
         </div>
       </div>
+      )}
     </div>
 
       {/* Modal: generar / mostrar clave */}

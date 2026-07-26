@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Restaurants — Integración de Sistemas</title>
+<style>
+  :root {
+    --bg: #0b0a08;
+    --bg-panel: #16130f;
+    --bg-panel-2: #1c1812;
+    --bg-code: #100e0c;
+    --ink: #f3eee6;
+    --ink-dim: #9c9284;
+    --ink-faint: #6e6558;
+    --line: rgba(243, 238, 230, 0.1);
+    --line-strong: rgba(243, 238, 230, 0.18);
+
+    --brasa: #ea6a1f;
+    --brasa-soft: rgba(234, 106, 31, 0.13);
+    --brasa-line: rgba(234, 106, 31, 0.35);
+
+    --selva: #22b57e;
+    --selva-soft: rgba(34, 181, 126, 0.13);
+    --selva-line: rgba(34, 181, 126, 0.35);
+
+    --mesero: #8b8bf7;
+    --mesero-soft: rgba(139, 139, 247, 0.15);
+    --mesero-line: rgba(139, 139, 247, 0.38);
+
+    --good: #22b57e;
+    --warn: #e0a92d;
+
+    --font-display: "Archivo Narrow", "Roboto Condensed", "Arial Narrow", sans-serif;
+    --font-body: Georgia, "Iowan Old Style", "Times New Roman", serif;
+    --font-mono: "SF Mono", "Cascadia Code", "JetBrains Mono", Consolas, "Liberation Mono", monospace;
+  }
+
+  :root[data-theme="light"] {
+    --bg: #faf6ef;
+    --bg-panel: #ffffff;
+    --bg-panel-2: #f3ede2;
+    --bg-code: #1b170f;
+    --ink: #241f16;
+    --ink-dim: #6b6151;
+    --ink-faint: #948a79;
+    --line: rgba(36, 31, 22, 0.12);
+    --line-strong: rgba(36, 31, 22, 0.2);
+
+    --brasa: #c24e0e;
+    --brasa-soft: rgba(194, 78, 14, 0.09);
+    --brasa-line: rgba(194, 78, 14, 0.35);
+
+    --selva: #12805a;
+    --selva-soft: rgba(18, 128, 90, 0.09);
+    --selva-line: rgba(18, 128, 90, 0.35);
+
+    --mesero: #5a5ae0;
+    --mesero-soft: rgba(90, 90, 224, 0.1);
+    --mesero-line: rgba(90, 90, 224, 0.35);
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #faf6ef;
+      --bg-panel: #ffffff;
+      --bg-panel-2: #f3ede2;
+      --bg-code: #1b170f;
+      --ink: #241f16;
+      --ink-dim: #6b6151;
+      --ink-faint: #948a79;
+      --line: rgba(36, 31, 22, 0.12);
+      --line-strong: rgba(36, 31, 22, 0.2);
+
+      --brasa: #c24e0e;
+      --brasa-soft: rgba(194, 78, 14, 0.09);
+      --brasa-line: rgba(194, 78, 14, 0.35);
+
+      --selva: #12805a;
+      --selva-soft: rgba(18, 128, 90, 0.09);
+      --selva-line: rgba(18, 128, 90, 0.35);
+
+      --mesero: #5a5ae0;
+      --mesero-soft: rgba(90, 90, 224, 0.1);
+      --mesero-line: rgba(90, 90, 224, 0.35);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection { background: var(--brasa-soft); color: var(--ink); }
+
+  a { color: inherit; }
+
+  .eyebrow {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ink-faint);
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    text-wrap: balance;
+    margin: 0;
+    letter-spacing: 0.01em;
+  }
+
+  code, pre, .mono {
+    font-family: var(--font-mono);
+  }
+
+  /* ── Masthead ───────────────────────────────────────────────── */
+  .masthead {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 56px 28px 40px;
+    border-bottom: 1px solid var(--line);
+  }
+  .masthead .eyebrow { margin-bottom: 14px; }
+  .masthead h1 {
+    font-size: clamp(30px, 5vw, 46px);
+    line-height: 1.08;
+    margin-bottom: 16px;
+  }
+  .masthead h1 em {
+    font-style: normal;
+    color: var(--brasa);
+  }
+  .masthead p.thesis {
+    font-size: 18px;
+    max-width: 62ch;
+    color: var(--ink-dim);
+    margin-bottom: 28px;
+  }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 22px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-display);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-dim);
+  }
+  .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+  .dot.brasa { background: var(--brasa); }
+  .dot.selva { background: var(--selva); }
+  .dot.mesero { background: var(--mesero); }
+
+  /* ── Sticky nav ─────────────────────────────────────────────── */
+  .topnav {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  .topnav-inner {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 0 28px;
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+  }
+  .topnav a {
+    font-family: var(--font-display);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    text-decoration: none;
+    color: var(--ink-dim);
+    padding: 14px 14px;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+  .topnav a:hover { color: var(--ink); }
+  .topnav a.brasa:hover { border-color: var(--brasa); }
+  .topnav a.selva:hover { border-color: var(--selva); }
+  .topnav a.mesero:hover { border-color: var(--mesero); }
+
+  /* ── Sections ───────────────────────────────────────────────── */
+  main { max-width: 980px; margin: 0 auto; padding: 0 28px; }
+
+  section.block { padding: 56px 0; border-bottom: 1px solid var(--line); }
+  section.block:last-of-type { border-bottom: none; }
+
+  .section-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 8px; }
+  .section-head .num { font-family: var(--font-mono); font-size: 14px; color: var(--ink-faint); }
+  .section-head h2 { font-size: clamp(24px, 3.4vw, 32px); }
+  .section-kicker { color: var(--ink-dim); max-width: 66ch; margin: 14px 0 34px; font-size: 16.5px; }
+  .section-kicker strong { color: var(--ink); }
+
+  .stack { display: flex; flex-direction: column; gap: 34px; }
+
+  .card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+    padding: 22px 24px;
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--line-strong);
+    border-radius: 4px;
+  }
+  .card.brasa { border-left-color: var(--brasa); }
+  .card.selva { border-left-color: var(--selva); }
+  .card.mesero { border-left-color: var(--mesero); }
+
+  .card h3 { font-size: 18px; margin-bottom: 6px; }
+  .card .tag {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 3px;
+    margin-left: 10px;
+    vertical-align: middle;
+    letter-spacing: 0;
+  }
+  .tag.brasa { background: var(--brasa-soft); color: var(--brasa); }
+  .tag.selva { background: var(--selva-soft); color: var(--selva); }
+  .tag.mesero { background: var(--mesero-soft); color: var(--mesero); }
+
+  .card p { color: var(--ink-dim); font-size: 15.5px; max-width: 72ch; }
+  .card p code, .card li code { font-size: 0.86em; }
+
+  /* ── Code panel ─────────────────────────────────────────────── */
+  .code-panel {
+    background: var(--bg-code);
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .code-titlebar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 14px;
+    background: rgba(255,255,255,0.03);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: #a99e8c;
+  }
+  .code-titlebar .dots { display: flex; gap: 5px; margin-right: 4px; }
+  .code-titlebar .dots span { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.14); }
+  .code-panel pre {
+    margin: 0;
+    padding: 16px 18px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.65;
+    color: #ecdfc9;
+  }
+  .code-panel .c { color: #8a8172; font-style: italic; } /* comment */
+  .code-panel .k { color: #eb9f6b; } /* keyword */
+  .code-panel .s { color: #9fd88f; } /* string */
+  .code-panel .t { color: #7fb9e8; } /* type */
+  .code-panel .a { color: #d9a5e8; } /* annotation */
+
+  /* ── Tables ─────────────────────────────────────────────────── */
+  .tbl-wrap { overflow-x: auto; }
+  table.integrations {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14.5px;
+  }
+  table.integrations th {
+    text-align: left;
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 12px;
+    color: var(--ink-faint);
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line-strong);
+  }
+  table.integrations td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+    color: var(--ink-dim);
+  }
+  table.integrations td.name { color: var(--ink); font-weight: 600; font-family: var(--font-display); }
+  table.integrations code { font-size: 0.9em; }
+  .pill {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .pill.ok { background: rgba(34,181,126,0.14); color: var(--good); }
+  .pill.warn { background: rgba(224,169,45,0.16); color: var(--warn); }
+
+  /* ── Endpoint field breakdown ───────────────────────────────── */
+  .endpoint-block {
+    padding: 16px 18px;
+    background: var(--bg-panel-2);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    margin-bottom: 12px;
+  }
+  .endpoint-block:last-child { margin-bottom: 0; }
+  .endpoint-block .ep-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+  .endpoint-block code.ep-path { font-size: 14px; color: var(--ink); }
+  .endpoint-block .ep-purpose { font-size: 14px; color: var(--ink-faint); margin: 0 0 12px; font-style: italic; }
+  .ep-step {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--brasa);
+  }
+  .field-row { display: flex; gap: 14px; padding: 6px 0; border-top: 1px solid var(--line); font-size: 14px; }
+  .field-row:first-of-type { border-top: none; }
+  .field-row .flabel {
+    flex: 0 0 168px;
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 11px;
+    color: var(--ink-faint);
+    padding-top: 2px;
+  }
+  .field-row .fvals { color: var(--ink-dim); }
+  .field-row.contact .flabel { color: var(--warn); }
+  .field-row.contact .fvals code { color: var(--warn); }
+
+  /* ── Real log evidence ─────────────────────────────────────── */
+  .log-panel {
+    background: var(--bg-code);
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid var(--warn);
+  }
+  .log-titlebar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 14px;
+    background: rgba(224,169,45,0.1);
+    border-bottom: 1px solid rgba(224,169,45,0.25);
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--warn);
+  }
+  .log-panel pre {
+    margin: 0;
+    padding: 14px 16px;
+    overflow-x: auto;
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: #e0a92d;
+    white-space: pre-wrap;
+  }
+  .log-panel .log-dim { color: #8a8172; }
+
+  /* ── Diagram ────────────────────────────────────────────────── */
+  .diagram-wrap {
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 20px;
+    overflow-x: auto;
+  }
+
+  /* ── Callout ────────────────────────────────────────────────── */
+  .callout {
+    background: var(--bg-panel-2);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 18px 22px;
+    font-size: 15px;
+    color: var(--ink-dim);
+  }
+  .callout strong { color: var(--ink); }
+
+  /* ── Flow strip ─────────────────────────────────────────────── */
+  .flow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .flow-step {
+    flex: 1 1 160px;
+    padding: 16px 16px;
+    border-right: 1px solid var(--line);
+    background: var(--bg-panel);
+  }
+  .flow-step:last-child { border-right: none; }
+  .flow-step .n { font-family: var(--font-mono); font-size: 12px; color: var(--mesero); }
+  .flow-step h4 { font-size: 14.5px; margin: 6px 0 4px; }
+  .flow-step p { margin: 0; font-size: 13px; color: var(--ink-dim); }
+
+  /* ── Stack chips ────────────────────────────────────────────── */
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+  .chip {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    padding: 5px 11px;
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    color: var(--ink-dim);
+  }
+
+  footer {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 34px 28px 60px;
+    color: var(--ink-faint);
+    font-size: 13px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  @media (max-width: 640px) {
+    .masthead { padding: 40px 20px 28px; }
+    main { padding: 0 20px; }
+    section.block { padding: 40px 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <span class="eyebrow">Integración de Sistemas de Software · Sustentación</span>
+  <h1>Restaurants<br />integración con el ecosistema</h1>
+  <p class="thesis">
+    Restaurants es el sistema principal: gestión de restaurantes, reservas y menús para
+    clientes en Tingo María. Esta sustentación se centra en cómo Restaurants se integra con
+    el resto del ecosistema — qué <em>expone</em> y qué <em>consume</em> — y cierra con un
+    extra: un caso de estudio de integración adicional que construimos.
+  </p>
+  <div class="legend">
+    <span class="legend-item"><span class="dot brasa"></span>Exponemos</span>
+    <span class="legend-item"><span class="dot selva"></span>Consumimos</span>
+    <span class="legend-item"><span class="dot mesero"></span>Extra: Meseros</span>
+  </div>
+</div>
+
+<nav class="topnav">
+  <div class="topnav-inner">
+    <a href="#sistema">Sistema</a>
+    <a class="brasa" href="#exponemos">Exponemos</a>
+    <a class="selva" href="#consumimos">Consumimos</a>
+    <a class="mesero" href="#meseros">Extra: Meseros</a>
+  </div>
+</nav>
+
+<main>
+
+  <!-- ============================================================ -->
+  <section class="block" id="sistema">
+    <div class="section-head"><span class="num">00</span><h2>El sistema principal</h2></div>
+    <p class="section-kicker">
+      <strong>Restaurants</strong> administra el ciclo completo de un restaurante: catálogo y
+      menús, reservas con pre-pedido, promociones, pagos con comprobante, distribución de
+      mesas y un dashboard por rol (cliente, dueño, admin).
+      Arquitectura hexagonal en el backend, para que la integración con otros sistemas entre por
+      un solo borde limpio (<code>infrastructure/</code>) sin filtrarse al dominio.
+    </p>
+    <div class="chips">
+      <span class="chip">Java 21 · Spring Boot 3</span>
+      <span class="chip">Next.js 14</span>
+      <span class="chip">PostgreSQL + PostGIS</span>
+      <span class="chip">JWT + API Keys</span>
+      <span class="chip">Render + Vercel</span>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section class="block" id="exponemos">
+    <div class="section-head"><span class="num">01</span><h2>Lo que exponemos</h2></div>
+    <p class="section-kicker">
+      Restaurants actúa como <strong>proveedor</strong> para el resto del ecosistema: otros
+      sistemas externos (hoteles, eventos, transporte) consumen datos y acciones nuestras a
+      través de dos superficies, cada una con su propio nivel de acceso — desde autenticación
+      propia de cada dueño hasta acceso de sistema a sistema.
+    </p>
+
+    <div class="stack">
+
+      <div class="card brasa">
+        <h3>Portal de desarrollador<span class="tag brasa">API keys propias</span></h3>
+        <p>Para lo que sí necesita identificar a alguien, hay autoservicio de claves
+          (<code>/v1/developer/api-keys</code>): cualquier dueño o developer genera, revoca o
+          regenera su propia clave desde el dashboard, sin pedirle nada a un administrador. La
+          pieza que lo hace funcionar es el filtro de autenticación: no asigna un rol fijo de
+          "sistema" a quien usa una key, carga al usuario real que hay detrás de ella, con sus
+          roles reales. Eso significa que <strong>cualquier endpoint que ya esté protegido por
+          rol de dueño sigue funcionando igual con una API key</strong>, sin escribir permisos
+          nuevos por cada caso.</p>
+        <div class="code-panel">
+          <div class="code-titlebar"><span class="dots"><span></span><span></span><span></span></span>ApiKeyAuthenticationFilter.java</div>
+          <pre>Optional&lt;ApiKey&gt; apiKey = apiKeyService.validateAndTouch(rawKey);
+<span class="k">if</span> (apiKey.isPresent()) {
+    <span class="c">// carga al DUEÑO REAL de la key — con sus roles reales,</span>
+    <span class="c">// no un rol fijo de "sistema". Por eso OwnershipGuard funciona igual.</span>
+    UserDetails userDetails = userDetailsService.loadUserByUsername(apiKey.get().getUserId().toString());
+    <span class="k">var</span> auth = <span class="k">new</span> UsernamePasswordAuthenticationToken(userDetails, <span class="k">null</span>, userDetails.getAuthorities());
+    SecurityContextHolder.getContext().setAuthentication(auth);
+}</pre>
+        </div>
+      </div>
+
+      <div class="card brasa">
+        <h3>Integración de ecosistema<span class="tag brasa">JWT de sistema</span></h3>
+        <p>Un segundo nivel, para cuando quien consulta no es una persona sino otro sistema
+          completo (rol <code>SYSTEM_INTEGRATION</code>). Los tres endpoints no son
+          alternativas entre sí — son tres pasos de un mismo flujo: primero se
+          <strong>descubre</strong> qué restaurantes hay, después se pide el
+          <strong>perfil completo</strong> de uno puntual, y por último se pregunta si
+          <strong>conviene recomendarlo justo ahora</strong>.</p>
+
+        <div class="endpoint-block">
+          <div class="ep-head"><span class="ep-step">01 · Descubrir</span><code class="ep-path">GET /restaurants</code></div>
+          <p class="ep-purpose">Un sistema externo (ej. un buscador de planes o actividades) todavía no sabe qué
+            restaurante quiere — pide la lista completa (paginada) para armar su propio catálogo o buscador.
+            Sin esto, no tendría de dónde sacar el <code>id</code> que necesitan los otros dos endpoints.</p>
+          <div class="field-row"><span class="flabel">Devuelve</span><span class="fvals">un <code>RestaurantResponse</code> por cada restaurante activo (mismos campos que "availability", abajo)</span></div>
+        </div>
+
+        <div class="endpoint-block">
+          <div class="ep-head"><span class="ep-step">02 · Perfil completo</span><code class="ep-path">GET /restaurants/{id}/availability</code></div>
+          <p class="ep-purpose">Ya con un <code>id</code> puntual en mano (salido del endpoint anterior, o de una
+            recomendación previa), se pide el detalle completo para mostrárselo a su propio usuario: una
+            tarjeta o perfil de "este es el restaurante", con todo lo necesario para decidir si visitarlo.</p>
+          <div class="field-row"><span class="flabel">Identidad</span><span class="fvals">nombre, categorías, rating, foto de portada</span></div>
+          <div class="field-row"><span class="flabel">Ubicación</span><span class="fvals">dirección, ciudad, región, coordenadas (lat/lng)</span></div>
+          <div class="field-row"><span class="flabel">Operación</span><span class="fvals">capacidad total, rango de precio, horarios de la semana</span></div>
+          <div class="field-row contact"><span class="flabel">Contacto del negocio</span><span class="fvals"><code>email</code>, <code>phone</code>, <code>ownerId</code></span></div>
+        </div>
+
+        <div class="endpoint-block">
+          <div class="ep-head"><span class="ep-step">03 · Decisión en tiempo real</span><code class="ep-path">GET /restaurants/{id}/daily-status</code></div>
+          <p class="ep-purpose">Distinto de los dos anteriores: no es el perfil (eso ya lo tiene), es la pregunta
+            de último momento — "¿conviene recomendarlo <em>ahora mismo</em>?". Pensado para sistemas de
+            itinerarios que arman un plan del día en vivo.</p>
+          <div class="field-row"><span class="flabel">Horario de hoy</span><span class="fvals"><code>openingTime</code>, <code>closingTime</code>, <code>status</code></span></div>
+          <div class="field-row"><span class="flabel">Capacidad ahora</span><span class="fvals"><code>availableTables</code>, <code>availableSeats</code></span></div>
+          <div class="field-row"><span class="flabel">Menú</span><span class="fvals"><code>menu[]</code>: id, nombre, precio y disponibilidad por plato</span></div>
+        </div>
+
+        <p style="margin-top:16px">
+          <strong>Nota honesta:</strong> los primeros dos reutilizan el mismo DTO que ya usaba
+          el dashboard del dueño (por eso el bloque de "contacto del negocio" en naranja) —
+          nunca se pensó una respuesta angosta solo para este caso. <code>daily-status</code>,
+          en cambio, sí tiene su propio DTO hecho a medida — responde justo lo que se necesita,
+          ni más ni menos. Es el que mejor ejemplifica cómo debería ser una respuesta de
+          integración bien pensada.
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section class="block" id="consumimos">
+    <div class="section-head"><span class="num">02</span><h2>Lo que consumimos</h2></div>
+    <p class="section-kicker">
+      Del otro lado, Restaurants es <strong>cliente</strong> de seis servicios externos — los
+      seis activos en producción ahora mismo. Todos comparten la misma regla de diseño, pensada
+      para el día en que alguno falle: <strong>si no responde o su clave deja de estar
+      configurada, se degrada a un resultado vacío — nunca rompe la respuesta al cliente
+      final.</strong>
+    </p>
+
+    <div class="stack">
+      <div class="card selva">
+        <h3>El patrón, en código real<span class="tag selva">isConfigured() + try/catch → null</span></h3>
+        <p>Ejemplo real (<code>ActifyEventsClient</code>, Sistema de Eventos): si Actify no
+          responde, el restaurante simplemente no muestra eventos cercanos — no hay pantalla de
+          error para el cliente.</p>
+        <div class="code-panel">
+          <div class="code-titlebar"><span class="dots"><span></span><span></span><span></span></span>ActifyEventsClient.java</div>
+          <pre><span class="k">public</span> EventLocation getEventLocation(String eventId) {
+    <span class="k">if</span> (!isConfigured()) <span class="k">return</span> <span class="k">null</span>;   <span class="c">// sin API key: ni lo intenta</span>
+    <span class="k">try</span> {
+        JsonNode resp = http.get().uri(baseUrl + <span class="s">"/events/{id}"</span>, eventId)
+                .header(<span class="s">"Authorization"</span>, <span class="s">"Bearer "</span> + apiKey)
+                .retrieve().body(JsonNode.class);
+        <span class="c">// ... parsea lat/lng ...</span>
+        <span class="k">return</span> result;
+    } <span class="k">catch</span> (Exception e) {
+        log.warn(<span class="s">"No se pudo obtener el evento {} de Actify: {}"</span>, eventId, e.getMessage());
+        <span class="k">return</span> <span class="k">null</span>;   <span class="c">// degrada, no propaga</span>
+    }
+}</pre>
+        </div>
+      </div>
+
+      <div class="card selva">
+        <h3>Hospy — Sistema de Hospedaje<span class="tag selva">contrato propio, no un estándar</span></h3>
+        <p>El restaurante muestra alojamientos cercanos consumiendo la API de Hospy. Se le
+          manda la coordenada del restaurante (<code>lat</code>, <code>lng</code>, radio en km);
+          Hospy responde una lista de hospedajes con id, nombre, tipo, ciudad, precio desde,
+          foto y distancia — Restaurants solo transforma esa respuesta a su propio modelo
+          (<code>Lodging</code>) y la sirve tal cual en la página del restaurante. Vale la pena
+          notar que Hospy no usa <code>Authorization: Bearer</code> como Actify — pide su propio
+          header, <code>X-Hospy-Integration-Key</code>. Cada integración externa trae su propio
+          contrato; el cliente se adapta al de cada quien, no al revés.</p>
+        <div class="code-panel">
+          <div class="code-titlebar"><span class="dots"><span></span><span></span><span></span></span>HospyLodgingClient.java</div>
+          <pre><span class="k">public</span> List&lt;Lodging&gt; findNearby(BigDecimal lat, BigDecimal lng, <span class="k">double</span> radiusKm) {
+    <span class="k">if</span> (!isConfigured()) <span class="k">return</span> List.of();
+    <span class="c">// ... revisa la caché de 5 min por coordenada+radio primero ...</span>
+    JsonNode resp = http.get()
+            .uri(baseUrl + <span class="s">"/integracion/hospedajes/cercanos/?lat={lat}&amp;lng={lng}&amp;radio_km={r}"</span>, lat, lng, radiusKm)
+            .header(<span class="s">"X-Hospy-Integration-Key"</span>, apiKey)   <span class="c">// header propio de Hospy, no Bearer</span>
+            .retrieve().body(JsonNode.class);
+    <span class="c">// ... mapea cada item a Lodging(id, name, type, city, priceFrom, photoUrl, distanceKm) ...</span>
+}</pre>
+        </div>
+        <p style="margin-top:14px">Esto no es teórico — este mismo <code>catch</code> ya se disparó en producción.
+          Log real de Render, tomado directo del servicio en vivo:</p>
+        <div class="log-panel">
+          <div class="log-titlebar">Log real · Render</div>
+          <pre>10:44:10 PM <span class="log-dim">[p5sx2]</span> WARN  c.t.r.i.i.HospyLodgingClient - No se pudo consultar
+hospedajes cercanos en Hospy: I/O error on GET request for
+<span class="log-dim">"https://hospy-api-wm7v5futiq-rj.a.run.app/api/v1/integracion/hospedajes/cercanos/"</span>:
+Read timed out</pre>
+        </div>
+        <p style="margin-top:10px">Hospy tardó más de 5 segundos en responder ese momento — el <code>catch</code>
+          lo atrapó, lo dejó en el log, y la página del restaurante se sirvió igual, sin esa
+          sección de hospedajes cercanos. Nadie vio un error; el diseño hizo exactamente lo que
+          tenía que hacer.</p>
+      </div>
+
+      <div class="card selva">
+        <h3>Caso real de integración fallida: correo por SMTP<span class="tag selva">lección aprendida</span></h3>
+        <p>El envío de correo usaba Gmail por SMTP tradicional. Al desplegar en Render, cada
+          correo fallaba con <code>Connection timed out</code> — Render bloquea los puertos SMTP
+          (25/465/587) en todos sus planes, sin importar que las credenciales fueran correctas.
+          La solución fue cambiar de protocolo, no de credenciales: <strong>Resend</strong> manda
+          por HTTPS, que sí atraviesa esa red.</p>
+        <div class="code-panel">
+          <div class="code-titlebar"><span class="dots"><span></span><span></span><span></span></span>ResendEmailClient.java</div>
+          <pre><span class="k">public void</span> send(String to, String subject, String html, ...) {
+    <span class="k">if</span> (!isConfigured()) { log.warn(<span class="s">"RESEND_API_KEY no configurada"</span>); <span class="k">return</span>; }
+    <span class="k">var</span> req = HttpRequest.newBuilder()
+            .uri(URI.create(<span class="s">"https://api.resend.com/emails"</span>))   <span class="c">// HTTPS, no SMTP</span>
+            .header(<span class="s">"Authorization"</span>, <span class="s">"Bearer "</span> + apiKey)
+            .POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(body)))
+            .build();
+    <span class="k">var</span> response = http.send(req, HttpResponse.BodyHandlers.ofString());
+    <span class="c">// 200-299 -&gt; log.info · si no, log.error con el motivo real (nunca lanza)</span>
+}</pre>
+        </div>
+      </div>
+
+      <div class="tbl-wrap">
+        <table class="integrations">
+          <thead><tr><th>Servicio</th><th>Para qué</th><th>En producción</th><th>Si la clave faltara</th></tr></thead>
+          <tbody>
+            <tr><td class="name">Actify (Eventos)</td><td>Eventos cerca del restaurante</td><td><span class="pill ok">activo</span></td><td>lista vacía</td></tr>
+            <tr><td class="name">Hospy (Hospedaje)</td><td>Alojamientos cercanos</td><td><span class="pill ok">activo</span></td><td>lista vacía</td></tr>
+            <tr><td class="name">Gemini (IA)</td><td>Asistente de reservas por texto</td><td><span class="pill ok">activo</span></td><td>modo reglas</td></tr>
+            <tr><td class="name">Google OAuth</td><td>Login de clientes</td><td><span class="pill ok">activo</span></td><td>botón oculto</td></tr>
+            <tr><td class="name">Cloudinary</td><td>Imágenes de platos/restaurante</td><td><span class="pill ok">activo</span></td><td>sin subida</td></tr>
+            <tr><td class="name">Resend</td><td>Correos transaccionales</td><td><span class="pill ok">activo</span></td><td>se loggea, no manda</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section class="block" id="meseros">
+    <div class="section-head"><span class="num">03</span><h2>Extra: Sistema del Mesero</h2></div>
+    <p class="section-kicker">
+      El caso de estudio completo: <strong>Meseros</strong>, un software aparte para que el
+      mesero tome pedidos en mesa — repo distinto, base de datos distinta (Supabase), pensado
+      para desplegarse aparte (por ahora corre en local para esta sustentación). Se integra con
+      Restaurants <strong>solo por contrato HTTP</strong>, sin compartir código ni base de datos.
+    </p>
+
+    <div class="stack">
+
+      <div class="diagram-wrap">
+        <pre class="mermaid">
+flowchart LR
+  M["Meseros<br/><small>Next.js + Supabase</small>"]
+  R["Restaurants<br/><small>Spring Boot + Postgres</small>"]
+
+  M -- "GET /v1/dishes/restaurant/{id}<br/>(público)" --> R
+  M -- "GET /v1/restaurants/{id}/tables<br/>(público)" --> R
+  M -- "PATCH .../tables/{id}/status<br/>(X-API-Key del dueño)" --> R
+  R -. "el dashboard del dueño<br/>lee el mismo currentStatus" .-> R
+        </pre>
+      </div>
+
+      <div class="card mesero">
+        <h3>Cómo se integró</h3>
+        <p>Meseros no tiene usuario ni contraseña dentro de Restaurants. El dueño del
+          restaurante genera su propia API key desde el portal de desarrollador (la misma
+          pieza de la sección anterior) y se la entrega a Meseros como variable de entorno.
+          Cuando el mesero envía un pedido a cocina, Meseros llama con esa key al mismo
+          endpoint manual que el dueño ya usaba desde su propio panel para marcar una mesa —
+          <code>OwnershipGuard</code> no distingue si la llamada vino de una sesión con
+          contraseña o de una API key, así que no hizo falta escribir ningún permiso nuevo
+          para este caso.</p>
+        <div class="code-panel">
+          <div class="code-titlebar"><span class="dots"><span></span><span></span><span></span></span>LayoutController.java</div>
+          <pre><span class="a">@PatchMapping</span>(<span class="s">"/tables/{tableId}/status"</span>)
+<span class="a">@PreAuthorize</span>(<span class="s">"hasAnyRole('ADMIN', 'RESTAURANTE_OWNER')"</span>)
+<span class="k">public</span> ResponseEntity&lt;ApiResponse&lt;TableResponse&gt;&gt; updateTableStatus(
+        <span class="a">@PathVariable</span> UUID restaurantId, <span class="a">@PathVariable</span> UUID tableId, <span class="a">@RequestParam</span> String status) {
+    ownershipGuard.assertOwnsRestaurant(restaurantId); <span class="c">// mismo guard de siempre, sin cambios</span>
+    RestaurantTableEntity e = tableRepository.findById(tableId)
+            .orElseThrow(() -&gt; <span class="k">new</span> IllegalStateException(<span class="s">"Mesa no encontrada"</span>));
+    e.setCurrentStatus(status);
+    tableRepository.save(e);
+    <span class="k">return</span> ResponseEntity.ok(ApiResponse.ok(<span class="s">"Estado actualizado"</span>, toTableResponse(e, ...)));
+}</pre>
+        </div>
+      </div>
+
+      <div class="card mesero">
+        <h3>Código enfocado a la integración: lado Meseros</h3>
+        <p>La clave nunca toca el navegador del mesero. El cliente llama a una ruta propia
+          de Meseros (<code>/api/mesas/[id]/estado</code>), y esa ruta —corriendo en su propio
+          servidor— es la única que conoce la key y llama a Restaurants.</p>
+        <div class="code-panel">
+          <div class="code-titlebar"><span class="dots"><span></span><span></span><span></span></span>Meseros · src/app/api/mesas/[tableId]/estado/route.ts</div>
+          <pre><span class="k">export async function</span> PATCH(request: NextRequest, { params }) {
+  <span class="k">const</span> apiKey = process.env.RESTAURANTS_API_KEY;      <span class="c">// solo servidor, nunca NEXT_PUBLIC_*</span>
+  <span class="k">const</span> { occupied } = <span class="k">await</span> request.json();
+  <span class="k">const</span> status = occupied ? <span class="s">"OCCUPIED"</span> : <span class="s">"AVAILABLE"</span>;
+
+  <span class="k">const</span> upstream = <span class="k">await</span> fetch(
+    `${apiUrl}/v1/restaurants/${restaurantId}/tables/${params.tableId}/status?status=${status}`,
+    { method: <span class="s">"PATCH"</span>, headers: { <span class="s">"X-API-Key"</span>: apiKey } }
+  );
+  <span class="k">return</span> NextResponse.json(<span class="k">await</span> upstream.json());
+}</pre>
+        </div>
+      </div>
+
+      <div class="card mesero">
+        <h3>El flujo completo, en vivo</h3>
+        <div class="flow">
+          <div class="flow-step"><span class="n">01</span><h4>Mesa libre</h4><p>El mesero ve la grilla, en vivo desde Restaurants.</p></div>
+          <div class="flow-step"><span class="n">02</span><h4>Toma el pedido</h4><p>Arma el carrito desde el menú público de Restaurants.</p></div>
+          <div class="flow-step"><span class="n">03</span><h4>Envía a cocina</h4><p>Se guarda en Supabase (Meseros) + PATCH a Restaurants → mesa <strong>OCCUPIED</strong>.</p></div>
+          <div class="flow-step"><span class="n">04</span><h4>Se ve en Restaurants</h4><p>El dashboard del dueño refresca solo — mesa roja, sin tocar nada.</p></div>
+          <div class="flow-step"><span class="n">05</span><h4>Manda boleta</h4><p>Cierra el pedido + PATCH → mesa <strong>AVAILABLE</strong> de nuevo.</p></div>
+        </div>
+      </div>
+
+      <div class="callout" style="margin-bottom:16px">
+        <strong>Integración pública vs. privada:</strong> la sección 01 mostró integración
+        <em>pública</em> — datos abiertos, sin dueño identificado, cualquiera los lee. Meseros
+        es el otro caso, el que se da cuando un restaurante <strong>ya opera con un sistema
+        propio</strong> (Restaurants) y quiere sumar una tecnología nueva (un POS de mesero)
+        sin reescribir nada de lo que ya tiene. Ahí no sirve dejar la puerta abierta a
+        cualquiera: se necesita integración <em>privada</em>, acotada a ese dueño en
+        particular — por eso la API key, y no un dato público más.
+      </div>
+
+      <div class="callout">
+        <strong>Qué demuestra este extra:</strong> dos sistemas con dueños de datos distintos
+        (Supabase vs. Postgres) que se mantienen sincronizados en un solo dato compartido — el
+        estado de la mesa — sin acoplar su código ni su base de datos. Restaurants está
+        desplegado (Vercel + Render); Meseros, para esta sustentación, corre en local — pero el
+        contrato entre ambos (las llamadas HTTP, la autenticación por API key, los datos que se
+        comparten) es exactamente el mismo que tendría desplegado aparte, que es lo que importa
+        demostrar acá. La reserva, además, sigue mostrando solo la hora al mesero
+        (<code>nextReservationTime</code>), nunca el nombre o teléfono del cliente: la
+        integración expone exactamente lo necesario, nada más.
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <span>Integración de Sistemas de Software — Tingo María</span>
+  <span>Restaurants · Meseros</span>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  if (window.mermaid) {
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'default'
+    });
+  }
+</script>
+</body>
+</html>
