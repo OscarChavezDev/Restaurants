@@ -279,6 +279,25 @@ export default function ApiKeysPage() {
         </div>
       </div>
       )}
+
+      {/* Documentación propia para dueños de restaurante: lo que su clave puede
+          hacer de verdad (actualizar el estado de sus propias mesas) — no el
+          catálogo público, que no le pertenece a este rol. */}
+      {!isDeveloper && (
+      <div className="bg-white/80 dark:bg-gray-800/90 backdrop-blur-xl rounded-3xl border border-gray-200 dark:border-gray-700/60 shadow-xl p-6 lg:p-8">
+        <div className="flex items-center gap-2 mb-4">
+          <Terminal className="h-6 w-6 text-orange-500" />
+          <h2 className="font-display text-xl font-bold text-gray-900 dark:text-gray-50">Uso de tu API key</h2>
+        </div>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+          Envía tu clave en el header <code className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-900 font-mono text-xs text-orange-600 dark:text-orange-400">X-API-Key</code> en cada solicitud. Límite: 60 req/min. Solo puedes tocar tu propio restaurante — es la misma verificación que usa tu panel manual.
+        </p>
+        <CodeSnippet
+          title="Marcar mesa ocupada/libre (PATCH, tu propio restaurante)"
+          code={`curl -X PATCH "${apiBaseUrl}/v1/restaurants/{tuRestaurantId}/tables/{tableId}/status?status=OCCUPIED" \\\n  -H "X-API-Key: rp_live_..."`}
+        />
+      </div>
+      )}
     </div>
 
       {/* Modal: generar / mostrar clave */}
