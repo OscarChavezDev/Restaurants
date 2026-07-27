@@ -788,28 +788,6 @@ flowchart LR
         </div>
       </div>
 
-      <div class="callout" style="margin-bottom:16px">
-        <strong>Integración pública vs. privada:</strong> la sección 01 mostró integración
-        <em>pública</em> — datos abiertos, sin dueño identificado, cualquiera los lee. Meseros
-        es el otro caso, el que se da cuando un restaurante <strong>ya opera con un sistema
-        propio</strong> (Restaurants) y quiere sumar una tecnología nueva (un POS de mesero)
-        sin reescribir nada de lo que ya tiene. Ahí no sirve dejar la puerta abierta a
-        cualquiera: se necesita integración <em>privada</em>, acotada a ese dueño en
-        particular — por eso la API key, y no un dato público más.
-      </div>
-
-      <div class="callout">
-        <strong>Qué demuestra este extra:</strong> dos sistemas con dueños de datos distintos
-        (Supabase vs. Postgres) que se mantienen sincronizados en un solo dato compartido — el
-        estado de la mesa — sin acoplar su código ni su base de datos. Restaurants está
-        desplegado (Vercel + Render); Meseros, para esta sustentación, corre en local — pero el
-        contrato entre ambos (las llamadas HTTP, la autenticación por API key, los datos que se
-        comparten) es exactamente el mismo que tendría desplegado aparte, que es lo que importa
-        demostrar acá. La reserva, además, sigue mostrando solo la hora al mesero
-        (<code>nextReservationTime</code>), nunca el nombre o teléfono del cliente: la
-        integración expone exactamente lo necesario, nada más.
-      </div>
-
     </div>
   </section>
 
