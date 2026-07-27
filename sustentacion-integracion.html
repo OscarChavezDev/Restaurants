@@ -728,25 +728,27 @@ flowchart LR
 
       <div class="card mesero">
         <h3>Cómo se integró</h3>
-        <p>Meseros no tiene usuario ni contraseña dentro de Restaurants. El dueño del
-          restaurante genera su propia API key desde el portal de desarrollador (la misma
-          pieza de la sección anterior) y se la entrega a Meseros como variable de entorno.
-          Cuando el mesero envía un pedido a cocina, Meseros llama con esa key al mismo
-          endpoint manual que el dueño ya usaba desde su propio panel para marcar una mesa —
-          <code>OwnershipGuard</code> no distingue si la llamada vino de una sesión con
-          contraseña o de una API key, así que no hizo falta escribir ningún permiso nuevo
-          para este caso.</p>
+        <p>De las tres llamadas del diagrama, solo una escribe algo — las otras dos son
+          lecturas públicas, igual que el menú de cualquier restaurante:</p>
+        <div class="field-row"><span class="flabel">Lee el menú</span><span class="fvals"><code>GET /v1/dishes/restaurant/{id}</code> — nombre, descripción, precio y disponibilidad de cada plato. Público, sin key.</span></div>
+        <div class="field-row"><span class="flabel">Lee las mesas</span><span class="fvals"><code>GET /v1/restaurants/{id}/tables</code> — número, capacidad, sección, estado (OCCUPIED/AVAILABLE) y hora de la próxima reserva. Público, sin key, sin ningún dato del cliente que reservó.</span></div>
+        <div class="field-row contact"><span class="flabel">Marca la mesa</span><span class="fvals"><code>PATCH .../tables/{id}/status</code> — el único que cambia algo, y por eso el único que exige la <code>X-API-Key</code> del dueño.</span></div>
+        <p style="margin-top:14px">Meseros no tiene usuario ni contraseña dentro de Restaurants. El dueño del
+          restaurante genera esa key desde el portal de desarrollador (la misma pieza de la
+          sección anterior) y se la entrega a Meseros como variable de entorno. Cuando el
+          mesero envía un pedido a cocina, Meseros llama con esa key al mismo endpoint manual
+          que el dueño ya usaba desde su propio panel para marcar una mesa:</p>
         <div class="code-panel">
           <div class="code-titlebar"><span class="dots"><span></span><span></span><span></span></span>LayoutController.java</div>
-          <pre><span class="a">@PatchMapping</span>(<span class="s">"/tables/{tableId}/status"</span>)
-<span class="a">@PreAuthorize</span>(<span class="s">"hasAnyRole('ADMIN', 'RESTAURANTE_OWNER')"</span>)
+          <pre><span class="a">@PatchMapping</span>(<span class="s">"/tables/{tableId}/status"</span>)                 <span class="c">// misma ruta que ya usaba el dashboard, nada nuevo</span>
+<span class="a">@PreAuthorize</span>(<span class="s">"hasAnyRole('ADMIN', 'RESTAURANTE_OWNER')"</span>)  <span class="c">// exige rol de dueño — Meseros entra con la key de ESE dueño</span>
 <span class="k">public</span> ResponseEntity&lt;ApiResponse&lt;TableResponse&gt;&gt; updateTableStatus(
         <span class="a">@PathVariable</span> UUID restaurantId, <span class="a">@PathVariable</span> UUID tableId, <span class="a">@RequestParam</span> String status) {
-    ownershipGuard.assertOwnsRestaurant(restaurantId); <span class="c">// mismo guard de siempre, sin cambios</span>
+    ownershipGuard.assertOwnsRestaurant(restaurantId);  <span class="c">// confirma que la mesa es de ESE dueño, no de otro</span>
     RestaurantTableEntity e = tableRepository.findById(tableId)
             .orElseThrow(() -&gt; <span class="k">new</span> IllegalStateException(<span class="s">"Mesa no encontrada"</span>));
-    e.setCurrentStatus(status);
-    tableRepository.save(e);
+    e.setCurrentStatus(status);                         <span class="c">// acá cambia: OCCUPIED o AVAILABLE</span>
+    tableRepository.save(e);                            <span class="c">// se guarda — esto es lo que ve el dashboard del dueño</span>
     <span class="k">return</span> ResponseEntity.ok(ApiResponse.ok(<span class="s">"Estado actualizado"</span>, toTableResponse(e, ...)));
 }</pre>
         </div>
@@ -754,21 +756,20 @@ flowchart LR
 
       <div class="card mesero">
         <h3>Código enfocado a la integración: lado Meseros</h3>
-        <p>La clave nunca toca el navegador del mesero. El cliente llama a una ruta propia
-          de Meseros (<code>/api/mesas/[id]/estado</code>), y esa ruta —corriendo en su propio
-          servidor— es la única que conoce la key y llama a Restaurants.</p>
+        <p>La clave nunca toca el navegador del mesero — corre en una ruta propia de Meseros
+          (<code>/api/mesas/[id]/estado</code>), en su propio servidor:</p>
         <div class="code-panel">
           <div class="code-titlebar"><span class="dots"><span></span><span></span><span></span></span>Meseros · src/app/api/mesas/[tableId]/estado/route.ts</div>
-          <pre><span class="k">export async function</span> PATCH(request: NextRequest, { params }) {
-  <span class="k">const</span> apiKey = process.env.RESTAURANTS_API_KEY;      <span class="c">// solo servidor, nunca NEXT_PUBLIC_*</span>
-  <span class="k">const</span> { occupied } = <span class="k">await</span> request.json();
-  <span class="k">const</span> status = occupied ? <span class="s">"OCCUPIED"</span> : <span class="s">"AVAILABLE"</span>;
+          <pre><span class="k">export async function</span> PATCH(request: NextRequest, { params }) {  <span class="c">// corre en el servidor de Meseros, no en el navegador</span>
+  <span class="k">const</span> apiKey = process.env.RESTAURANTS_API_KEY;      <span class="c">// la key vive solo acá, nunca llega al cliente</span>
+  <span class="k">const</span> { occupied } = <span class="k">await</span> request.json();           <span class="c">// lo que mandó el navegador: true o false</span>
+  <span class="k">const</span> status = occupied ? <span class="s">"OCCUPIED"</span> : <span class="s">"AVAILABLE"</span>;   <span class="c">// se traduce al valor que espera Restaurants</span>
 
   <span class="k">const</span> upstream = <span class="k">await</span> fetch(
     `${apiUrl}/v1/restaurants/${restaurantId}/tables/${params.tableId}/status?status=${status}`,
-    { method: <span class="s">"PATCH"</span>, headers: { <span class="s">"X-API-Key"</span>: apiKey } }
+    { method: <span class="s">"PATCH"</span>, headers: { <span class="s">"X-API-Key"</span>: apiKey } }  <span class="c">// mismo endpoint que ya usaba el dashboard del dueño</span>
   );
-  <span class="k">return</span> NextResponse.json(<span class="k">await</span> upstream.json());
+  <span class="k">return</span> NextResponse.json(<span class="k">await</span> upstream.json());      <span class="c">// se reenvía la respuesta de Restaurants tal cual</span>
 }</pre>
         </div>
       </div>
