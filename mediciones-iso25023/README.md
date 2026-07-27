@@ -76,8 +76,8 @@ El parámetro `-Sufijo` evita pisar los CSV de la medición local.
 
 ## Base técnica del sistema que habilita cada medición
 
-- **Interoperabilidad:** endpoints de integración `/v1/integration/**`
-  (`IntegrationController`, rol `SYSTEM_INTEGRATION`/`ADMIN`), contrato OpenAPI 3
+- **Interoperabilidad:** portal de desarrollador `/v1/developer-api/**`
+  (`DeveloperApiController`, autenticación `X-API-Key`), contrato OpenAPI 3
   en `/v3/api-docs`, envelope JSON `ApiResponse`, autenticación JWT Bearer y CORS.
 - **Disponibilidad:** Spring Boot Actuator (`/actuator/health`, público en
   `SecurityConfig`) + healthchecks de Docker Compose.

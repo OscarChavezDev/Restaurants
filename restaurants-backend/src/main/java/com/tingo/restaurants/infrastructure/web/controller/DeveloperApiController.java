@@ -19,8 +19,7 @@ import java.util.UUID;
  * Catálogo de restaurantes de solo lectura para el portal de desarrollador
  * autoservicio: registro en /v1/auth/register-developer, API key generada en
  * /v1/developer/api-keys, autenticación acá vía el header X-API-Key
- * (ApiKeyAuthenticationFilter). No usa JWT — a diferencia de /v1/integration,
- * pensado para socios ya verificados por un admin (rol SYSTEM_INTEGRATION).
+ * (ApiKeyAuthenticationFilter). No usa JWT.
  */
 @RestController
 @RequestMapping("/v1/developer-api")

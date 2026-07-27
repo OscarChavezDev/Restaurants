@@ -15,14 +15,12 @@ const ROLE_LABELS: Record<string, string> = {
   ADMIN: 'Administrador',
   RESTAURANTE_OWNER: 'Dueño de Restaurante',
   CLIENTE: 'Cliente',
-  SYSTEM_INTEGRATION: 'Integración de Sistema',
 };
 
 const ROLE_COLORS: Record<string, string> = {
   ADMIN: 'bg-red-100 text-red-700',
   RESTAURANTE_OWNER: 'bg-orange-100 text-orange-700',
   CLIENTE: 'bg-blue-100 text-blue-700',
-  SYSTEM_INTEGRATION: 'bg-purple-100 text-purple-700',
 };
 
 const profileSchema = z.object({

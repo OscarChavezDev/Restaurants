@@ -20,6 +20,8 @@ import com.tingo.restaurants.infrastructure.security.JwtTokenProvider;
 import com.tingo.restaurants.infrastructure.security.LoginAttemptService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,6 +49,14 @@ public class AuthService {
             throw new UserAlreadyExistsException(request.getEmail());
         }
 
+        // Este endpoint es público (permitAll): cualquiera sin sesión puede llamarlo.
+        // El campo "role" solo existe para que un ADMIN autenticado cree cuentas con
+        // rol elegido desde el panel de Usuarios — un caller anónimo (o no-admin) no
+        // puede pedirse a sí mismo ADMIN ni DEVELOPER por este medio.
+        if (request.getRole() != UserRole.CLIENTE && request.getRole() != UserRole.RESTAURANTE_OWNER && !callerIsAdmin()) {
+            throw new AccessDeniedException("No tienes permiso para crear una cuenta con ese rol");
+        }
+
         // Una cuenta de dueño nunca se activa sola: queda en revisión del admin.
         boolean owner = request.getRole() == UserRole.RESTAURANTE_OWNER;
 
@@ -67,6 +77,12 @@ public class AuthService {
         User saved = userRepository.save(user);
         log.info("Usuario registrado: {} con rol: {}", saved.getEmail(), saved.getRole());
         return buildAuthResponse(saved);
+    }
+
+    private boolean callerIsAdmin() {
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        return auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
     }
 
     /**

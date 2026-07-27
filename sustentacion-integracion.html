@@ -513,24 +513,22 @@
   <section class="block" id="exponemos">
     <div class="section-head"><span class="num">01</span><h2>Lo que exponemos</h2></div>
     <p class="section-kicker">
-      Restaurants actúa como <strong>proveedor</strong> para el resto del ecosistema: otros
-      sistemas externos (hoteles, eventos, transporte) consumen datos y acciones nuestras a
-      través de dos superficies, cada una con su propio nivel de acceso — desde autenticación
-      propia de cada dueño hasta acceso de sistema a sistema.
+      Restaurants actúa como <strong>proveedor</strong> para el resto del ecosistema a través de
+      un portal de desarrollador autoservicio: cualquiera genera su propia clave, sin pedirle
+      nada a un administrador, y con ella consume el catálogo de restaurantes de solo lectura.
     </p>
 
     <div class="stack">
 
       <div class="card brasa">
-        <h3>Portal de desarrollador<span class="tag brasa">API keys propias</span></h3>
-        <p>Para lo que sí necesita identificar a alguien, hay autoservicio de claves
-          (<code>/v1/developer/api-keys</code>): cualquier dueño o developer genera, revoca o
-          regenera su propia clave desde el dashboard, sin pedirle nada a un administrador. La
-          pieza que lo hace funcionar es el filtro de autenticación: no asigna un rol fijo de
-          "sistema" a quien usa una key, carga al usuario real que hay detrás de ella, con sus
-          roles reales. Eso significa que <strong>cualquier endpoint que ya esté protegido por
-          rol de dueño sigue funcionando igual con una API key</strong>, sin escribir permisos
-          nuevos por cada caso.</p>
+        <h3>Portal de desarrollador<span class="tag brasa">autoservicio · X-API-Key</span></h3>
+        <p>Autoservicio de claves (<code>/v1/developer/api-keys</code>): cualquier dueño o
+          developer genera, revoca o regenera su propia clave desde el dashboard. La pieza que lo
+          hace funcionar es el filtro de autenticación: no asigna un rol fijo de "sistema" a quien
+          usa una key, carga al usuario real que hay detrás de ella, con sus roles reales — por
+          eso esta misma pieza es la que usa el caso de estudio de la sección 03 (Meseros) para
+          marcar una mesa, solo que ahí el rol real detrás de la key es dueño de restaurante en
+          vez de developer.</p>
         <div class="code-panel">
           <div class="code-titlebar"><span class="dots"><span></span><span></span><span></span></span>ApiKeyAuthenticationFilter.java</div>
           <pre>Optional&lt;ApiKey&gt; apiKey = apiKeyService.validateAndTouch(rawKey);
@@ -542,13 +540,10 @@
     SecurityContextHolder.getContext().setAuthentication(auth);
 }</pre>
         </div>
-      </div>
-
-      <div class="card brasa">
-        <h3>Integración de ecosistema<span class="tag brasa">JWT de sistema</span></h3>
-        <p>Un segundo nivel, para cuando quien consulta no es una persona sino otro sistema
-          completo (rol <code>SYSTEM_INTEGRATION</code>). Los tres endpoints no son
-          alternativas entre sí — son tres pasos de un mismo flujo: primero se
+        <p style="margin-top:14px">Con esa key, en el header <code>X-API-Key</code>, el propio dashboard
+          del developer documenta y deja probar tres endpoints de solo lectura
+          (<code>DeveloperApiController</code>, prefijo <code>/v1/developer-api</code>). No son
+          alternativas entre sí — son pasos de un mismo flujo: primero se
           <strong>descubre</strong> qué restaurantes hay, después se pide el
           <strong>perfil completo</strong> de uno puntual, y por último se pregunta si
           <strong>conviene recomendarlo justo ahora</strong>.</p>
@@ -556,16 +551,17 @@
         <div class="endpoint-block">
           <div class="ep-head"><span class="ep-step">01 · Descubrir</span><code class="ep-path">GET /restaurants</code></div>
           <p class="ep-purpose">Un sistema externo (ej. un buscador de planes o actividades) todavía no sabe qué
-            restaurante quiere — pide la lista completa (paginada) para armar su propio catálogo o buscador.
-            Sin esto, no tendría de dónde sacar el <code>id</code> que necesitan los otros dos endpoints.</p>
-          <div class="field-row"><span class="flabel">Devuelve</span><span class="fvals">un <code>RestaurantResponse</code> por cada restaurante activo (mismos campos que "availability", abajo)</span></div>
+            restaurante quiere — pide la lista completa (paginada, con filtro opcional por ciudad) para armar su
+            propio catálogo o buscador. Sin esto, no tendría de dónde sacar el <code>id</code> que necesitan los
+            otros dos endpoints.</p>
+          <div class="field-row"><span class="flabel">Devuelve</span><span class="fvals">un <code>RestaurantResponse</code> por cada restaurante activo (mismos campos que "detalle", abajo)</span></div>
         </div>
 
         <div class="endpoint-block">
-          <div class="ep-head"><span class="ep-step">02 · Perfil completo</span><code class="ep-path">GET /restaurants/{id}/availability</code></div>
-          <p class="ep-purpose">Ya con un <code>id</code> puntual en mano (salido del endpoint anterior, o de una
-            recomendación previa), se pide el detalle completo para mostrárselo a su propio usuario: una
-            tarjeta o perfil de "este es el restaurante", con todo lo necesario para decidir si visitarlo.</p>
+          <div class="ep-head"><span class="ep-step">02 · Perfil completo</span><code class="ep-path">GET /restaurants/{id}</code></div>
+          <p class="ep-purpose">Ya con un <code>id</code> puntual en mano (salido del endpoint anterior), se
+            pide el detalle completo para mostrárselo a su propio usuario: una tarjeta o perfil de "este es el
+            restaurante", con todo lo necesario para decidir si visitarlo.</p>
           <div class="field-row"><span class="flabel">Identidad</span><span class="fvals">nombre, categorías, rating, foto de portada</span></div>
           <div class="field-row"><span class="flabel">Ubicación</span><span class="fvals">dirección, ciudad, región, coordenadas (lat/lng)</span></div>
           <div class="field-row"><span class="flabel">Operación</span><span class="fvals">capacidad total, rango de precio, horarios de la semana</span></div>
@@ -583,8 +579,8 @@
         </div>
 
         <p style="margin-top:16px">
-          <strong>Nota honesta:</strong> los primeros dos reutilizan el mismo DTO que ya usaba
-          el dashboard del dueño (por eso el bloque de "contacto del negocio" en naranja) —
+          <strong>Nota honesta:</strong> los primeros dos pasos reutilizan el mismo DTO que ya
+          usaba el dashboard del dueño (por eso el bloque de "contacto del negocio" en naranja) —
           nunca se pensó una respuesta angosta solo para este caso. <code>daily-status</code>,
           en cambio, sí tiene su propio DTO hecho a medida — responde justo lo que se necesita,
           ni más ni menos. Es el que mejor ejemplifica cómo debería ser una respuesta de

@@ -32,13 +32,12 @@ public class SwaggerConfig {
                             - Búsqueda geoespacial (restaurantes cercanos a eventos)
                             - Promociones y descuentos
                             - Calificaciones y reseñas
-                            - APIs de integración para el ecosistema turístico
+                            - Portal de desarrollador para consumo externo del catálogo
 
                             ### Roles
                             - `ADMIN` — Control total del sistema
                             - `RESTAURANTE_OWNER` — Gestión de su restaurante
                             - `CLIENTE` — Reservas y consultas
-                            - `SYSTEM_INTEGRATION` — Integración entre microservicios (creada por un admin)
                             - `DEVELOPER` — Portal de desarrollador autoservicio; genera una API key
                               (`X-API-Key`) para consumir el catálogo de restaurantes de solo lectura
                             """)

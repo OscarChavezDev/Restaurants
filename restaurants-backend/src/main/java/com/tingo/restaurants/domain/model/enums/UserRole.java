@@ -4,6 +4,5 @@ public enum UserRole {
     ADMIN,
     RESTAURANTE_OWNER,
     CLIENTE,
-    SYSTEM_INTEGRATION,
     DEVELOPER
 }

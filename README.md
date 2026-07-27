@@ -138,7 +138,7 @@ Credenciales por defecto (datos seed locales):
 | `ADMIN` | Control total del sistema |
 | `RESTAURANTE_OWNER` | Gestión de sus propios restaurantes |
 | `CLIENTE` | Reservas y consultas |
-| `SYSTEM_INTEGRATION` | APIs de integración entre sistemas del ecosistema |
+| `DEVELOPER` | Portal de desarrollador autoservicio (API key, catálogo de solo lectura) |
 
 Seguridad: JWT stateless. La autorización fina es por `@PreAuthorize` en los controladores, y el
 acceso a recursos se valida por propiedad (`OwnershipGuard`): un dueño solo opera sobre sus propios
@@ -161,7 +161,7 @@ restaurantes, menús, platos, promociones, imágenes y reservas. El login tiene 
 | `POST` | `/v1/reservations` | Crear reserva | Autenticado |
 | `GET` | `/v1/reservations/code/{code}` | Consultar reserva por código | Público |
 | `PATCH` | `/v1/reservations/{id}/confirm` | Confirmar reserva (dueño del local) | OWNER/ADMIN |
-| `GET` | `/v1/integration/**` | Catálogo para sistemas externos | SYSTEM_INTEGRATION |
+| `GET` | `/v1/developer-api/**` | Catálogo de restaurantes para consumo externo | X-API-Key (DEVELOPER) |
 
 Documentación completa en Swagger: `http://localhost:8080/api/swagger-ui.html`
 
@@ -178,10 +178,9 @@ Documentación completa en Swagger: `http://localhost:8080/api/swagger-ui.html`
 
 ## Integración con el ecosistema
 
-El sistema expone `/v1/integration/**` (rol `SYSTEM_INTEGRATION`) para consumo por los sistemas de
-Eventos, Hoteles, Turismo y Transporte. La integración aún no está implementada: el endpoint
-`GET /v1/restaurants/near-event/{eventId}` existe pero por ahora devuelve vacío (placeholder),
-a la espera de conectar con el Sistema de Eventos.
+El sistema expone un portal de desarrollador autoservicio (`/v1/developer/api-keys` para generar
+claves, `/v1/developer-api/**` para consumirlas con el header `X-API-Key`) para que otros sistemas
+externos consuman el catálogo de restaurantes de solo lectura, sin depender de un admin.
 
 ---
 
